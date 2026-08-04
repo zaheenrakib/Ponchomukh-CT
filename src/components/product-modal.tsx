@@ -14,6 +14,10 @@ export const ProductModal: React.FC = () => {
   } = useCart();
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  
+  const formatRp = (value: number) => {
+    return `Rp${value.toLocaleString("id-ID")}`;
+  };
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
 
@@ -162,11 +166,11 @@ export const ProductModal: React.FC = () => {
             {/* Price section */}
             <div className="mt-4 flex items-baseline gap-2">
               <span className="font-mono text-2xl font-black text-zinc-900 dark:text-white">
-                ${activePrice.toFixed(2)}
+                {formatRp(activePrice)}
               </span>
               {selectedProduct.salePrice && (
                 <span className="font-mono text-sm font-medium text-zinc-450 line-through dark:text-zinc-600">
-                  ${selectedProduct.basePrice.toFixed(2)}
+                  {formatRp(selectedProduct.basePrice)}
                 </span>
               )}
             </div>
@@ -206,7 +210,7 @@ export const ProductModal: React.FC = () => {
                         )}
                         <span>{opt.value}</span>
                         <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
-                          (${v.price.toFixed(2)})
+                          ({formatRp(v.price)})
                         </span>
                       </button>
                     );

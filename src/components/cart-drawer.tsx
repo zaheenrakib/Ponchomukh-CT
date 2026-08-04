@@ -22,6 +22,10 @@ export const CartDrawer: React.FC = () => {
   const [couponError, setCouponError] = useState("");
   const [activeCouponDiscount, setActiveCouponDiscount] = useState(0);
 
+  const formatRp = (value: number) => {
+    return `Rp${value.toLocaleString("id-ID")}`;
+  };
+
   if (!isCartOpen) return null;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
@@ -158,11 +162,11 @@ export const CartDrawer: React.FC = () => {
                         {/* Price */}
                         <div className="text-right">
                           <span className="font-mono text-xs font-extrabold text-zinc-850 dark:text-white block">
-                            ${(item.variant.price * item.quantity).toFixed(2)}
+                            {formatRp(item.variant.price * item.quantity)}
                           </span>
                           {item.quantity > 1 && (
                             <span className="font-mono text-[9px] text-zinc-400 dark:text-zinc-500 block">
-                              ${item.variant.price.toFixed(2)} each
+                              {formatRp(item.variant.price)} each
                             </span>
                           )}
                         </div>
@@ -215,13 +219,13 @@ export const CartDrawer: React.FC = () => {
               <div className="space-y-1.5 text-xs font-medium text-zinc-550 dark:text-zinc-400">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-mono text-zinc-850 dark:text-white">${cartSubtotal.toFixed(2)}</span>
+                  <span className="font-mono text-zinc-850 dark:text-white">{formatRp(cartSubtotal)}</span>
                 </div>
                 
                 {finalDiscount > 0 && (
                   <div className="flex justify-between text-rose-500 font-bold">
                     <span>Discounts</span>
-                    <span className="font-mono">-${finalDiscount.toFixed(2)}</span>
+                    <span className="font-mono">-{formatRp(finalDiscount)}</span>
                   </div>
                 )}
 
@@ -231,14 +235,14 @@ export const CartDrawer: React.FC = () => {
                     {cartShippingFee === 0 ? (
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold uppercase text-[10px]">Free</span>
                     ) : (
-                      `$${cartShippingFee.toFixed(2)}`
+                      formatRp(cartShippingFee)
                     )}
                   </span>
                 </div>
 
                 <div className="flex justify-between pt-3 border-t border-zinc-200 dark:border-zinc-800 text-sm font-black text-zinc-900 dark:text-white">
                   <span>Total</span>
-                  <span className="font-mono text-base text-rose-500">${finalTotal.toFixed(2)}</span>
+                  <span className="font-mono text-base text-rose-500">{formatRp(finalTotal)}</span>
                 </div>
               </div>
 
