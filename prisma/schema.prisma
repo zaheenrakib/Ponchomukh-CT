@@ -107,6 +107,7 @@ model User {
   posts         BlogPost[]  @relation("PostAuthor")
   tickets       Ticket[]
   ticketMessages TicketMessage[]
+  wishlists     Wishlist[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -212,6 +213,8 @@ model Product {
   variants           ProductVariant[]
   reviews            Review[]
   questions          Question[]
+  wishlists          Wishlist[]
+  collections        CollectionProduct[]
 
   @@index([slug])
   @@index([categoryId])
@@ -494,3 +497,73 @@ model TicketMessage {
   attachments String[]
   createdAt   DateTime @default(now())
 }
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Banner {
+  id             String    @id @default(uuid())
+  title          String
+  subtitle       String?
+  imageUrl       String
+  mobileImageUrl String?
+  buttonText     String?
+  buttonUrl      String?
+  position       String    @default("HERO") // HERO, PROMOTIONAL, CATEGORY
+  sortOrder      Int       @default(0)
+  isActive       Boolean   @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([position])
+  @@index([isActive])
+}
+
+model Collection {
+  id          String              @id @default(uuid())
+  title       String
+  slug        String              @unique
+  description String?
+  imageUrl    String?
+  isFeatured  Boolean             @default(false)
+  sortOrder   Int                 @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  products    CollectionProduct[]
+
+  @@index([slug])
+}
+
+model CollectionProduct {
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, productId])
+}
+
+model SiteSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  group     String   @default("GENERAL") // GENERAL, DELIVERY, SOCIAL, HEADER, SEO
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+}
+

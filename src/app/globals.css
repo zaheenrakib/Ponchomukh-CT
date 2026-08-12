@@ -5,6 +5,16 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-primary-brown: #3B0C04;
+  --color-dark-brown: #260700;
+  --color-primary-gold: #FFC40E;
+  --color-gold-dark: #D99E00;
+  --color-cream: #FFF7EE;
+  --color-warm-white: #FFFDF9;
+  --color-text-brown: #2B160F;
+  --color-secondary-brown: #6B5A52;
+  --color-muted-brown: #8C7B72;
+  --color-border-brown: #E8DCD2;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
