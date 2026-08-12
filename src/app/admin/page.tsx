@@ -123,10 +123,19 @@ export default function AdminDashboard() {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="border-t border-zinc-150 pt-4 px-2">
+        <div className="border-t border-zinc-150 pt-4 px-2 space-y-2">
           <Link href="/" className="text-xs font-bold text-[#3B0C04] hover:underline flex items-center gap-1">
             ← View Customer Website
           </Link>
+          <button
+            onClick={async () => {
+              await fetch("/api/admin/logout", { method: "POST" });
+              window.location.href = "/admin/login";
+            }}
+            className="w-full text-left text-xs font-bold text-rose-600 hover:underline pt-1"
+          >
+            🔒 Sign Out
+          </button>
         </div>
       </aside>
 
