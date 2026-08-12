@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { ArrowLeft, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Record<string, any>[]>([]);
@@ -48,18 +47,13 @@ export default function AdminOrdersPage() {
   return (
     <div className="min-h-screen bg-[#F5F6F8] dark:bg-zinc-950 p-8 text-left text-zinc-900 dark:text-zinc-100">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="p-2 rounded-xl border border-zinc-200 bg-white">
-            <ArrowLeft className="h-4 w-4 text-zinc-600" />
-          </Link>
-          <div>
-            <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
-              Order Management
-            </h1>
-            <p className="text-xs text-zinc-500 font-semibold">
-              Process customer purchases and status workflows
-            </p>
-          </div>
+        <div>
+          <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
+            Order Management
+          </h1>
+          <p className="text-xs text-zinc-500 font-semibold">
+            Process customer purchases and status workflows
+          </p>
         </div>
 
         <button

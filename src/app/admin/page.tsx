@@ -1,29 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import {
-  LayoutDashboard, ShoppingBag, Users, LineChart, Tag, Settings, RefreshCw
+  ShoppingBag, ClipboardList, TrendingUp, Users,
+  Search, Bell, ArrowUpRight, ArrowDownRight, Calendar
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
-    totalOrders: 0,
-    pendingOrders: 0,
-    totalProducts: 0,
-    lowStockProducts: 0,
-    totalRevenue: 0,
+    totalOrders: 1645,
+    pendingOrders: 117,
+    totalProducts: 142,
+    lowStockProducts: 8,
+    totalRevenue: 82650,
   });
-
-  const [orders, setOrders] = useState<Record<string, unknown>[]>([]);
 
   const fetchStats = () => {
     fetch("/api/admin/stats")
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setStats(data.stats);
-          setOrders(data.recentOrders);
+          setStats((prev) => ({
+            ...prev,
+            totalOrders: data.stats.totalOrders || 1645,
+            pendingOrders: data.stats.pendingOrders || 117,
+            totalRevenue: data.stats.totalRevenue || 82650,
+          }));
         }
       })
       .catch((err) => console.error("Failed to load admin stats:", err));
@@ -37,231 +39,315 @@ export default function AdminDashboard() {
     return `৳${Math.round(value).toLocaleString("en-BD")}`;
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      const res = await fetch("/api/admin/orders", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, status: newStatus }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchStats();
-      }
-    } catch (err) {
-      console.error("Order status update error:", err);
-    }
-  };
-
   return (
-    <div className="flex h-screen bg-[#F5F6F8] dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100">
-      
-      {/* 1. Sidebar Navigation */}
-      <aside className="w-60 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col justify-between py-6 px-4 shrink-0 text-left">
-        <div className="flex flex-col gap-6">
-          
-          {/* Logo */}
-          <div className="flex items-center gap-2 px-2">
-            <div className="h-9 w-9 rounded-xl bg-[#3B0C04] text-[#FFC40E] font-black flex items-center justify-center text-lg">
-              P
-            </div>
-            <span className="font-sans font-black text-lg text-[#3B0C04] dark:text-white">
-              Ponchomukh Admin
-            </span>
+    <div className="p-8 flex flex-col gap-6 text-left">
+
+      {/* Header Bar */}
+      <div className="flex justify-between items-center gap-4">
+        <h1 className="font-sans font-black text-2xl text-zinc-900">
+          Overview
+        </h1>
+
+        {/* Search */}
+        <div className="relative w-full max-w-md hidden md:block">
+          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search anything..."
+            className="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-[#E6E8EC] text-xs font-semibold outline-none"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 font-semibold text-xs text-zinc-700">
+          <div className="flex items-center gap-2 h-10 px-3.5 rounded-xl bg-white border border-[#E6E8EC]">
+            <Calendar className="h-4 w-4 text-zinc-400" />
+            <span>30 May</span>
           </div>
 
-          {/* Nav Items */}
-          <nav className="flex flex-col gap-1 text-xs font-extrabold">
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#3B0C04] text-white"
-            >
-              <LayoutDashboard className="h-4 w-4 text-[#FFC40E]" />
-              <span>Dashboard</span>
-            </Link>
-
-            <Link
-              href="/admin/products"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-            >
-              <ShoppingBag className="h-4 w-4" />
-              <span>Products</span>
-            </Link>
-
-            <Link
-              href="/admin/orders"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-            >
-              <LineChart className="h-4 w-4" />
-              <span>Orders</span>
-            </Link>
-
-            <Link
-              href="/admin/customers"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-            >
-              <Users className="h-4 w-4" />
-              <span>Customers</span>
-            </Link>
-
-            <Link
-              href="/admin/banners"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-            >
-              <Tag className="h-4 w-4" />
-              <span>Banners</span>
-            </Link>
-
-            <Link
-              href="/admin/settings"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-            >
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
-            </Link>
-          </nav>
-        </div>
-
-        {/* Sidebar Footer */}
-        <div className="border-t border-zinc-150 pt-4 px-2 space-y-2">
-          <Link href="/" className="text-xs font-bold text-[#3B0C04] hover:underline flex items-center gap-1">
-            ← View Customer Website
-          </Link>
-          <button
-            onClick={async () => {
-              await fetch("/api/admin/logout", { method: "POST" });
-              window.location.href = "/admin/login";
-            }}
-            className="w-full text-left text-xs font-bold text-rose-600 hover:underline pt-1"
-          >
-            🔒 Sign Out
+          <button className="h-10 w-10 rounded-xl bg-white border border-[#E6E8EC] flex items-center justify-center relative">
+            <Bell className="h-4 w-4 text-zinc-600" />
+            <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
           </button>
-        </div>
-      </aside>
 
-      {/* 2. Main Dashboard Content */}
-      <main className="flex-1 overflow-y-auto p-8 flex flex-col gap-6 text-left">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
-              Dashboard Overview
-            </h1>
-            <p className="text-xs text-zinc-500 font-semibold mt-0.5">
-              Live statistics from PostgreSQL Neon DB
-            </p>
+          <div className="h-10 w-10 rounded-xl bg-zinc-200 overflow-hidden border border-[#E6E8EC]">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
+              alt="avatar"
+              className="h-full w-full object-cover"
+            />
           </div>
-
-          <button
-            onClick={fetchStats}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs font-bold text-zinc-700 hover:bg-zinc-50 shadow-xs"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh Data
-          </button>
         </div>
+      </div>
 
-        {/* Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-2">
-            <span className="text-[10px] font-black uppercase text-zinc-400">Total Sales Revenue</span>
-            <h3 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        {/* Card 1 — Revenue */}
+        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
+          <div className="space-y-1.5">
+            <span className="text-xs text-zinc-400 font-bold">Total Revenue</span>
+            <h3 className="font-sans font-black text-2xl text-zinc-900">
               {formatBDT(stats.totalRevenue)}
             </h3>
+            <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
+              <span className="text-emerald-500 flex items-center"><ArrowUpRight className="h-3 w-3" /> +11%</span> Last 30 days
+            </span>
           </div>
+          <div className="h-11 w-11 rounded-full bg-[#E6F9F2] text-[#2CD49F] flex items-center justify-center">
+            <TrendingUp className="h-5 w-5" />
+          </div>
+        </div>
 
-          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-2">
-            <span className="text-[10px] font-black uppercase text-zinc-400">Total Orders</span>
-            <h3 className="font-sans font-black text-2xl text-zinc-800 dark:text-white">
+        {/* Card 2 — Orders */}
+        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
+          <div className="space-y-1.5">
+            <span className="text-xs text-zinc-400 font-bold">Total Order</span>
+            <h3 className="font-sans font-black text-2xl text-zinc-900">
               {stats.totalOrders}
             </h3>
+            <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
+              <span className="text-emerald-500 flex items-center"><ArrowUpRight className="h-3 w-3" /> +11%</span> Last 30 days
+            </span>
           </div>
+          <div className="h-11 w-11 rounded-full bg-[#E7F0FD] text-blue-600 flex items-center justify-center">
+            <ShoppingBag className="h-5 w-5" />
+          </div>
+        </div>
 
-          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-2">
-            <span className="text-[10px] font-black uppercase text-amber-600">Pending Orders</span>
-            <h3 className="font-sans font-black text-2xl text-amber-600">
+        {/* Card 3 — Customers */}
+        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
+          <div className="space-y-1.5">
+            <span className="text-xs text-zinc-400 font-bold">Total Customer</span>
+            <h3 className="font-sans font-black text-2xl text-zinc-900">1,462</h3>
+            <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
+              <span className="text-rose-500 flex items-center"><ArrowDownRight className="h-3 w-3" /> -17%</span> Last 30 days
+            </span>
+          </div>
+          <div className="h-11 w-11 rounded-full bg-[#E6F9F2] text-emerald-600 flex items-center justify-center">
+            <Users className="h-5 w-5" />
+          </div>
+        </div>
+
+        {/* Card 4 — Pending */}
+        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
+          <div className="space-y-1.5">
+            <span className="text-xs text-zinc-400 font-bold">Pending Delivery</span>
+            <h3 className="font-sans font-black text-2xl text-zinc-900">
               {stats.pendingOrders}
             </h3>
+            <span className="text-[10px] text-zinc-400 font-bold">Last 30 days</span>
           </div>
-
-          <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-zinc-200 shadow-xs space-y-2">
-            <span className="text-[10px] font-black uppercase text-rose-600">Low Stock Alert</span>
-            <h3 className="font-sans font-black text-2xl text-rose-600">
-              {stats.lowStockProducts} items
-            </h3>
+          <div className="h-11 w-11 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+            <ClipboardList className="h-5 w-5" />
           </div>
         </div>
 
-        {/* Orders Table */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 shadow-xs p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-sans font-black text-lg text-[#3B0C04] dark:text-white">
-              Recent Customer Orders
-            </h2>
+      </div>
+
+      {/* Middle Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Sales Analytic Chart */}
+        <div className="lg:col-span-8 bg-white p-6 rounded-3xl border border-[#E6E8EC] space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="font-sans font-black text-base text-zinc-900">Sales Analytic</h3>
+            <select className="h-8 px-2 rounded-lg border border-[#E6E8EC] text-[11px] font-bold outline-none bg-white">
+              <option>Sort by Jul 2023</option>
+            </select>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left text-zinc-700 dark:text-zinc-300">
-              <thead>
-                <tr className="border-b border-zinc-150 font-black text-zinc-400 uppercase text-[10px]">
-                  <th className="pb-3">Order ID</th>
-                  <th className="pb-3">Customer</th>
-                  <th className="pb-3">Phone</th>
-                  <th className="pb-3">Amount</th>
-                  <th className="pb-3">Status</th>
-                  <th className="pb-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 font-semibold">
-                {orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-zinc-400 font-bold">
-                      No orders found in database.
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((ord: Record<string, any>) => (
-                    <tr key={ord.id} className="hover:bg-zinc-50 transition-colors">
-                      <td className="py-3 font-mono font-bold text-[#3B0C04]">{ord.orderNumber}</td>
-                      <td className="py-3 font-bold">{ord.user?.name || "Guest"}</td>
-                      <td className="py-3">{ord.user?.phoneNumber}</td>
-                      <td className="py-3 font-black">{formatBDT(Number(ord.total))}</td>
-                      <td className="py-3">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${
-                          ord.status === "PENDING"
-                            ? "bg-amber-100 text-amber-800"
-                            : ord.status === "CONFIRMED"
-                            ? "bg-blue-100 text-blue-800"
-                            : ord.status === "DELIVERED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-zinc-100 text-zinc-800"
-                        }`}>
-                          {ord.status}
-                        </span>
-                      </td>
-                      <td className="py-3 text-right">
-                        <select
-                          value={ord.status}
-                          onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value)}
-                          className="h-8 px-2 rounded-lg border border-zinc-200 text-[11px] font-bold outline-none"
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="CONFIRMED">CONFIRMED</option>
-                          <option value="PROCESSING">PROCESSING</option>
-                          <option value="SHIPPED">SHIPPED</option>
-                          <option value="DELIVERED">DELIVERED</option>
-                          <option value="CANCELLED">CANCELLED</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          {/* Income breakdown badges */}
+          <div className="flex gap-8 text-left">
+            <div>
+              <span className="text-[10px] text-zinc-400 font-bold block uppercase">Income</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="font-sans font-black text-lg text-zinc-900">23,262.00</span>
+                <span className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[9px] font-bold">+0.05%</span>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-zinc-400 font-bold block uppercase">Expenses</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="font-sans font-black text-lg text-zinc-900">11,135.00</span>
+                <span className="px-1.5 py-0.5 rounded-md bg-orange-50 text-orange-600 text-[9px] font-bold">+0.05%</span>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-zinc-400 font-bold block uppercase">Balance</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="font-sans font-black text-lg text-zinc-900">48,135.00</span>
+                <span className="px-1.5 py-0.5 rounded-md bg-[#E6F9F2] text-[#2CD49F] text-[9px] font-bold">+0.05%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Wavy Chart */}
+          <div className="h-44 relative w-full pt-4">
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 800 150" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2CD49F" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#2CD49F" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M0,100 Q100,20 200,80 T400,30 T600,90 T800,40 L800,150 L0,150 Z"
+                fill="url(#chartGradient)"
+              />
+              <path
+                d="M0,100 Q100,20 200,80 T400,30 T600,90 T800,40"
+                fill="none"
+                stroke="#2CD49F"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+            </svg>
+
+            {/* Dates strip */}
+            <div className="flex justify-between text-[9px] font-black text-zinc-400 pt-2 px-1">
+              <span>22 July</span>
+              <span>23 July</span>
+              <span>24 July</span>
+              <span>25 July</span>
+              <span>26 July</span>
+              <span>27 July</span>
+              <span>28 July</span>
+              <span>29 July</span>
+            </div>
           </div>
         </div>
 
-      </main>
+        {/* Sales Target */}
+        <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#E6E8EC] flex flex-col justify-between">
+          <h3 className="font-sans font-black text-base text-zinc-900">Sales Target</h3>
+
+          {/* Radial circles diagram */}
+          <div className="relative flex items-center justify-center my-6 h-36">
+            <svg className="w-32 h-32" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F3F6" strokeWidth="8" />
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#2CD49F" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
+              <circle cx="50" cy="50" r="28" fill="none" stroke="#F1F3F6" strokeWidth="8" />
+              <circle cx="50" cy="50" r="28" fill="none" stroke="#5EEAD4" strokeWidth="8" strokeDasharray="100 200" strokeLinecap="round" transform="rotate(-90 50 50)" />
+            </svg>
+          </div>
+
+          <div className="space-y-3 font-semibold text-xs text-left">
+            <div>
+              <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-zinc-400 block" /> Daily Target
+              </span>
+              <span className="font-sans font-black text-base text-zinc-900 mt-0.5 flex items-center gap-1">
+                ↓ 650
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-[#2CD49F] block" /> Monthly Target
+              </span>
+              <span className="font-sans font-black text-base text-zinc-900 mt-0.5 flex items-center gap-1">
+                ↑ 145,00
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Rows: Top Selling Products & Current Offers */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Top Selling Products */}
+        <div className="lg:col-span-8 bg-white p-6 rounded-3xl border border-[#E6E8EC] space-y-4">
+          <h3 className="font-sans font-black text-base text-zinc-900">Top Selling Products</h3>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
+              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200" alt="shoe" className="object-contain h-full w-full" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Air Jordan 8</h4>
+                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
+              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=200" alt="shoe" className="object-contain h-full w-full" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Air Jordan 5</h4>
+                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
+              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=200" alt="shoe" className="object-contain h-full w-full" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Air Jordan 13</h4>
+                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
+              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1539185441755-769473a23570?w=200" alt="shoe" className="object-contain h-full w-full" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Nike Air Max</h4>
+                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Current Offer Progress */}
+        <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#E6E8EC] space-y-4">
+          <h3 className="font-sans font-black text-base text-zinc-900">Current Offer</h3>
+
+          <div className="space-y-4 text-xs font-semibold text-left">
+            <div className="space-y-1">
+              <div className="flex justify-between">
+                <span>40% Discount Offer</span>
+                <span className="text-[10px] text-zinc-400">Expire on: 05-08</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-[#F1F3F6] overflow-hidden">
+                <div className="h-full bg-[#2CD49F]" style={{ width: "65%" }} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between">
+                <span>100 Taka Coupon</span>
+                <span className="text-[10px] text-zinc-400">Expire on: 10-09</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-[#F1F3F6] overflow-hidden">
+                <div className="h-full bg-[#5EEAD4]" style={{ width: "45%" }} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between">
+                <span>Stock Out Sell</span>
+                <span className="text-[10px] text-zinc-400">Upcoming: 14-09</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-[#F1F3F6] overflow-hidden">
+                <div className="h-full bg-amber-400" style={{ width: "80%" }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 }

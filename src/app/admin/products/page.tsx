@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Search, ArrowLeft } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Record<string, any>[]>([]);
@@ -39,18 +39,13 @@ export default function AdminProductsPage() {
       
       {/* Top Header */}
       <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="p-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50">
-            <ArrowLeft className="h-4 w-4 text-zinc-600" />
-          </Link>
-          <div>
-            <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
-              Product Management
-            </h1>
-            <p className="text-xs text-zinc-500 font-semibold">
-              Manage website catalog items and inventory
-            </p>
-          </div>
+        <div>
+          <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
+            Product Management
+          </h1>
+          <p className="text-xs text-zinc-500 font-semibold">
+            Manage website catalog items and inventory
+          </p>
         </div>
 
         <Link
