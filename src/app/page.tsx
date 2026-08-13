@@ -13,7 +13,6 @@ import {
   Zap, ArrowLeft, ArrowRight, CheckCircle2
 } from "lucide-react";
 
-// Countdown Timer Component for Flash Sale
 const FlashSaleTimer: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({
     hours: 3,
