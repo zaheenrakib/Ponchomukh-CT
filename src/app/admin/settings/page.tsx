@@ -1,175 +1,317 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { ArrowLeft, Save, Check } from "lucide-react";
+import React, { useState } from "react";
+import { Settings, Save, ShieldCheck, Truck, CreditCard, Share2, Globe } from "lucide-react";
+import { useCart } from "@/context/cart-context";
+import { initialSiteSettings } from "@/lib/mockData";
 
 export default function AdminSettingsPage() {
-  const [settings, setSettings] = useState<Record<string, string>>({
-    announcement_text: "🚚 সারা বাংলাদেশে হোম ডেলিভারি | Cash on Delivery Available",
-    delivery_inside_dhaka: "60",
-    delivery_outside_dhaka: "120",
-    contact_phone: "+880 1700-000000",
-    contact_email: "support@ponchomukh.com",
-    contact_address: "Dhaka, Bangladesh",
-    social_facebook: "https://facebook.com/ponchomukh",
-    social_instagram: "https://instagram.com/ponchomukh",
-  });
+  const { showToast } = useCart();
+  const [activeTab, setActiveTab] = useState<"general" | "delivery" | "payment" | "social" | "seo">("general");
 
-  const [loading, setLoading] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [settings, setSettings] = useState(initialSiteSettings);
 
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.settings) {
-          setSettings((prev) => ({ ...prev, ...data.settings }));
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSettings((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setSaved(false);
-
     try {
-      const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSaved(true);
-      }
+      localStorage.setItem("ponchomukh_site_settings", JSON.stringify(settings));
+      showToast("✓ সেটিংস সফলভাবে সংরক্ষিত হয়েছে!");
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F6F8] dark:bg-zinc-950 p-8 text-left text-zinc-900 dark:text-zinc-100">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/admin" className="p-2 rounded-xl border border-zinc-200 bg-white">
-          <ArrowLeft className="h-4 w-4 text-zinc-600" />
-        </Link>
+    <div className="space-y-6 max-w-4xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
-            Website Settings
+          <h1 className="text-2xl font-black text-[#3B0C04]">
+            ওয়েবসাইট সেটিংস (Website Settings)
           </h1>
-          <p className="text-xs text-zinc-500 font-semibold">
-            Manage announcement text, delivery charges, and contact information
+          <p className="text-xs text-[#6B5A52] mt-0.5">
+            ব্র্যান্ড ইনফো, ডেলিভারি চার্জ, পেমেন্ট গেটওয়ে এবং সোশ্যাল লিংক পরিচালনা করুন
           </p>
         </div>
       </div>
 
-      {saved && (
-        <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-          <Check className="h-4 w-4" /> Settings successfully saved to database!
-        </div>
-      )}
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-[#E8DCD2] pb-1 text-xs font-bold overflow-x-auto no-scrollbar">
+        <button
+          onClick={() => setActiveTab("general")}
+          className={`px-4 py-2 rounded-lg shrink-0 transition-colors ${
+            activeTab === "general" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          সাধারণ সেটিংস (General)
+        </button>
+        <button
+          onClick={() => setActiveTab("delivery")}
+          className={`px-4 py-2 rounded-lg shrink-0 transition-colors ${
+            activeTab === "delivery" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          ডেলিভারি চার্জ (Delivery)
+        </button>
+        <button
+          onClick={() => setActiveTab("payment")}
+          className={`px-4 py-2 rounded-lg shrink-0 transition-colors ${
+            activeTab === "payment" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          পেমেন্ট মেথড (Payment)
+        </button>
+        <button
+          onClick={() => setActiveTab("social")}
+          className={`px-4 py-2 rounded-lg shrink-0 transition-colors ${
+            activeTab === "social" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          সোশ্যাল মিডিয়া (Social Links)
+        </button>
+        <button
+          onClick={() => setActiveTab("seo")}
+          className={`px-4 py-2 rounded-lg shrink-0 transition-colors ${
+            activeTab === "seo" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          এসইও (SEO)
+        </button>
+      </div>
 
-      <form onSubmit={handleSubmit} className="max-w-3xl bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 space-y-6">
-        
-        {/* Header & Announcement */}
-        <div className="space-y-4">
-          <h2 className="font-sans font-black text-base text-[#3B0C04] border-b border-zinc-150 pb-2">
-            Header & Announcement Bar
-          </h2>
+      <form onSubmit={handleSave} className="space-y-6">
+        {/* GENERAL SETTINGS */}
+        {activeTab === "general" && (
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
+            <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
+              ব্র্যান্ড ও যোগাযোগের তথ্য
+            </h2>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-600 mb-1">Announcement Bar Text</label>
-            <input
-              type="text"
-              name="announcement_text"
-              value={settings.announcement_text || ""}
-              onChange={handleChange}
-              className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs font-semibold outline-none focus:border-[#3B0C04]"
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold mb-1">ব্র্যান্ড নাম (ইংরেজি):</label>
+                <input
+                  type="text"
+                  value={settings.brandName}
+                  onChange={(e) => setSettings({ ...settings, brandName: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
 
-        {/* Delivery Charges */}
-        <div className="space-y-4 pt-4 border-t border-zinc-150">
-          <h2 className="font-sans font-black text-base text-[#3B0C04] border-b border-zinc-150 pb-2">
-            Delivery Charges (৳ BDT)
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-zinc-600 mb-1">Inside Dhaka Fee (৳)</label>
-              <input
-                type="number"
-                name="delivery_inside_dhaka"
-                value={settings.delivery_inside_dhaka || "60"}
-                onChange={handleChange}
-                className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs font-semibold outline-none focus:border-[#3B0C04]"
-              />
+              <div>
+                <label className="block font-bold mb-1">ব্র্যান্ড নাম (বাংলা):</label>
+                <input
+                  type="text"
+                  value={settings.brandNameBn}
+                  onChange={(e) => setSettings({ ...settings, brandNameBn: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-600 mb-1">Outside Dhaka Fee (৳)</label>
-              <input
-                type="number"
-                name="delivery_outside_dhaka"
-                value={settings.delivery_outside_dhaka || "120"}
-                onChange={handleChange}
-                className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs font-semibold outline-none focus:border-[#3B0C04]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Info */}
-        <div className="space-y-4 pt-4 border-t border-zinc-150">
-          <h2 className="font-sans font-black text-base text-[#3B0C04] border-b border-zinc-150 pb-2">
-            Contact Details
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-zinc-600 mb-1">Contact Phone</label>
+              <label className="block font-bold mb-1">ট্যাগলাইন (Tagline):</label>
               <input
                 type="text"
-                name="contact_phone"
-                value={settings.contact_phone || ""}
-                onChange={handleChange}
-                className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs font-semibold outline-none focus:border-[#3B0C04]"
+                value={settings.tagline}
+                onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
+                className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-bold mb-1">হটলাইন ফোন নম্বর:</label>
+                <input
+                  type="text"
+                  value={settings.phone}
+                  onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">সাপোর্ট ইমেইল:</label>
+                <input
+                  type="email"
+                  value={settings.email}
+                  onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold mb-1">অফিস ও ওয়্যারহাউজ ঠিকানা:</label>
+              <textarea
+                rows={2}
+                value={settings.address}
+                onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                className="w-full p-3 rounded-lg border border-[#E8DCD2]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* DELIVERY SETTINGS */}
+        {activeTab === "delivery" && (
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
+            <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
+              ডেলিভারি চার্জ ও সময়সীমা
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-2">
+                <h3 className="font-bold text-[#3B0C04]">ঢাকা সিটির ভেতর</h3>
+                <div>
+                  <label className="block font-bold mb-1">ডেলিভারি চার্জ (৳):</label>
+                  <input
+                    type="number"
+                    value={settings.insideDhakaFee}
+                    onChange={(e) => setSettings({ ...settings, insideDhakaFee: Number(e.target.value) })}
+                    className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] bg-white font-bold text-sm text-[#3B0C04]"
+                  />
+                </div>
+                <p className="text-[11px] text-[#8C7B72]">প্রত্যাশিত সময়: ২৪-৪৮ ঘণ্টা</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-2">
+                <h3 className="font-bold text-[#3B0C04]">ঢাকার বাইরে (সারাদেশ)</h3>
+                <div>
+                  <label className="block font-bold mb-1">ডেলিভারি চার্জ (৳):</label>
+                  <input
+                    type="number"
+                    value={settings.outsideDhakaFee}
+                    onChange={(e) => setSettings({ ...settings, outsideDhakaFee: Number(e.target.value) })}
+                    className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] bg-white font-bold text-sm text-[#3B0C04]"
+                  />
+                </div>
+                <p className="text-[11px] text-[#8C7B72]">প্রত্যাশিত সময়: ২-৩ কার্যদিবস</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PAYMENT SETTINGS */}
+        {activeTab === "payment" && (
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
+            <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
+              পেমেন্ট মাধ্যম কনফিগারেশন
+            </h2>
+
+            <div className="p-4 rounded-xl border border-[#E8DCD2] flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-[#2B160F]">ক্যাশ অন ডেলিভারি (Cash on Delivery)</h3>
+                <p className="text-[#8C7B72]">চেকআউট পেজে গ্রাহকদের জন্য ডিফল্ট চালু রয়েছে</p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-[#E8F6F1] text-[#16834A] font-bold">
+                ACTIVE
+              </span>
+            </div>
+
+            <div className="p-4 rounded-xl border border-[#E8DCD2] flex items-center justify-between opacity-80">
+              <div>
+                <h3 className="font-bold text-[#2B160F]">bKash Merchant Payment Gateway</h3>
+                <p className="text-[#8C7B72]">API ক্রেডেনশিয়াল ও ওয়েবহুক রেডি</p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold">
+                GATEWAY READY
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* SOCIAL LINKS */}
+        {activeTab === "social" && (
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
+            <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
+              সোশ্যাল মিডিয়া প্রোফাইল লিংক
+            </h2>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block font-bold mb-1">Facebook URL:</label>
+                <input
+                  type="url"
+                  value={settings.socialLinks.facebook}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      socialLinks: { ...settings.socialLinks, facebook: e.target.value }
+                    })
+                  }
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">Instagram URL:</label>
+                <input
+                  type="url"
+                  value={settings.socialLinks.instagram}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      socialLinks: { ...settings.socialLinks, instagram: e.target.value }
+                    })
+                  }
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1">WhatsApp Hotline URL:</label>
+                <input
+                  type="url"
+                  value={settings.socialLinks.whatsapp}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      socialLinks: { ...settings.socialLinks, whatsapp: e.target.value }
+                    })
+                  }
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SEO SETTINGS */}
+        {activeTab === "seo" && (
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
+            <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
+              গ্লোবাল এসইও মেটাডাটা
+            </h2>
+
+            <div>
+              <label className="block font-bold mb-1">সাইট টাইটেল (SEO Title):</label>
+              <input
+                type="text"
+                defaultValue="পঞ্চমুখ (Ponchomukh) | পছন্দে, প্রয়োজনে, প্রাপ্তিতে — পঞ্চমুখ"
+                className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-600 mb-1">Contact Email</label>
-              <input
-                type="email"
-                name="contact_email"
-                value={settings.contact_email || ""}
-                onChange={handleChange}
-                className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs font-semibold outline-none focus:border-[#3B0C04]"
+              <label className="block font-bold mb-1">মেটা ডেসক্রিপশন (Meta Description):</label>
+              <textarea
+                rows={3}
+                defaultValue="পঞ্চমুখ একটি modern Bangladesh-focused e-commerce platform। Gadgets, Electronics, Home & Kitchen, Travel Accessories এবং Lifestyle পণ্য সবচেয়ে সহজে ও দ্রুত ডেলিভারিতে পান।"
+                className="w-full p-3 rounded-lg border border-[#E8DCD2]"
               />
             </div>
           </div>
+        )}
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs shadow-md transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            <span>সেটিংস পরিবর্তন সংরক্ষণ করুন</span>
+          </button>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex h-11 items-center justify-center gap-2 px-8 rounded-xl bg-[#3B0C04] text-white font-bold text-xs shadow-md"
-        >
-          <Save className="h-4 w-4 text-[#FFC40E]" />
-          <span>{loading ? "Saving Settings..." : "Save Settings"}</span>
-        </button>
-
       </form>
     </div>
   );

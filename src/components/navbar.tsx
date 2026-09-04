@@ -1,293 +1,566 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/context/cart-context";
+import { mockCategories, mockProducts } from "@/lib/mockData";
 import {
-  Search, ShoppingBag, Heart, User, ChevronDown, Menu, X, Home, Grid
+  Search,
+  ShoppingBag,
+  Heart,
+  User,
+  Menu,
+  X,
+  ChevronDown,
+  Phone,
+  MessageCircle,
+  ExternalLink,
+  ShieldCheck,
+  PackageCheck,
+  Sparkles
 } from "lucide-react";
-import { mockCategories } from "@/lib/mockData";
 
 export const Navbar: React.FC = () => {
+  const router = useRouter();
   const pathname = usePathname();
-  const {
-    cartCount,
-    setIsCartOpen,
-    searchQuery,
-    setSearchQuery,
-    setSelectedCategory
-  } = useCart();
+  const { cartCount, wishlistCount, setIsCartOpen, searchQuery, setSearchQuery } = useCart();
 
-  const [announcementText, setAnnouncementText] = useState("🚚 সারা বাংলাদেশে হোম ডেলিভারি | Cash on Delivery Available");
-  const [showAnnouncement, setShowAnnouncement] = useState(true);
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [localSearch, setLocalSearch] = useState(searchQuery || "");
 
-  // Fetch Announcement Bar settings
+  const searchRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
+
+  // Close menus when clicking outside
   useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.settings?.announcement_text) {
-          setAnnouncementText(data.settings.announcement_text);
-        }
-      })
-      .catch(() => {});
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchFocused(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryDropdownOpen(false);
+      }
+      if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
+        setIsAccountDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsCategoryDropdownOpen(false);
+    setIsAccountDropdownOpen(false);
+  }, [pathname]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (localSearch.trim()) {
+      setSearchQuery(localSearch.trim());
+      router.push(`/search?q=${encodeURIComponent(localSearch.trim())}`);
+      setSearchFocused(false);
+    }
+  };
+
+  const searchSuggestions = localSearch.trim()
+    ? mockProducts.filter((p) =>
+        p.name.toLowerCase().includes(localSearch.toLowerCase()) ||
+        p.category.name.toLowerCase().includes(localSearch.toLowerCase())
+      ).slice(0, 5)
+    : [];
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-white dark:bg-zinc-950 border-b border-zinc-150 dark:border-zinc-850 shadow-xs transition-colors">
-      
-      {/* 1. TOP ANNOUNCEMENT BAR (PART 05 Blueprint: 36px Desktop) */}
-      {showAnnouncement && (
-        <div className="bg-[#3B0C04] text-[#FFF7EE] py-2 px-4 text-xs font-semibold tracking-wide border-b border-[#260700]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between">
-            <div className="flex-1 text-center sm:text-left text-[11px] sm:text-xs">
-              {announcementText}
+    <header className="sticky top-0 z-40 bg-white border-b border-[#E8DCD2] shadow-xs">
+      {/* DESKTOP HEADER (72px) */}
+      <div className="hidden lg:block border-b border-[#E8DCD2]/60">
+        <div className="container-custom h-[72px] flex items-center justify-between gap-6">
+          {/* Brand Logo (Left) */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+            <div className="w-10 h-10 rounded-xl bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-xl shadow-sm border border-[#FFC40E]/30 group-hover:scale-105 transition-transform">
+              প
             </div>
-            <button
-              onClick={() => setShowAnnouncement(false)}
-              className="text-[#FFF7EE]/70 hover:text-white ml-2 text-xs"
-              aria-label="Dismiss Announcement"
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tight text-[#3B0C04] leading-none">
+                PONCHOMUKH
+              </span>
+              <span className="text-[11px] font-medium text-[#6B5A52] tracking-wide mt-0.5">
+                পঞ্চমুখ • পছন্দে, প্রয়োজনে, প্রাপ্তিতে
+              </span>
+            </div>
+          </Link>
+
+          {/* Search Bar (Center 440px) */}
+          <div ref={searchRef} className="relative flex-1 max-w-[480px]">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                placeholder="আপনি কী খুঁজছেন? (পণ্য বা ক্যাটাগরি)"
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                className="w-full h-11 pl-11 pr-24 rounded-lg bg-[#FFFDF9] border border-[#E8DCD2] text-sm text-[#2B160F] placeholder-[#8C7B72] focus:outline-none focus:border-[#3B0C04] focus:ring-1 focus:ring-[#3B0C04] transition-all"
+              />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B72]" />
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3.5 bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-semibold rounded-md transition-colors"
+              >
+                খুঁজুন
+              </button>
+            </form>
+
+            {/* Live Search Suggestions Dropdown */}
+            {searchFocused && localSearch.trim().length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-[#E8DCD2] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in-50 duration-150">
+                <div className="p-2 border-b border-[#E8DCD2] bg-[#FFF7EE] text-xs font-semibold text-[#3B0C04] flex items-center justify-between">
+                  <span>অনুসন্ধান ফলাফল ({searchSuggestions.length})</span>
+                  <span className="text-[11px] text-[#6B5A52]">Enter চাপুন</span>
+                </div>
+                {searchSuggestions.length > 0 ? (
+                  <div className="divide-y divide-[#E8DCD2]/40 max-h-72 overflow-y-auto">
+                    {searchSuggestions.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/product/${item.slug}`}
+                        onClick={() => setSearchFocused(false)}
+                        className="flex items-center gap-3 p-2.5 hover:bg-[#FFF7EE] transition-colors"
+                      >
+                        <img
+                          src={item.images[0]?.imageUrl}
+                          alt={item.name}
+                          className="w-10 h-10 object-cover rounded-md bg-[#FFFDF9] shrink-0 border border-[#E8DCD2]/50"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-[#2B160F] truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-[11px] text-[#3B0C04] font-bold mt-0.5">
+                            ৳{item.salePrice || item.basePrice}
+                            {item.salePrice && (
+                              <span className="text-[#8C7B72] line-through font-normal ml-1.5">
+                                ৳{item.basePrice}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-xs text-[#8C7B72]">
+                    কোনো ফলাফল পাওয়া যায়নি।
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Header Actions (Right) */}
+          <div className="flex items-center gap-4 shrink-0">
+            {/* Wishlist */}
+            <Link
+              href="/wishlist"
+              className="relative p-2 rounded-lg text-[#2B160F] hover:text-[#3B0C04] hover:bg-[#FFF7EE] transition-colors flex items-center gap-1.5"
+              title="উইশলিস্ট"
             >
-              ✕
+              <div className="relative">
+                <Heart className="w-5 h-5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-[#D64545] text-white text-[10px] font-bold flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-medium hidden xl:inline">উইশলিস্ট</span>
+            </Link>
+
+            {/* Account Dropdown */}
+            <div ref={accountRef} className="relative">
+              <button
+                onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                className="p-2 rounded-lg text-[#2B160F] hover:text-[#3B0C04] hover:bg-[#FFF7EE] transition-colors flex items-center gap-1.5"
+              >
+                <User className="w-5 h-5" />
+                <span className="text-xs font-medium hidden xl:inline">অ্যাকাউন্ট</span>
+                <ChevronDown className="w-3.5 h-3.5 text-[#8C7B72]" />
+              </button>
+
+              {isAccountDropdownOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-52 bg-white border border-[#E8DCD2] rounded-xl shadow-xl py-2 z-50 animate-in fade-in-50 duration-150">
+                  <div className="px-4 py-2 border-b border-[#E8DCD2]/60 mb-1">
+                    <p className="text-xs font-bold text-[#3B0C04]">স্বাগতম!</p>
+                    <p className="text-[11px] text-[#6B5A52]">আপনার অ্যাকাউন্ট পরিচালনা করুন</p>
+                  </div>
+                  <Link
+                    href="/account"
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04]"
+                  >
+                    <User className="w-4 h-4 text-[#8C7B72]" />
+                    <span>মাই অ্যাকাউন্ট</span>
+                  </Link>
+                  <Link
+                    href="/account?tab=orders"
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04]"
+                  >
+                    <PackageCheck className="w-4 h-4 text-[#8C7B72]" />
+                    <span>আমার অর্ডারসমূহ</span>
+                  </Link>
+                  <Link
+                    href="/order-tracking"
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04]"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-[#8C7B72]" />
+                    <span>অর্ডার ট্র্যাকিং</span>
+                  </Link>
+                  <div className="border-t border-[#E8DCD2]/60 my-1 pt-1">
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#3B0C04] font-semibold hover:bg-[#FFF7EE]"
+                    >
+                      <Sparkles className="w-4 h-4 text-[#FFC40E]" />
+                      <span>অ্যাডমিন প্যানেল</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cart Button */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative flex items-center gap-2.5 h-11 px-4 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] transition-colors shadow-xs"
+            >
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#FFC40E] text-[#260700] text-[11px] font-black flex items-center justify-center shadow-xs">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-bold tracking-wide">
+                কার্ট {cartCount > 0 && `(${cartCount})`}
+              </span>
             </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* 2. MAIN HEADER (PART 06 Blueprint: 72px Height Desktop) */}
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        
-        {/* Mobile Hamburger Menu Toggle */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300"
-        >
-          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+      {/* DESKTOP NAVIGATION BAR (48px) */}
+      <div className="hidden lg:block bg-white">
+        <div className="container-custom h-12 flex items-center justify-between">
+          <nav className="flex items-center gap-7 text-sm font-medium">
+            <Link
+              href="/"
+              className={`transition-colors hover:text-[#3B0C04] ${
+                pathname === "/" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
+              }`}
+            >
+              হোম
+            </Link>
 
-        {/* Brand Logo */}
-        <Link
-          href="/"
-          onClick={() => {
-            setSelectedCategory(null);
-            setSearchQuery("");
-          }}
-          className="flex items-center gap-1.5 shrink-0 group"
-        >
-          <div className="flex flex-col text-left">
-            <span className="font-sans font-black text-2xl sm:text-3xl tracking-tight text-[#3B0C04] dark:text-white">
-              পঞ্চমুখ<span className="text-[#FFC40E] font-extrabold text-xl sm:text-2xl">.com</span>
-            </span>
-            <span className="text-[9px] font-bold text-[#8C7B72] dark:text-zinc-400 -mt-1 hidden sm:inline">
-              পছন্দে, প্রয়োজনে, প্রাপ্তিতে — পঞ্চমুখ।
-            </span>
-          </div>
-        </Link>
+            {/* Categories Mega Dropdown */}
+            <div ref={categoryRef} className="relative">
+              <button
+                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                className={`flex items-center gap-1.5 transition-colors hover:text-[#3B0C04] ${
+                  pathname.startsWith("/category") || pathname.startsWith("/shop")
+                    ? "text-[#3B0C04] font-bold"
+                    : "text-[#2B160F]"
+                }`}
+              >
+                <span>ক্যাটাগরি সমূহ</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
 
-        {/* Search Bar Container (Desktop) */}
-        <div className="hidden lg:flex flex-1 max-w-xl items-center gap-2 relative">
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="আপনি কী খুঁজছেন? (Product, SKU, Category...)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#E8DCD2] bg-[#FFF7EE]/50 text-xs font-semibold transition-all outline-none focus:border-[#3B0C04] focus:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:focus:border-zinc-700 dark:focus:bg-zinc-950 dark:text-white"
-            />
+              {isCategoryDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-[#E8DCD2] rounded-xl shadow-xl py-2 z-50 animate-in fade-in-50 duration-150">
+                  <div className="px-3 py-1.5 text-xs font-bold text-[#6B5A52] uppercase tracking-wider border-b border-[#E8DCD2]/40 mb-1">
+                    সকল ক্যাটাগরি
+                  </div>
+                  {mockCategories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.slug}`}
+                      className="flex items-center justify-between px-4 py-2.5 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04] transition-colors"
+                    >
+                      <span className="font-semibold">{cat.name}</span>
+                      <span className="text-[10px] text-[#8C7B72]">{cat.subcategories?.length || 0} সাব-ক্যাটাগরি</span>
+                    </Link>
+                  ))}
+                  <div className="border-t border-[#E8DCD2]/60 mt-1 pt-1 px-3">
+                    <Link
+                      href="/shop"
+                      className="block text-center text-xs font-bold text-[#3B0C04] py-1.5 hover:underline"
+                    >
+                      সব পণ্য দেখুন →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link
+              href="/shop"
+              className={`transition-colors hover:text-[#3B0C04] ${
+                pathname === "/shop" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
+              }`}
+            >
+              সকল পণ্য
+            </Link>
+
+            <Link
+              href="/shop?filter=new"
+              className="transition-colors hover:text-[#3B0C04] text-[#2B160F] flex items-center gap-1.5"
+            >
+              <span>নতুন পণ্য</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FFC40E] text-[#3B0C04]">
+                New
+              </span>
+            </Link>
+
+            <Link
+              href="/shop?filter=bestseller"
+              className="transition-colors hover:text-[#3B0C04] text-[#2B160F]"
+            >
+              বেস্ট সেলার
+            </Link>
+
+            <Link
+              href="/shop?filter=offers"
+              className="transition-colors hover:text-[#3B0C04] text-[#D64545] font-semibold flex items-center gap-1"
+            >
+              <span>স্পেশাল অফার</span>
+              <span className="w-2 h-2 rounded-full bg-[#D64545] animate-pulse"></span>
+            </Link>
+
+            <Link
+              href="/about"
+              className={`transition-colors hover:text-[#3B0C04] ${
+                pathname === "/about" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
+              }`}
+            >
+              আমাদের সম্পর্কে
+            </Link>
+
+            <Link
+              href="/contact"
+              className={`transition-colors hover:text-[#3B0C04] ${
+                pathname === "/contact" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
+              }`}
+            >
+              যোগাযোগ
+            </Link>
+          </nav>
+
+          {/* Hotline / Quick Help */}
+          <div className="flex items-center gap-4 text-xs font-medium text-[#6B5A52]">
+            <a
+              href="tel:+8801700000000"
+              className="flex items-center gap-1.5 hover:text-[#3B0C04] transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5 text-[#3B0C04]" />
+              <span>হটলাইন: 01700-000000</span>
+            </a>
           </div>
         </div>
+      </div>
 
-        {/* Header Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          
-          {/* Wishlist Icon */}
-          <Link
-            href="/wishlist"
-            className="hidden sm:flex flex-col items-center gap-0.5 p-2 text-zinc-700 hover:text-[#3B0C04] dark:text-zinc-300 dark:hover:text-white transition-colors"
-            title="Wishlist"
+      {/* MOBILE HEADER (56px row + 44px sticky search) */}
+      <div className="lg:hidden">
+        {/* First Row (56px) */}
+        <div className="container-custom h-14 flex items-center justify-between border-b border-[#E8DCD2]">
+          {/* Hamburger Menu Toggle */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 -ml-2 text-[#3B0C04] hover:bg-[#FFF7EE] rounded-lg transition-colors"
+            aria-label="Open Mobile Menu"
           >
-            <Heart className="h-5 w-5" />
-            <span className="text-[10px] font-extrabold">Wishlist</span>
+            <Menu className="w-6 h-6" />
+          </button>
+
+          {/* Logo Center */}
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-base shadow-xs">
+              প
+            </div>
+            <span className="text-lg font-black tracking-tight text-[#3B0C04]">
+              PONCHOMUKH
+            </span>
           </Link>
 
-          {/* Account Icon */}
-          <Link
-            href="/account"
-            className="flex flex-col items-center gap-0.5 p-2 text-zinc-700 hover:text-[#3B0C04] dark:text-zinc-300 dark:hover:text-white transition-colors"
-            title="Account"
-          >
-            <User className="h-5 w-5" />
-            <span className="text-[10px] font-extrabold hidden sm:inline">Account</span>
-          </Link>
-
-          {/* Shopping Cart Drawer Trigger */}
+          {/* Cart Trigger */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-[#3B0C04] text-white hover:bg-[#260700] transition-all active:scale-95 shadow-sm"
-            title="Cart"
+            className="relative p-2 -mr-2 text-[#3B0C04] hover:bg-[#FFF7EE] rounded-lg transition-colors"
+            aria-label="Open Cart"
           >
-            <ShoppingBag className="h-5 w-5 text-[#FFC40E]" />
+            <ShoppingBag className="w-6 h-6" />
             {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#FFC40E] text-[10px] font-black text-[#3B0C04] ring-2 ring-white">
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#FFC40E] text-[#260700] text-[10px] font-black flex items-center justify-center">
                 {cartCount}
               </span>
             )}
           </button>
         </div>
-      </div>
 
-      {/* MOBILE SEARCH ROW (PART 08 Blueprint: 44px Search Row) */}
-      <div className="lg:hidden px-4 pb-3">
-        <div className="relative w-full">
-          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="🔍  আপনি কী খুঁজছেন? Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#E8DCD2] bg-[#FFF7EE]/60 text-xs font-semibold outline-none focus:border-[#3B0C04] dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
-          />
+        {/* Second Row: Full Width Sticky Search Bar (44px) */}
+        <div className="container-custom py-2 bg-white border-b border-[#E8DCD2]/60">
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <input
+              type="text"
+              placeholder="আপনি কী খুঁজছেন?"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="w-full h-10 pl-9 pr-14 rounded-lg bg-[#FFFDF9] border border-[#E8DCD2] text-xs text-[#2B160F] placeholder-[#8C7B72] focus:outline-none focus:border-[#3B0C04]"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B72]" />
+            <button
+              type="submit"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2.5 bg-[#3B0C04] text-[#FFC40E] text-[11px] font-semibold rounded-md"
+            >
+              Search
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* 3. DESKTOP NAVIGATION BAR (PART 07 Blueprint: 48px Height) */}
-      <div className="hidden lg:block border-t border-[#E8DCD2]/50 bg-[#FFF7EE]/40 dark:border-zinc-800 dark:bg-zinc-900/40">
-        <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-8 text-xs font-extrabold text-zinc-800 dark:text-zinc-200">
-          
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className={`hover:text-[#3B0C04] transition-colors ${pathname === "/" ? "text-[#3B0C04] font-black" : ""}`}
-            >
-              Home
-            </Link>
+      {/* MOBILE DRAWER */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
 
-            <Link
-              href="/shop"
-              className={`hover:text-[#3B0C04] transition-colors ${pathname === "/shop" ? "text-[#3B0C04] font-black" : ""}`}
-            >
-              Shop
-            </Link>
-
-            {/* Categories Mega Dropdown */}
-            <div className="relative">
+          {/* Drawer Body */}
+          <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
+            {/* Drawer Header */}
+            <div className="p-4 bg-[#3B0C04] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#FFC40E] text-[#260700] flex items-center justify-center font-bold text-sm">
+                  প
+                </div>
+                <span className="font-bold text-base text-[#FFC40E]">পঞ্চমুখ</span>
+              </div>
               <button
-                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                className="flex items-center gap-1 hover:text-[#3B0C04] transition-colors py-3"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1 rounded-md text-white/80 hover:text-white"
               >
-                <span>Categories</span>
-                <ChevronDown className="h-3.5 w-3.5" />
+                <X className="w-5 h-5" />
               </button>
+            </div>
 
-              {isCategoryDropdownOpen && (
-                <div
-                  className="absolute top-full left-0 z-50 w-56 rounded-xl border border-[#E8DCD2] bg-white p-2 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 animate-in fade-in-50"
-                  onMouseLeave={() => setIsCategoryDropdownOpen(false)}
+            {/* Navigation Links */}
+            <div className="p-4 flex-1 divide-y divide-[#E8DCD2]/60">
+              <div className="py-2 space-y-1">
+                <Link
+                  href="/"
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
+                  হোম
+                </Link>
+                <Link
+                  href="/shop"
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
+                >
+                  সকল পণ্য (Shop)
+                </Link>
+                <Link
+                  href="/shop?filter=new"
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
+                >
+                  নতুন পণ্য (New Arrivals)
+                </Link>
+                <Link
+                  href="/shop?filter=bestseller"
+                  className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
+                >
+                  বেস্ট সেলার (Best Sellers)
+                </Link>
+              </div>
+
+              {/* Category Section */}
+              <div className="py-3">
+                <p className="px-3 text-xs font-bold text-[#6B5A52] uppercase mb-2">
+                  ক্যাটাগরি সমূহ
+                </p>
+                <div className="space-y-1">
                   {mockCategories.map((cat) => (
                     <Link
                       key={cat.id}
-                      href={`/shop?category=${cat.slug}`}
-                      onClick={() => setIsCategoryDropdownOpen(false)}
-                      className="block px-3 py-2 rounded-lg text-xs font-bold text-zinc-700 hover:bg-[#FFF7EE] hover:text-[#3B0C04] dark:text-zinc-300 dark:hover:bg-zinc-900"
+                      href={`/category/${cat.slug}`}
+                      className="block px-3 py-1.5 text-xs text-[#2B160F] hover:text-[#3B0C04]"
                     >
-                      {cat.name}
+                      • {cat.name}
                     </Link>
                   ))}
                 </div>
-              )}
-            </div>
-
-            <Link href="/shop?filter=new" className="hover:text-[#3B0C04] transition-colors">
-              New Arrivals
-            </Link>
-
-            <Link href="/shop?filter=bestseller" className="hover:text-[#3B0C04] transition-colors">
-              Best Sellers
-            </Link>
-
-            <Link href="/shop?filter=offers" className="text-rose-600 font-black hover:text-rose-700 transition-colors">
-              🔥 Offers
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-6 text-[11px] text-zinc-600 dark:text-zinc-400">
-            <Link href="/about" className="hover:text-[#3B0C04] transition-colors">About Us</Link>
-            <Link href="/contact" className="hover:text-[#3B0C04] transition-colors">Contact</Link>
-            <Link href="/order-tracking" className="font-bold text-[#3B0C04] dark:text-white hover:underline">Track Order</Link>
-          </div>
-
-        </div>
-      </div>
-
-      {/* MOBILE DRAWER NAVIGATION MENU */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex">
-          <div className="w-4/5 max-w-xs bg-white dark:bg-zinc-950 h-full p-6 flex flex-col justify-between overflow-y-auto">
-            <div>
-              <div className="flex justify-between items-center pb-4 border-b border-zinc-150">
-                <span className="font-black text-xl text-[#3B0C04] dark:text-white">পঞ্চমুখ</span>
-                <button onClick={() => setIsMobileMenuOpen(false)}>
-                  <X className="h-5 w-5 text-zinc-500" />
-                </button>
               </div>
 
-              <nav className="mt-6 flex flex-col gap-3 font-bold text-sm">
-                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-zinc-100">Home</Link>
-                <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-zinc-100">Shop All</Link>
-                <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-zinc-100">Wishlist</Link>
-                <Link href="/account/orders" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-zinc-100">My Orders</Link>
-                <Link href="/order-tracking" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-zinc-100">Track Order</Link>
-                <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-zinc-100">About Us</Link>
-                <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="py-2">Contact Us</Link>
-              </nav>
-            </div>
+              {/* Customer Account & Orders */}
+              <div className="py-3 space-y-1">
+                <Link
+                  href="/account"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2B160F] hover:bg-[#FFF7EE]"
+                >
+                  <User className="w-4 h-4 text-[#3B0C04]" />
+                  <span>আমার অ্যাকাউন্ট</span>
+                </Link>
+                <Link
+                  href="/order-tracking"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2B160F] hover:bg-[#FFF7EE]"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#3B0C04]" />
+                  <span>অর্ডার ট্র্যাকিং</span>
+                </Link>
+                <Link
+                  href="/wishlist"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2B160F] hover:bg-[#FFF7EE]"
+                >
+                  <Heart className="w-4 h-4 text-[#D64545]" />
+                  <span>উইশলিস্ট ({wishlistCount})</span>
+                </Link>
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#3B0C04] hover:bg-[#FFF7EE]"
+                >
+                  <Sparkles className="w-4 h-4 text-[#FFC40E]" />
+                  <span>অ্যাডমিন প্যানেল</span>
+                </Link>
+              </div>
 
-            <div className="pt-4 border-t border-zinc-150 text-xs font-semibold text-zinc-500">
-              📞 +880 1700-000000
+              {/* Support Hotline */}
+              <div className="pt-4 pb-2 text-xs text-[#6B5A52] space-y-2">
+                <a
+                  href="tel:+8801700000000"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#FFF7EE] text-[#3B0C04] font-semibold"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>হটলাইন: 01700-000000</span>
+                </a>
+                <a
+                  href="https://wa.me/8801700000000"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 text-[#075E54] font-semibold"
+                >
+                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                  <span>হোয়াটসঅ্যাপ মেসেজ</span>
+                </a>
+              </div>
             </div>
           </div>
-          <div className="flex-1" onClick={() => setIsMobileMenuOpen(false)} />
         </div>
       )}
-
-      {/* MOBILE STICKY BOTTOM NAVIGATION (PART 01 Blueprint) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-zinc-950 border-t border-[#E8DCD2] dark:border-zinc-800 py-2 px-4 flex justify-around items-center shadow-lg">
-        <Link href="/" className="flex flex-col items-center gap-0.5 text-zinc-700 dark:text-zinc-300">
-          <Home className="h-5 w-5" />
-          <span className="text-[9px] font-bold">Home</span>
-        </Link>
-
-        <Link href="/shop" className="flex flex-col items-center gap-0.5 text-zinc-700 dark:text-zinc-300">
-          <Grid className="h-5 w-5" />
-          <span className="text-[9px] font-bold">Shop</span>
-        </Link>
-
-        <Link href="/wishlist" className="flex flex-col items-center gap-0.5 text-zinc-700 dark:text-zinc-300">
-          <Heart className="h-5 w-5" />
-          <span className="text-[9px] font-bold">Wishlist</span>
-        </Link>
-
-        <Link href="/account" className="flex flex-col items-center gap-0.5 text-zinc-700 dark:text-zinc-300">
-          <User className="h-5 w-5" />
-          <span className="text-[9px] font-bold">Account</span>
-        </Link>
-
-        <button onClick={() => setIsCartOpen(true)} className="flex flex-col items-center gap-0.5 text-[#3B0C04] relative">
-          <ShoppingBag className="h-5 w-5 text-[#3B0C04]" />
-          <span className="text-[9px] font-bold">Cart</span>
-          {cartCount > 0 && (
-            <span className="absolute -top-1 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#FFC40E] text-[8px] font-black text-[#3B0C04]">
-              {cartCount}
-            </span>
-          )}
-        </button>
-      </div>
-
     </header>
   );
 };

@@ -1,431 +1,627 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CartProvider, useCart } from "@/context/cart-context";
+import Link from "next/link";
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { ProductCard } from "@/components/product-card";
 import { ProductModal } from "@/components/product-modal";
 import { CartDrawer } from "@/components/cart-drawer";
-import { mockProducts, mockCategories, mockStores } from "@/lib/mockData";
-import { 
-  Flame, Shirt, Briefcase, Scissors, ShoppingBag, Footprints, Watch, Crown, Grid,
-  Zap, ArrowLeft, ArrowRight, CheckCircle2
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { Footer } from "@/components/footer";
+import {
+  mockCategories,
+  mockProducts,
+  mockCollections,
+  mockBanners,
+  Category,
+  Product
+} from "@/lib/mockData";
+import {
+  Smartphone,
+  Headphones,
+  Utensils,
+  Luggage,
+  Sparkles,
+  Package,
+  ArrowRight,
+  Flame,
+  Clock,
+  Truck,
+  CreditCard,
+  ShieldCheck,
+  RotateCcw,
+  HeadphonesIcon,
+  Lock,
+  Star,
+  CheckCircle2,
+  Mail,
+  MessageCircle,
+  Video
 } from "lucide-react";
+import { FacebookIcon, InstagramIcon } from "@/components/ui/social-icons";
 
-const FlashSaleTimer: React.FC = () => {
+export default function HomePage() {
+  // Flash Sale Countdown Timer State
   const [timeLeft, setTimeLeft] = useState({
-    hours: 3,
-    minutes: 17,
-    seconds: 56
+    days: 5,
+    hours: 12,
+    minutes: 34,
+    seconds: 22
   });
+
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else {
-          clearInterval(timer);
-          return prev;
-        }
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        if (prev.days > 0) return { days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
+        clearInterval(timer);
+        return prev;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
-  const formatNum = (num: number) => String(num).padStart(2, "0");
+  const formatDigit = (num: number) => String(num).padStart(2, "0");
 
-  return (
-    <div className="flex items-center gap-1.5 font-sans font-black text-xs text-white">
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500 shadow-sm shadow-rose-500/10">
-        {formatNum(timeLeft.hours)}
-      </span>
-      <span className="text-rose-500 font-bold">:</span>
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500 shadow-sm shadow-rose-500/10">
-        {formatNum(timeLeft.minutes)}
-      </span>
-      <span className="text-rose-500 font-bold">:</span>
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500 shadow-sm shadow-rose-500/10">
-        {formatNum(timeLeft.seconds)}
-      </span>
-    </div>
-  );
-};
-
-const StorefrontContent: React.FC = () => {
-  const {
-    selectedCategory,
-    setSelectedCategory,
-    searchQuery,
-    setSearchQuery
-  } = useCart();
-
-  const [activeTab, setActiveTab] = useState("Best Seller");
-
-  // Helper function to resolve category icons dynamically
   const getCategoryIcon = (iconName?: string) => {
     switch (iconName) {
-      case "Shirt": return <Shirt className="h-5 w-5" />;
-      case "Flame": return <Flame className="h-5 w-5" />;
-      case "Briefcase": return <Briefcase className="h-5 w-5" />;
-      case "Scissors": return <Scissors className="h-5 w-5" />;
-      case "ShoppingBag": return <ShoppingBag className="h-5 w-5" />;
-      case "Footprints": return <Footprints className="h-5 w-5" />;
-      case "Watch": return <Watch className="h-5 w-5" />;
-      case "Crown": return <Crown className="h-5 w-5" />;
-      default: return <Grid className="h-5 w-5" />;
+      case "Smartphone": return <Smartphone className="w-6 h-6 text-[#3B0C04]" />;
+      case "Headphones": return <Headphones className="w-6 h-6 text-[#3B0C04]" />;
+      case "Utensils": return <Utensils className="w-6 h-6 text-[#3B0C04]" />;
+      case "Luggage": return <Luggage className="w-6 h-6 text-[#3B0C04]" />;
+      case "Sparkles": return <Sparkles className="w-6 h-6 text-[#3B0C04]" />;
+      default: return <Package className="w-6 h-6 text-[#3B0C04]" />;
     }
   };
 
-  // Filter products for Flash Sale
-  const flashSaleProducts = mockProducts.filter(p => p.isFlashSale);
+  // Filter products by homepage sections
+  const featuredProducts = mockProducts.filter((p) => p.isFeatured).slice(0, 4);
+  const bestSellerProducts = mockProducts.filter((p) => p.isBestSeller).slice(0, 4);
+  const flashSaleProducts = mockProducts.filter((p) => p.isFlashSale).slice(0, 4);
+  const newArrivalProducts = mockProducts.filter((p) => p.isNewArrival || !p.isBestSeller).slice(0, 4);
 
-  // Filter products for "Today's For You" grid based on category selection, search queries, and tabs
-  const filteredProducts = mockProducts.filter((product) => {
-    if (product.isFlashSale) return false; // Exclude flash sale items
-
-    const matchesCategory = selectedCategory 
-      ? product.category.slug === selectedCategory 
-      : true;
-      
-    const matchesSearch = searchQuery
-      ? product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-
-    return matchesCategory && matchesSearch;
-  });
-
-  const formatRp = (value: number) => {
-    return `Rp${value.toLocaleString("id-ID")}`;
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail.trim()) {
+      setNewsletterSubmitted(true);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 transition-colors">
-      
-      {/* 1. Header Navigation */}
+    <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
+      {/* 1. ANNOUNCEMENT BAR */}
+      <AnnouncementBar />
+
+      {/* 2 & 3. HEADER & NAVIGATION MENU */}
       <Navbar />
 
-      {/* 2. Hero Section Banner */}
-      <Hero />
+      <main className="flex-1 space-y-16 md:space-y-20 pb-16">
+        {/* 4. HERO BANNER */}
+        <Hero />
 
-      {/* 3. Category Horizontal Circular Grid */}
-      <section className="py-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 border-b border-zinc-100 dark:border-zinc-900">
-        <div className="flex items-center justify-between overflow-x-auto pb-4 gap-6 scrollbar-none">
-          {/* All Category Circle */}
-          <button
-            onClick={() => {
-              setSelectedCategory(null);
-              setSearchQuery("");
-            }}
-            className="flex flex-col items-center gap-2 group shrink-0"
-          >
-            <div className={`h-14 w-14 rounded-full flex items-center justify-center transition-all ${
-              !selectedCategory 
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" 
-                : "bg-[#F0F2F5] hover:bg-zinc-200 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            }`}>
-              <Grid className="h-5 w-5" />
-            </div>
-            <span className="text-[10px] font-extrabold tracking-tight text-zinc-650 dark:text-zinc-400 group-hover:text-rose-500 transition-colors">
-              All Category
-            </span>
-          </button>
-
-          {/* Individual Categories Circles */}
-          {mockCategories.map((cat) => {
-            const isSelected = selectedCategory === cat.slug;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.slug);
-                  setSearchQuery("");
-                }}
-                className="flex flex-col items-center gap-2 group shrink-0"
-              >
-                <div className={`h-14 w-14 rounded-full flex items-center justify-center transition-all ${
-                  isSelected 
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" 
-                    : "bg-[#F0F2F5] hover:bg-zinc-200 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                }`}>
-                  {getCategoryIcon(cat.iconName)}
-                </div>
-                <span className="text-[10px] font-extrabold tracking-tight text-zinc-650 dark:text-zinc-400 group-hover:text-rose-500 transition-colors">
-                  {cat.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 4. Flash Sale Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Zap className="h-5 w-5 text-zinc-900 fill-zinc-900 dark:text-white dark:fill-white shrink-0 animate-pulse" />
-              <h2 className="font-sans font-black text-lg sm:text-xl text-zinc-900 dark:text-white uppercase tracking-tight">
-                Flash Sale
+        {/* 5. SHOP BY CATEGORY */}
+        <section className="container-custom">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div>
+              <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
+                Shop by Category
               </h2>
+              <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
+                আপনার প্রয়োজনীয় ক্যাটাগরি বেছে নিয়ে সহজেই পণ্য খুঁজুন
+              </p>
             </div>
-            <FlashSaleTimer />
-          </div>
-          {/* Arrow Buttons Mock */}
-          <div className="flex gap-1.5">
-            <button className="flex h-7 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-850">
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </button>
-            <button className="flex h-7 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white hover:bg-zinc-850 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Product Cards Slider Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {flashSaleProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
-      {/* 5. Today's For You Grid Section */}
-      <section id="products-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 border-t border-zinc-100 dark:border-zinc-900">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <h2 className="font-sans font-black text-lg sm:text-xl text-zinc-900 dark:text-white tracking-tight">
-            Todays For You!
-          </h2>
-
-          {/* Navigation Filter Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-            {["Best Seller", "Keep Stylish", "Special Discount", "Official Store", "Coveted Product"].map((tab) => {
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold tracking-tight transition-all shrink-0 border ${
-                    isActive 
-                      ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 dark:border-white" 
-                      : "bg-white border-zinc-200 text-zinc-550 hover:border-zinc-300 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400"
-                  }`}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Product Cards Grid */}
-        {filteredProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-16 border border-dashed border-zinc-200 dark:border-zinc-850 rounded-2xl bg-white/20">
-            <h3 className="font-sans text-sm font-black text-zinc-800 dark:text-zinc-250">No products found</h3>
-            <p className="text-xs text-zinc-400 mt-1 max-w-[240px]">Try clearing search queries or switching tags to display inventory.</p>
-            <button
-              onClick={() => {
-                setSelectedCategory(null);
-                setSearchQuery("");
-              }}
-              className="mt-4 flex h-9 items-center justify-center px-4 rounded-xl bg-zinc-900 text-white text-[11px] font-bold dark:bg-white dark:text-zinc-950"
+            <Link
+              href="/shop"
+              className="text-xs md:text-sm font-bold text-[#3B0C04] hover:text-[#260700] hover:underline flex items-center gap-1 shrink-0"
             >
-              Reset Filters
-            </button>
+              <span>View All</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
+
+          {/* Category Cards Grid (6 cards desktop, 2-col mobile) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4">
+            {mockCategories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/category/${category.slug}`}
+                className="group flex flex-col items-center text-center p-4 rounded-xl bg-white border border-[#E8DCD2] hover:border-[#3B0C04] hover:shadow-md transition-all duration-200"
+              >
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#FFF7EE] group-hover:bg-[#3B0C04] flex items-center justify-center mb-3 transition-colors duration-200">
+                  <div className="group-hover:text-[#FFC40E] transition-colors">
+                    {getCategoryIcon(category.iconName)}
+                  </div>
+                </div>
+                <h3 className="text-xs md:text-sm font-bold text-[#2B160F] group-hover:text-[#3B0C04] transition-colors line-clamp-1">
+                  {category.name}
+                </h3>
+                <span className="text-[11px] text-[#8C7B72] mt-0.5">
+                  {category.subcategories?.length || 0}+ আইটেম
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* 6. FEATURED PRODUCTS (4 cards desktop, 2-col mobile) */}
+        <section className="container-custom">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#FFC40E]" />
+                <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
+                  Featured Products
+                </h2>
+              </div>
+              <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
+                গ্রাহকদের সর্বাধিক পছন্দের যাচাইকৃত প্রিমিয়াম প্রোডাক্ট
+              </p>
+            </div>
+            <Link
+              href="/shop?filter=featured"
+              className="text-xs md:text-sm font-bold text-[#3B0C04] hover:underline flex items-center gap-1 shrink-0"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
 
-      {/* 6. Best Selling Store Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 border-t border-zinc-100 dark:border-zinc-900">
-        <h2 className="text-center font-sans font-black text-lg sm:text-xl text-zinc-900 dark:text-white tracking-tight mb-8">
-          Best Selling Store
-        </h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Left Column: Brand Promo Visual Card */}
-          <div className="lg:col-span-3 rounded-2xl bg-[#EFF1F4] dark:bg-zinc-900/60 p-6 flex flex-col justify-between min-h-[300px] border border-zinc-200/40 dark:border-zinc-850">
-            <div className="flex-1 flex flex-col items-center justify-center text-center pb-4">
-              <img
-                src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&auto=format&fit=crop&q=80"
-                alt="Mall shopping bags visual"
-                className="w-32 aspect-square object-cover rounded-xl shadow-md border border-white/50"
-              />
-              <h3 className="mt-5 font-sans font-black text-base text-zinc-900 dark:text-white leading-tight">
-                Ponchomukh Mall
+        {/* 7. PROMOTIONAL BANNER (280px full width, Brown + Gold + Cream) */}
+        <section className="container-custom">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#3B0C04] via-[#260700] to-[#1A0400] text-white p-6 sm:p-10 lg:p-12 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-xl space-y-3 text-center md:text-left z-10">
+              <span className="px-3 py-1 rounded-full bg-[#FFC40E] text-[#260700] text-xs font-black uppercase tracking-wider">
+                Special Collection
+              </span>
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#FFC40E] leading-tight">
+                Make Everyday Life Better
               </h3>
-              <p className="mt-2 text-[10px] font-bold text-zinc-450 dark:text-zinc-400 max-w-[180px]">
-                Shop, Explore, Delight and Experience Mall Magic!
+              <p className="text-xs sm:text-sm text-[#E8DCD2]/90 leading-relaxed font-normal">
+                প্রিমিয়াম কোয়ালিটি ও আধুনিক ডিজাইনের কিচেন ও হোম গ্যাজেটে বিশেষ ছাড়। আজই অর্ডার করুন এবং উপভোগ করুন দ্রুত হোম ডেলিভারি।
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/shop"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#FFC40E] hover:bg-[#D99E00] text-[#260700] font-bold text-xs sm:text-sm transition-colors shadow-sm"
+                >
+                  <span>Explore Collection</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative w-full md:w-auto flex justify-center">
+              <div className="w-48 h-48 sm:w-60 sm:h-60 rounded-2xl bg-white/10 p-3 backdrop-blur-xs border border-white/20 flex items-center justify-center">
+                <img
+                  src="https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80"
+                  alt="Special Home Collection"
+                  className="w-full h-full object-cover rounded-xl"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 8. BEST SELLERS */}
+        <section className="container-custom">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div>
+              <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
+                Best Sellers
+              </h2>
+              <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
+                সবচেয়ে বেশি বিক্রিত এবং গ্রাহকদের সেরা রেটিংপ্রাপ্ত পণ্যসমূহ
               </p>
             </div>
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="w-full flex h-10 items-center justify-center rounded-xl bg-zinc-900 hover:bg-zinc-850 text-white font-bold text-xs transition-all dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+            <Link
+              href="/shop?filter=bestseller"
+              className="text-xs md:text-sm font-bold text-[#3B0C04] hover:underline flex items-center gap-1 shrink-0"
             >
-              Explore Store
-            </button>
+              <span>View All</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
-          {/* Right Column: Grid of 4 Shop cards */}
-          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {mockStores.map((store) => (
-              <div 
-                key={store.id}
-                className="rounded-2xl border border-zinc-150 bg-white p-5 dark:border-zinc-850 dark:bg-zinc-950 flex flex-col justify-between gap-4"
-              >
-                {/* Header details */}
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0">
-                    <img src={store.logoUrl} alt={store.name} className="h-full w-full object-cover" />
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-1">
-                      <h4 className="font-sans text-xs font-black text-zinc-850 dark:text-zinc-200">
-                        {store.name}
-                      </h4>
-                      {store.isVerified && (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 fill-blue-500/10 shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 mt-0.5">
-                      &ldquo;{store.tagline}&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* 3 product previews strip */}
-                <div className="grid grid-cols-3 gap-2.5">
-                  {store.products.map((p) => (
-                    <div key={p.id} className="flex flex-col gap-1.5 group/preview cursor-pointer">
-                      <div className="aspect-square rounded-xl bg-[#EFF1F4] dark:bg-zinc-900 flex items-center justify-center p-2 border border-zinc-200/30 overflow-hidden">
-                        <img 
-                          src={p.imageUrl} 
-                          alt={p.name} 
-                          className="h-full w-full object-cover rounded-lg group-hover/preview:scale-103 transition-transform" 
-                        />
-                      </div>
-                      <span className="font-mono text-[9px] font-extrabold text-zinc-800 dark:text-zinc-300 text-center">
-                        {formatRp(p.price)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
+            {bestSellerProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 7. Quote/Rack Banner */}
-      <section className="relative overflow-hidden w-full h-[220px] flex items-center justify-center bg-zinc-900">
-        <img
-          src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=1200&auto=format&fit=crop&q=80"
-          alt="Hanging clothing rack"
-          className="absolute inset-0 w-full h-full object-cover opacity-35"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20" />
-        <div className="relative z-10 text-center px-4">
-          <h2 className="font-sans font-extrabold text-xl sm:text-2xl lg:text-3xl italic tracking-wide text-white leading-relaxed">
-            &ldquo;Let&apos;s Shop Beyond Boundaries&rdquo;
-          </h2>
-        </div>
-      </section>
+        {/* 9. FLASH SALE (Countdown + Products) */}
+        {flashSaleProducts.length > 0 && (
+          <section className="container-custom">
+            <div className="p-6 md:p-8 rounded-2xl bg-[#FFF7EE] border border-[#E8DCD2] shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8 border-b border-[#E8DCD2]/70 pb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#D64545] text-white flex items-center justify-center shadow-xs">
+                    <Flame className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black text-[#3B0C04]">
+                      ⚡ FLASH SALE
+                    </h2>
+                    <p className="text-xs text-[#6B5A52]">সীমিত সময়ের স্পেশাল ডিসকাউন্ট অফার</p>
+                  </div>
+                </div>
 
-      {/* 8. Overlay drawers and product modals */}
-      <CartDrawer />
-      <ProductModal />
+                {/* Countdown Box */}
+                <div className="flex items-center gap-2 text-xs font-bold">
+                  <span className="text-[#6B5A52] mr-1 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" /> অফার শেষ হতে বাকি:
+                  </span>
+                  <div className="flex items-center gap-1 font-mono text-sm font-black text-white">
+                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatDigit(timeLeft.days)}d</span>
+                    <span className="text-[#3B0C04]">:</span>
+                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatDigit(timeLeft.hours)}h</span>
+                    <span className="text-[#3B0C04]">:</span>
+                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatDigit(timeLeft.minutes)}m</span>
+                    <span className="text-[#3B0C04]">:</span>
+                    <span className="px-2 py-1 rounded-md bg-[#D64545]">{formatDigit(timeLeft.seconds)}s</span>
+                  </div>
+                </div>
+              </div>
 
-      {/* 9. Dark Branding Footer */}
-      <footer className="bg-[#181C24] dark:bg-zinc-950 text-zinc-400 py-16 border-t border-zinc-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-10">
-          
-          {/* Brand info */}
-          <div className="col-span-2 flex flex-col gap-4 text-left">
-            <span className="font-sans font-black text-xl tracking-tight text-white">
-              Ponchomukh<span className="text-rose-500">.com</span>
-            </span>
-            <p className="text-[10px] text-zinc-500 leading-relaxed font-semibold max-w-[200px]">
-              &ldquo;Let&apos;s Shop Beyond Boundaries&rdquo;
+              {/* Flash Sale Product Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
+                {flashSaleProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 10. NEW ARRIVALS */}
+        <section className="container-custom">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div>
+              <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
+                New Arrivals
+              </h2>
+              <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
+                সর্বশেষ যুক্ত হওয়া নতুন পণ্যের আধুনিক কালেকশন
+              </p>
+            </div>
+            <Link
+              href="/shop?filter=new"
+              className="text-xs md:text-sm font-bold text-[#3B0C04] hover:underline flex items-center gap-1 shrink-0"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
+            {newArrivalProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+
+        {/* 11. SHOP BY COLLECTION */}
+        <section className="container-custom">
+          <div className="mb-6 md:mb-8">
+            <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
+              Curated Collections
+            </h2>
+            <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
+              আপনার প্রয়োজন অনুযায়ী বিশেষভাবে সাজানো কালেকশন
             </p>
-            <div className="flex gap-3 text-zinc-500 mt-2">
-              <a href="#" className="hover:text-white transition-colors">
-                <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-              </a>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {mockCollections.map((col) => (
+              <Link
+                key={col.id}
+                href="/shop"
+                className="group relative h-60 rounded-2xl overflow-hidden border border-[#E8DCD2] shadow-sm flex flex-col justify-end p-5"
+              >
+                {/* Background Image */}
+                <img
+                  src={col.imageUrl}
+                  alt={col.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                {/* Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#260700] via-[#260700]/60 to-transparent" />
+
+                {/* Content */}
+                <div className="relative z-10 text-white space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFC40E]">
+                    {col.productCount}+ পণ্য
+                  </span>
+                  <h3 className="text-lg font-bold group-hover:text-[#FFC40E] transition-colors">
+                    {col.titleBn}
+                  </h3>
+                  <p className="text-xs text-[#E8DCD2]/80 line-clamp-1">
+                    {col.description}
+                  </p>
+                  <div className="pt-2 flex items-center gap-1.5 text-xs font-bold text-[#FFC40E]">
+                    <span>Explore Now</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* 12. WHY CHOOSE PONCHOMUKH (6 Trust Cards) */}
+        <section className="container-custom">
+          <div className="text-center max-w-xl mx-auto mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-black text-[#3B0C04]">
+              কেন পঞ্চমুখ?
+            </h2>
+            <p className="text-xs md:text-sm text-[#6B5A52] mt-1.5">
+              অনলাইন শপিংয়ে আপনার সর্বোচ্চ আস্থা ও সন্তুষ্টি নিশ্চিতে আমরা প্রতিশ্রুতিবদ্ধ
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4">
+            <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
+                <Truck className="w-6 h-6 text-[#3B0C04]" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Fast Delivery</h3>
+              <p className="text-[11px] text-[#6B5A52]">সারা দেশে দ্রুত হোম ডেলিভারি</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-[#3B0C04]" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Easy Payment</h3>
+              <p className="text-[11px] text-[#6B5A52]">সহজ ও নিরাপদ Cash on Delivery</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-[#16834A]" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Trusted Products</h3>
+              <p className="text-[11px] text-[#6B5A52]">মানসম্মত ও ১০০% যাচাইকৃত পণ্য</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
+                <RotateCcw className="w-6 h-6 text-[#3B0C04]" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Easy Return</h3>
+              <p className="text-[11px] text-[#6B5A52]">সহজ ৭ দিনের রিটার্ন পলিসি</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
+                <HeadphonesIcon className="w-6 h-6 text-[#3B0C04]" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Customer Support</h3>
+              <p className="text-[11px] text-[#6B5A52]">দ্রুত ও নির্ভরযোগ্য কাস্টমার কেয়ার</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
+                <Lock className="w-6 h-6 text-[#3B0C04]" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Secure Shopping</h3>
+              <p className="text-[11px] text-[#6B5A52]">নিরাপদ অনলাইন শপিং অভিজ্ঞতা</p>
             </div>
           </div>
+        </section>
 
-          {/* Links */}
-          <div className="flex flex-col gap-3 text-[11px] text-left">
-            <h4 className="font-extrabold text-zinc-500 uppercase tracking-wider text-[10px]">Ponchomukh</h4>
-            <a href="#" className="hover:text-white transition-colors font-medium">About Ponchomukh</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Careers</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Mitra Blog</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">BDB Digital</a>
+        {/* 13. CUSTOMER REVIEWS (3 review cards desktop / swipe mobile) */}
+        <section className="container-custom">
+          <div className="text-center max-w-xl mx-auto mb-8 md:mb-10">
+            <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
+              Customers Love Ponchomukh
+            </h2>
+            <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
+              আমাদের সম্মানিত গ্রাহকদের বাস্তব অভিজ্ঞতা ও মতামত
+            </p>
           </div>
 
-          <div className="flex flex-col gap-3 text-[11px] text-left">
-            <h4 className="font-extrabold text-zinc-500 uppercase tracking-wider text-[10px]">Buy</h4>
-            <a href="#" className="hover:text-white transition-colors font-medium">Bill & Top Up</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Ponchomukh COD</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Mitra Blog</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Promo</a>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] space-y-4 shadow-xs">
+              <div className="flex items-center text-[#FFC40E] gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <p className="text-xs md:text-sm text-[#2B160F] leading-relaxed italic">
+                “Sonifer ব্লেন্ডারটা অনেক ভালো কাজ করছে। ঢাকার ভেতর মাত্র ২৪ ঘণ্টায় ডেলিভারি পেয়েছি। প্রোডাক্টের ফিনিশিং একদম ছবির মতোই নিখুঁত।”
+              </p>
+              <div className="pt-2 border-t border-[#E8DCD2]/60 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-[#2B160F]">তানভীর আহমেদ</h4>
+                  <span className="text-[10px] text-[#8C7B72]">ধানমন্ডি, ঢাকা</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full">
+                  <CheckCircle2 className="w-3 h-3" /> Verified Purchase
+                </span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] space-y-4 shadow-xs">
+              <div className="flex items-center text-[#FFC40E] gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <p className="text-xs md:text-sm text-[#2B160F] leading-relaxed italic">
+                “Joyroom ইয়ারবাডসটা সাউন্ড কোয়ালিটি বেশ দারুণ। ব্যাস খুব ভালো। পঞ্চমুখের কাস্টমার সাপোর্ট খুব হেল্পফুল ছিল। ধন্যবাদ!”
+              </p>
+              <div className="pt-2 border-t border-[#E8DCD2]/60 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-[#2B160F]">সুমাইয়া আক্তার</h4>
+                  <span className="text-[10px] text-[#8C7B72]">উত্তরা, ঢাকা</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full">
+                  <CheckCircle2 className="w-3 h-3" /> Verified Purchase
+                </span>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] space-y-4 shadow-xs">
+              <div className="flex items-center text-[#FFC40E] gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <p className="text-xs md:text-sm text-[#2B160F] leading-relaxed italic">
+                “স্মার্ট ফ্লাস্ক ও ওয়াটারপ্রুফ ব্যাকপ্যাক অর্ডার করেছিলাম। চিটাগংয়ে ৩ দিনের মধ্যে পেয়েছি। ক্যাশ অন ডেলিভারিতে চেক করে নিয়েছি।”
+              </p>
+              <div className="pt-2 border-t border-[#E8DCD2]/60 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-[#2B160F]">মাহির ফয়সাল</h4>
+                  <span className="text-[10px] text-[#8C7B72]">চট্টগ্রাম</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full">
+                  <CheckCircle2 className="w-3 h-3" /> Verified Purchase
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 14. TRUST & PAYMENT SECTION */}
+        <section className="container-custom">
+          <div className="p-6 rounded-2xl bg-[#FFFDF9] border border-[#E8DCD2] flex flex-wrap items-center justify-between gap-4 text-center sm:text-left">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-8 h-8 text-[#16834A]" />
+              <div>
+                <h4 className="text-sm font-bold text-[#2B160F]">১০০% নিরাপদ ও সুবিধাজনক পেমেন্ট</h4>
+                <p className="text-xs text-[#6B5A52]">ক্যাশ অন ডেলিভারি এবং দ্রুত অনলাইন ট্রানজেকশন</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+              <span className="px-3 py-1.5 rounded-lg bg-white border border-[#E8DCD2] text-[#3B0C04]">
+                💵 Cash on Delivery
+              </span>
+              <span className="px-3 py-1.5 rounded-lg bg-white border border-[#E8DCD2] text-[#D12053]">
+                bKash Ready
+              </span>
+              <span className="px-3 py-1.5 rounded-lg bg-white border border-[#E8DCD2] text-[#F7931E]">
+                Nagad Ready
+              </span>
+              <span className="px-3 py-1.5 rounded-lg bg-white border border-[#E8DCD2] text-[#1A1F71]">
+                Visa / MasterCard
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* 15. SOCIAL MEDIA / FOLLOW PONCHOMUKH */}
+        <section className="container-custom text-center space-y-4">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold text-[#2B160F]">
+              Follow Ponchomukh
+            </h2>
+            <p className="text-xs text-[#6B5A52] mt-1">
+              আমাদের সোশ্যাল মিডিয়া পেজে যুক্ত হয়ে পান আকর্ষণীয় গিভঅ্যাওয়ে ও লাইভ আপডেট
+            </p>
           </div>
 
-          <div className="flex flex-col gap-3 text-[11px] text-left">
-            <h4 className="font-extrabold text-zinc-500 uppercase tracking-wider text-[10px]">Sell</h4>
-            <a href="#" className="hover:text-white transition-colors font-medium">Seller Education Center</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Brand Index</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Register Official Store</a>
+          <div className="flex items-center justify-center gap-3">
+            <a
+              href="https://facebook.com/ponchomukh"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2] hover:text-white text-xs font-bold transition-colors"
+            >
+              <FacebookIcon className="w-4 h-4" />
+              <span>Facebook</span>
+            </a>
+            <a
+              href="https://instagram.com/ponchomukh"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#E4405F]/10 text-[#E4405F] hover:bg-[#E4405F] hover:text-white text-xs font-bold transition-colors"
+            >
+              <InstagramIcon className="w-4 h-4" />
+              <span>Instagram</span>
+            </a>
+            <a
+              href="https://wa.me/8801700000000"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366]/10 text-[#075E54] hover:bg-[#25D366] hover:text-white text-xs font-bold transition-colors"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>WhatsApp</span>
+            </a>
           </div>
+        </section>
 
-          <div className="flex flex-col gap-3 text-[11px] text-left">
-            <h4 className="font-extrabold text-zinc-500 uppercase tracking-wider text-[10px]">Guide and Help</h4>
-            <a href="#" className="hover:text-white transition-colors font-medium">Ponchomukh Care</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Terms and Conditions</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors font-medium">Mitra</a>
+        {/* 16. NEWSLETTER (Deep Brown Background + Gold CTA) */}
+        <section className="container-custom">
+          <div className="rounded-2xl bg-[#3B0C04] text-white p-6 md:p-10 lg:p-12 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-md space-y-2 text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FFC40E]">
+                <Mail className="w-4 h-4" />
+                <span>Stay Updated</span>
+              </div>
+              <h3 className="text-xl md:text-3xl font-black text-[#FFC40E]">
+                বিশেষ অফার ও ডিসকাউন্ট পেতে থাকুন
+              </h3>
+              <p className="text-xs text-[#E8DCD2]/80 leading-relaxed font-normal">
+                নতুন পণ্য, ফ্ল্যাশ সেল ও ডিসকাউন্ট কুপনের নোটিফিকেশন সবার আগে পেতে আমাদের নিউজলেটার সাবস্ক্রাইব করুন।
+              </p>
+            </div>
+
+            <div className="w-full md:w-auto flex-1 max-w-md">
+              {newsletterSubmitted ? (
+                <div className="p-4 rounded-xl bg-[#16834A]/20 border border-[#16834A] text-center text-xs font-bold text-[#FFC40E]">
+                  ✓ ধন্যবাদ! আপনার সাবস্ক্রিপশন সফলভাবে সম্পন্ন হয়েছে।
+                </div>
+              ) : (
+                <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    required
+                    placeholder="আপনার ইমেইল অ্যাড্রেস লিখুন..."
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    className="flex-1 h-12 px-4 rounded-lg bg-white text-[#2B160F] text-xs placeholder-[#8C7B72] focus:outline-none focus:ring-2 focus:ring-[#FFC40E]"
+                  />
+                  <button
+                    type="submit"
+                    className="h-12 px-6 rounded-lg bg-[#FFC40E] hover:bg-[#D99E00] text-[#260700] font-bold text-xs sm:text-sm transition-colors shrink-0"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
+        </section>
+      </main>
 
-        </div>
+      {/* 17. FOOTER */}
+      <Footer />
 
-        {/* Copyright banner */}
-        <div className="border-t border-zinc-800/60 mt-12 pt-6 text-[10px] font-bold text-zinc-600">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-            © 2021 - 2026 Ponchomukh.com. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      {/* Sticky Mobile Bottom Navigation (0-767px) */}
+      <MobileBottomNav />
 
+      {/* Quick View Product Modal */}
+      <ProductModal />
+
+      {/* Mini Cart Slide-Over Drawer */}
+      <CartDrawer />
     </div>
-  );
-};
-
-export default function Home() {
-  return (
-    <CartProvider>
-      <StorefrontContent />
-    </CartProvider>
   );
 }

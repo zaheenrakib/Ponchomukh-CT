@@ -1,353 +1,315 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
-  ShoppingBag, ClipboardList, TrendingUp, Users,
-  Search, Bell, ArrowUpRight, ArrowDownRight, Calendar
+  TrendingUp,
+  ShoppingBag,
+  Users,
+  DollarSign,
+  Clock,
+  Warehouse,
+  AlertTriangle,
+  ArrowUpRight,
+  CheckCircle2,
+  Package,
+  Calendar,
+  ExternalLink
 } from "lucide-react";
+import { mockProducts } from "@/lib/mockData";
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    totalOrders: 1645,
-    pendingOrders: 117,
-    totalProducts: 142,
-    lowStockProducts: 8,
-    totalRevenue: 82650,
-  });
-
-  const fetchStats = () => {
-    fetch("/api/admin/stats")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setStats((prev) => ({
-            ...prev,
-            totalOrders: data.stats.totalOrders || 1645,
-            pendingOrders: data.stats.pendingOrders || 117,
-            totalRevenue: data.stats.totalRevenue || 82650,
-          }));
-        }
-      })
-      .catch((err) => console.error("Failed to load admin stats:", err));
-  };
+export default function AdminDashboardPage() {
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchStats();
+    try {
+      const stored = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
+      if (stored.length > 0) {
+        setOrders(stored);
+      } else {
+        setOrders([
+          {
+            orderId: "PN10025",
+            date: "০৪ সেপ্টেম্বর, ২০২৬",
+            customer: { name: "তানভীর আহমেদ", phone: "01712-345678" },
+            total: 1359,
+            paymentMethod: "Cash on Delivery",
+            status: "PROCESSING"
+          },
+          {
+            orderId: "PN10024",
+            date: "০৪ সেপ্টেম্বর, ২০২৬",
+            customer: { name: "সুমাইয়া আক্তার", phone: "01823-456789" },
+            total: 1899,
+            paymentMethod: "Cash on Delivery",
+            status: "CONFIRMED"
+          },
+          {
+            orderId: "PN10023",
+            date: "০৩ সেপ্টেম্বর, ২০২৬",
+            customer: { name: "মাহির ফয়সাল", phone: "01934-567890" },
+            total: 4299,
+            paymentMethod: "bKash",
+            status: "DELIVERED"
+          }
+        ]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }, []);
 
-  const formatBDT = (value: number) => {
-    return `৳${Math.round(value).toLocaleString("en-BD")}`;
+  const lowStockProducts = mockProducts.filter((p) => p.stock <= (p.lowStockThreshold || 15));
+
+  const totalRevenue = orders.reduce((acc, o) => acc + (Number(o.total) || 0), 24500);
+
+  const handleUpdateStatus = (orderId: string, newStatus: string) => {
+    const updated = orders.map((o) => (o.orderId === orderId ? { ...o, status: newStatus } : o));
+    setOrders(updated);
+    try {
+      localStorage.setItem("ponchomukh_all_orders", JSON.stringify(updated));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
-    <div className="p-8 flex flex-col gap-6 text-left">
-
-      {/* Header Bar */}
-      <div className="flex justify-between items-center gap-4">
-        <h1 className="font-sans font-black text-2xl text-zinc-900">
-          Overview
-        </h1>
-
-        {/* Search */}
-        <div className="relative w-full max-w-md hidden md:block">
-          <Search className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="Search anything..."
-            className="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-[#E6E8EC] text-xs font-semibold outline-none"
-          />
+    <div className="space-y-8">
+      {/* Top Welcome Strip */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-[#3B0C04]">
+            অ্যাডমিন ড্যাশবোর্ড ওভারভিউ
+          </h1>
+          <p className="text-xs text-[#6B5A52] mt-0.5">
+            আজকের বিক্রয়, অর্ডার ও ইনভেন্টরি ট্র্যাকিং
+          </p>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-3 font-semibold text-xs text-zinc-700">
-          <div className="flex items-center gap-2 h-10 px-3.5 rounded-xl bg-white border border-[#E6E8EC]">
-            <Calendar className="h-4 w-4 text-zinc-400" />
-            <span>30 May</span>
-          </div>
-
-          <button className="h-10 w-10 rounded-xl bg-white border border-[#E6E8EC] flex items-center justify-center relative">
-            <Bell className="h-4 w-4 text-zinc-600" />
-            <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-rose-500" />
-          </button>
-
-          <div className="h-10 w-10 rounded-xl bg-zinc-200 overflow-hidden border border-[#E6E8EC]">
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
-              alt="avatar"
-              className="h-full w-full object-cover"
-            />
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/admin/products"
+            className="px-4 py-2 rounded-xl bg-[#3B0C04] text-[#FFC40E] text-xs font-bold shadow-xs hover:bg-[#260700]"
+          >
+            + নতুন পণ্য যোগ করুন
+          </Link>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-        {/* Card 1 — Revenue */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
-          <div className="space-y-1.5">
-            <span className="text-xs text-zinc-400 font-bold">Total Revenue</span>
-            <h3 className="font-sans font-black text-2xl text-zinc-900">
-              {formatBDT(stats.totalRevenue)}
-            </h3>
-            <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
-              <span className="text-emerald-500 flex items-center"><ArrowUpRight className="h-3 w-3" /> +11%</span> Last 30 days
-            </span>
+      {/* 8 CORE STAT METRIC CARDS */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {/* Today's Orders */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">আজকের অর্ডার</span>
+            <Clock className="w-4 h-4 text-[#3B0C04]" />
           </div>
-          <div className="h-11 w-11 rounded-full bg-[#E6F9F2] text-[#2CD49F] flex items-center justify-center">
-            <TrendingUp className="h-5 w-5" />
-          </div>
+          <p className="text-2xl font-black text-[#3B0C04]">১২ টি</p>
+          <p className="text-[11px] text-[#16834A] font-semibold flex items-center gap-1">
+            <TrendingUp className="w-3 h-3" /> +১৮% গতকাল থেকে বেশি
+          </p>
         </div>
 
-        {/* Card 2 — Orders */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
-          <div className="space-y-1.5">
-            <span className="text-xs text-zinc-400 font-bold">Total Order</span>
-            <h3 className="font-sans font-black text-2xl text-zinc-900">
-              {stats.totalOrders}
-            </h3>
-            <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
-              <span className="text-emerald-500 flex items-center"><ArrowUpRight className="h-3 w-3" /> +11%</span> Last 30 days
-            </span>
+        {/* Today's Sales */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">আজকের সেলস</span>
+            <DollarSign className="w-4 h-4 text-[#16834A]" />
           </div>
-          <div className="h-11 w-11 rounded-full bg-[#E7F0FD] text-blue-600 flex items-center justify-center">
-            <ShoppingBag className="h-5 w-5" />
-          </div>
+          <p className="text-2xl font-black text-[#16834A]">৳১৬,৪৫০</p>
+          <p className="text-[11px] text-[#6B5A52]">মোট ১২টি ডেলিভারি অর্ডার</p>
         </div>
 
-        {/* Card 3 — Customers */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
-          <div className="space-y-1.5">
-            <span className="text-xs text-zinc-400 font-bold">Total Customer</span>
-            <h3 className="font-sans font-black text-2xl text-zinc-900">1,462</h3>
-            <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
-              <span className="text-rose-500 flex items-center"><ArrowDownRight className="h-3 w-3" /> -17%</span> Last 30 days
-            </span>
+        {/* Total Orders */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">সর্বমোট অর্ডার</span>
+            <ShoppingBag className="w-4 h-4 text-[#3B0C04]" />
           </div>
-          <div className="h-11 w-11 rounded-full bg-[#E6F9F2] text-emerald-600 flex items-center justify-center">
-            <Users className="h-5 w-5" />
-          </div>
+          <p className="text-2xl font-black text-[#3B0C04]">{orders.length + 85} টি</p>
+          <p className="text-[11px] text-[#6B5A52]">লাইফটাইম অর্ডার রেকর্ড</p>
         </div>
 
-        {/* Card 4 — Pending */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E6E8EC] flex items-center justify-between shadow-xs">
-          <div className="space-y-1.5">
-            <span className="text-xs text-zinc-400 font-bold">Pending Delivery</span>
-            <h3 className="font-sans font-black text-2xl text-zinc-900">
-              {stats.pendingOrders}
-            </h3>
-            <span className="text-[10px] text-zinc-400 font-bold">Last 30 days</span>
+        {/* Total Revenue */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">সর্বমোট রেভিনিউ</span>
+            <TrendingUp className="w-4 h-4 text-[#FFC40E]" />
           </div>
-          <div className="h-11 w-11 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
-            <ClipboardList className="h-5 w-5" />
-          </div>
+          <p className="text-2xl font-black text-[#3B0C04]">৳{totalRevenue.toLocaleString()}</p>
+          <p className="text-[11px] text-[#16834A] font-semibold">গ্রোথ রেট +২৪%</p>
         </div>
 
+        {/* Pending Orders */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">পেন্ডিং অর্ডার</span>
+            <Clock className="w-4 h-4 text-[#D99E00]" />
+          </div>
+          <p className="text-2xl font-black text-[#D99E00]">
+            {orders.filter((o) => o.status === "PENDING").length || 3} টি
+          </p>
+          <p className="text-[11px] text-[#D99E00] font-semibold">কনফার্মেশন অপেক্ষমান</p>
+        </div>
+
+        {/* Total Customers */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">কাস্টমার সংখ্যা</span>
+            <Users className="w-4 h-4 text-[#3B0C04]" />
+          </div>
+          <p className="text-2xl font-black text-[#3B0C04]">১,২৪৫ জন</p>
+          <p className="text-[11px] text-[#6B5A52]">একটিভ রেজিস্টার্ড ইউজার</p>
+        </div>
+
+        {/* Total Products */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold">মোট পণ্য সংখ্যা</span>
+            <Package className="w-4 h-4 text-[#3B0C04]" />
+          </div>
+          <p className="text-2xl font-black text-[#3B0C04]">{mockProducts.length + 18} টি</p>
+          <p className="text-[11px] text-[#6B5A52]">৬টি সক্রিয় ক্যাটাগরিতে</p>
+        </div>
+
+        {/* Low Stock Products Alert */}
+        <div className="p-5 rounded-2xl bg-white border border-[#D64545]/40 shadow-xs space-y-2 bg-[#D64545]/5">
+          <div className="flex items-center justify-between text-[#D64545]">
+            <span className="text-xs font-bold">লো স্টক সতর্কতা</span>
+            <AlertTriangle className="w-4 h-4" />
+          </div>
+          <p className="text-2xl font-black text-[#D64545]">{lowStockProducts.length} টি</p>
+          <p className="text-[11px] text-[#D64545] font-semibold">তাৎক্ষণিক রিস্টক প্রয়োজন</p>
+        </div>
       </div>
 
-      {/* Middle Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* Sales Analytic Chart */}
-        <div className="lg:col-span-8 bg-white p-6 rounded-3xl border border-[#E6E8EC] space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="font-sans font-black text-base text-zinc-900">Sales Analytic</h3>
-            <select className="h-8 px-2 rounded-lg border border-[#E6E8EC] text-[11px] font-bold outline-none bg-white">
-              <option>Sort by Jul 2023</option>
-            </select>
+      {/* RECENT ORDERS TABLE */}
+      <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-[#E8DCD2] pb-4">
+          <div>
+            <h2 className="text-base font-bold text-[#3B0C04]">
+              সাম্প্রতিক অর্ডারসমূহ (Recent Orders)
+            </h2>
+            <p className="text-xs text-[#6B5A52]">
+              স্ট্যাটাস পরিবর্তন করে সরাসরি কাস্টমার টাইমলাইন আপডেট করুন
+            </p>
           </div>
-
-          {/* Income breakdown badges */}
-          <div className="flex gap-8 text-left">
-            <div>
-              <span className="text-[10px] text-zinc-400 font-bold block uppercase">Income</span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-sans font-black text-lg text-zinc-900">23,262.00</span>
-                <span className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[9px] font-bold">+0.05%</span>
-              </div>
-            </div>
-
-            <div>
-              <span className="text-[10px] text-zinc-400 font-bold block uppercase">Expenses</span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-sans font-black text-lg text-zinc-900">11,135.00</span>
-                <span className="px-1.5 py-0.5 rounded-md bg-orange-50 text-orange-600 text-[9px] font-bold">+0.05%</span>
-              </div>
-            </div>
-
-            <div>
-              <span className="text-[10px] text-zinc-400 font-bold block uppercase">Balance</span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-sans font-black text-lg text-zinc-900">48,135.00</span>
-                <span className="px-1.5 py-0.5 rounded-md bg-[#E6F9F2] text-[#2CD49F] text-[9px] font-bold">+0.05%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Premium Wavy Chart */}
-          <div className="h-44 relative w-full pt-4">
-            <svg className="w-full h-full overflow-visible" viewBox="0 0 800 150" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2CD49F" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#2CD49F" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,100 Q100,20 200,80 T400,30 T600,90 T800,40 L800,150 L0,150 Z"
-                fill="url(#chartGradient)"
-              />
-              <path
-                d="M0,100 Q100,20 200,80 T400,30 T600,90 T800,40"
-                fill="none"
-                stroke="#2CD49F"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            {/* Dates strip */}
-            <div className="flex justify-between text-[9px] font-black text-zinc-400 pt-2 px-1">
-              <span>22 July</span>
-              <span>23 July</span>
-              <span>24 July</span>
-              <span>25 July</span>
-              <span>26 July</span>
-              <span>27 July</span>
-              <span>28 July</span>
-              <span>29 July</span>
-            </div>
-          </div>
+          <Link
+            href="/admin/orders"
+            className="text-xs font-bold text-[#3B0C04] hover:underline"
+          >
+            সকল অর্ডার দেখুন →
+          </Link>
         </div>
 
-        {/* Sales Target */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#E6E8EC] flex flex-col justify-between">
-          <h3 className="font-sans font-black text-base text-zinc-900">Sales Target</h3>
-
-          {/* Radial circles diagram */}
-          <div className="relative flex items-center justify-center my-6 h-36">
-            <svg className="w-32 h-32" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#F1F3F6" strokeWidth="8" />
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#2CD49F" strokeWidth="8" strokeDasharray="180 250" strokeLinecap="round" transform="rotate(-90 50 50)" />
-              <circle cx="50" cy="50" r="28" fill="none" stroke="#F1F3F6" strokeWidth="8" />
-              <circle cx="50" cy="50" r="28" fill="none" stroke="#5EEAD4" strokeWidth="8" strokeDasharray="100 200" strokeLinecap="round" transform="rotate(-90 50 50)" />
-            </svg>
-          </div>
-
-          <div className="space-y-3 font-semibold text-xs text-left">
-            <div>
-              <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-zinc-400 block" /> Daily Target
-              </span>
-              <span className="font-sans font-black text-base text-zinc-900 mt-0.5 flex items-center gap-1">
-                ↓ 650
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#2CD49F] block" /> Monthly Target
-              </span>
-              <span className="font-sans font-black text-base text-zinc-900 mt-0.5 flex items-center gap-1">
-                ↑ 145,00
-              </span>
-            </div>
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-[#FFF7EE] text-[#3B0C04] font-bold border-b border-[#E8DCD2]">
+              <tr>
+                <th className="p-3.5">অর্ডার আইডি</th>
+                <th className="p-3.5">কাস্টমার নাম & ফোন</th>
+                <th className="p-3.5">তারিখ</th>
+                <th className="p-3.5">বিল পরিমাণ</th>
+                <th className="p-3.5">পেমেন্ট</th>
+                <th className="p-3.5">বর্তমান স্ট্যাটাস</th>
+                <th className="p-3.5">স্ট্যাটাস আপডেট</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8DCD2]">
+              {orders.slice(0, 5).map((order) => (
+                <tr key={order.orderId} className="hover:bg-[#FFFDF9]">
+                  <td className="p-3.5 font-mono font-bold text-[#3B0C04]">
+                    {order.orderId}
+                  </td>
+                  <td className="p-3.5">
+                    <p className="font-bold text-[#2B160F]">{order.customer?.name || "Customer"}</p>
+                    <p className="text-[11px] text-[#8C7B72]">{order.customer?.phone || "N/A"}</p>
+                  </td>
+                  <td className="p-3.5 text-[#6B5A52]">{order.date}</td>
+                  <td className="p-3.5 font-bold text-[#2B160F]">৳{order.total}</td>
+                  <td className="p-3.5">
+                    <span className="px-2 py-0.5 rounded bg-white border border-[#E8DCD2] text-[11px] font-semibold">
+                      {order.paymentMethod}
+                    </span>
+                  </td>
+                  <td className="p-3.5">
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                        order.status === "DELIVERED"
+                          ? "bg-[#E8F6F1] text-[#16834A]"
+                          : order.status === "PROCESSING" || order.status === "SHIPPED"
+                          ? "bg-[#FFF7EE] text-[#3B0C04]"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="p-3.5">
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleUpdateStatus(order.orderId, e.target.value)}
+                      className="px-2.5 py-1 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-semibold focus:outline-none focus:border-[#3B0C04]"
+                    >
+                      <option value="PENDING">PENDING</option>
+                      <option value="CONFIRMED">CONFIRMED</option>
+                      <option value="PROCESSING">PROCESSING</option>
+                      <option value="SHIPPED">SHIPPED</option>
+                      <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
+                      <option value="DELIVERED">DELIVERED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
       </div>
 
-      {/* Bottom Rows: Top Selling Products & Current Offers */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* Top Selling Products */}
-        <div className="lg:col-span-8 bg-white p-6 rounded-3xl border border-[#E6E8EC] space-y-4">
-          <h3 className="font-sans font-black text-base text-zinc-900">Top Selling Products</h3>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-
-            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
-              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200" alt="shoe" className="object-contain h-full w-full" />
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Air Jordan 8</h4>
-                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
-              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
-                <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=200" alt="shoe" className="object-contain h-full w-full" />
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Air Jordan 5</h4>
-                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
-              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
-                <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=200" alt="shoe" className="object-contain h-full w-full" />
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Air Jordan 13</h4>
-                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#F8F9FA] rounded-2xl border border-[#F1F3F6] text-left space-y-2">
-              <div className="aspect-square rounded-xl overflow-hidden bg-white border border-[#E6E8EC] p-2 flex items-center justify-center">
-                <img src="https://images.unsplash.com/photo-1539185441755-769473a23570?w=200" alt="shoe" className="object-contain h-full w-full" />
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-zinc-900 line-clamp-1">Nike Air Max</h4>
-                <span className="text-[10px] text-zinc-400 font-semibold block">752 Pcs</span>
-              </div>
-            </div>
-
+      {/* LOW STOCK PRODUCTS WARNING */}
+      <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-[#E8DCD2] pb-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-[#D64545]" />
+            <h2 className="text-base font-bold text-[#3B0C04]">
+              ইনভেন্টরি লো স্টক অ্যালার্ট
+            </h2>
           </div>
+          <Link
+            href="/admin/inventory"
+            className="text-xs font-bold text-[#3B0C04] hover:underline"
+          >
+            ইনভেন্টরি ম্যানেজ করুন →
+          </Link>
         </div>
 
-        {/* Current Offer Progress */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#E6E8EC] space-y-4">
-          <h3 className="font-sans font-black text-base text-zinc-900">Current Offer</h3>
-
-          <div className="space-y-4 text-xs font-semibold text-left">
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span>40% Discount Offer</span>
-                <span className="text-[10px] text-zinc-400">Expire on: 05-08</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {lowStockProducts.map((p) => (
+            <div
+              key={p.id}
+              className="p-3.5 rounded-xl border border-[#D64545]/30 bg-[#D64545]/5 flex items-center justify-between gap-3 text-xs"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <img
+                  src={p.images[0]?.imageUrl}
+                  alt=""
+                  className="w-12 h-12 rounded-lg object-contain bg-white border border-[#E8DCD2] p-1 shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="font-bold text-[#2B160F] truncate">{p.name}</p>
+                  <p className="text-[11px] text-[#8C7B72]">SKU: {p.sku}</p>
+                </div>
               </div>
-              <div className="h-2 w-full rounded-full bg-[#F1F3F6] overflow-hidden">
-                <div className="h-full bg-[#2CD49F]" style={{ width: "65%" }} />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span>100 Taka Coupon</span>
-                <span className="text-[10px] text-zinc-400">Expire on: 10-09</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-[#F1F3F6] overflow-hidden">
-                <div className="h-full bg-[#5EEAD4]" style={{ width: "45%" }} />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span>Stock Out Sell</span>
-                <span className="text-[10px] text-zinc-400">Upcoming: 14-09</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-[#F1F3F6] overflow-hidden">
-                <div className="h-full bg-amber-400" style={{ width: "80%" }} />
+              <div className="text-right shrink-0">
+                <span className="px-2 py-0.5 rounded bg-[#D64545] text-white font-bold text-[11px]">
+                  বাকি {p.stock} পিস
+                </span>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-
       </div>
-
     </div>
   );
 }

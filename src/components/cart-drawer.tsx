@@ -1,251 +1,264 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCart } from "@/context/cart-context";
-import { X, Trash2, Plus, Minus, ShoppingBag, CreditCard, Tag, Check } from "lucide-react";
+import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag } from "lucide-react";
 
 export const CartDrawer: React.FC = () => {
-  const router = useRouter();
   const {
     cartItems,
     isCartOpen,
     setIsCartOpen,
-    removeFromCart,
     updateQuantity,
+    removeFromCart,
     cartSubtotal,
     cartDiscount,
     cartShippingFee,
-    clearCart
+    cartTotal,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    deliveryZone,
+    setDeliveryZone
   } = useCart();
 
-  const [couponCode, setCouponCode] = useState("");
-  const [isCouponApplied, setIsCouponApplied] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
   const [couponError, setCouponError] = useState("");
-  const [activeCouponDiscount, setActiveCouponDiscount] = useState(0);
-
-  const formatBDT = (value: number) => {
-    return `৳${Math.round(value).toLocaleString("en-BD")}`;
-  };
 
   if (!isCartOpen) return null;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanCode = couponCode.trim().toUpperCase();
-    if (cleanCode === "PONCHOMUKH10" || cleanCode === "WELCOME10") {
-      setIsCouponApplied(true);
-      setCouponError("");
-      setActiveCouponDiscount(cartSubtotal * 0.1);
-    } else if (cleanCode === "") {
-      setCouponError("Please enter a code");
+    if (!couponInput.trim()) return;
+    const res = applyCoupon(couponInput.trim());
+    if (!res.success) {
+      setCouponError(res.message);
     } else {
-      setCouponError("Invalid coupon code");
-      setIsCouponApplied(false);
-      setActiveCouponDiscount(0);
+      setCouponError("");
+      setCouponInput("");
     }
   };
 
-  const finalDiscount = cartDiscount + activeCouponDiscount;
-  const finalTotal = Math.max(0, cartSubtotal - finalDiscount + cartShippingFee);
-
-  const handleProceedCheckout = () => {
-    setIsCartOpen(false);
-    router.push("/checkout");
-  };
-
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex justify-end animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         onClick={() => setIsCartOpen(false)}
       />
 
-      {/* Drawer Container */}
-      <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
-        <div className="w-screen max-w-md transform bg-white shadow-2xl transition-all duration-300 dark:bg-zinc-950 flex flex-col h-full border-l border-zinc-200 dark:border-zinc-800">
-          
-          {/* Drawer Header */}
-          <div className="flex items-center justify-between border-b border-[#E8DCD2] p-5 dark:border-zinc-800 bg-[#FFF7EE] dark:bg-zinc-900">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-[#3B0C04]" />
-              <h2 className="font-sans text-base sm:text-lg font-black text-[#3B0C04] dark:text-white">Your Shopping Cart</h2>
-              <span className="rounded-full bg-[#FFC40E] px-2 py-0.5 text-xs font-black text-[#3B0C04]">
-                {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-              </span>
-            </div>
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-[#E8DCD2] text-zinc-600 dark:text-zinc-400 active:scale-95 transition-all"
-            >
-              <X className="h-5 w-5" />
-            </button>
+      {/* Drawer Body */}
+      <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
+        {/* Header */}
+        <div className="p-4 bg-[#3B0C04] text-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <ShoppingBag className="w-5 h-5 text-[#FFC40E]" />
+            <h2 className="font-bold text-base text-[#FFC40E]">
+              আপনার কার্ট ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})
+            </h2>
           </div>
+          <button
+            onClick={() => setIsCartOpen(false)}
+            className="p-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Close cart"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Drawer Body: Cart Items */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {cartItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF7EE] dark:bg-zinc-900 mb-4 border border-[#E8DCD2]">
-                  <ShoppingBag className="h-8 w-8 text-[#3B0C04]" />
-                </div>
-                <h3 className="font-sans text-base font-black text-[#2B160F] dark:text-zinc-200">আপনার cart এখনো খালি।</h3>
-                <p className="text-xs text-zinc-500 mt-1 max-w-[220px]">আপনার পছন্দের পণ্য খুঁজে shopping শুরু করুন।</p>
-                <button
-                  onClick={() => setIsCartOpen(false)}
-                  className="mt-6 flex h-10 items-center justify-center px-6 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-white font-bold transition-all text-xs shadow-md"
-                >
-                  Shop Now
-                </button>
+        {/* Free Shipping or Offer Progress */}
+        <div className="bg-[#FFF7EE] px-4 py-2.5 border-b border-[#E8DCD2] text-xs text-[#2B160F] flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#16834A] shrink-0" />
+          <span>সারা বাংলাদেশে ১০০% ক্যাশ অন ডেলিভারি সুবিধা!</span>
+        </div>
+
+        {/* Cart Item List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {cartItems.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-[#FFF7EE] text-[#3B0C04] flex items-center justify-center">
+                <ShoppingBag className="w-8 h-8 text-[#3B0C04]" />
               </div>
-            ) : (
-              cartItems.map((item) => {
-                const itemPrice = Number(item.variant.price);
-                return (
-                  <div
-                    key={item.productVariantId}
-                    className="flex gap-3 p-3 rounded-xl border border-[#E8DCD2] bg-[#FFF7EE]/30 dark:border-zinc-800 dark:bg-zinc-900/40"
-                  >
-                    {/* Item Thumbnail */}
-                    <div className="relative aspect-square w-16 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                      <img
-                        src={item.variant.imageUrl || item.product.images?.[0]?.imageUrl || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200"}
-                        alt={item.product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-
-                    {/* Item Metadata & controls */}
-                    <div className="flex flex-col flex-1 justify-between text-left">
-                      <div>
-                        <div className="flex justify-between items-start gap-1">
-                          <h4 className="font-sans text-xs font-bold text-[#2B160F] dark:text-zinc-200 line-clamp-1 leading-tight">
-                            {item.product.name}
-                          </h4>
-                          <button
-                            onClick={() => removeFromCart(item.productVariantId)}
-                            className="p-1 rounded-md text-zinc-400 hover:text-rose-600 transition-all shrink-0"
-                            title="Remove"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Quantity & Price */}
-                      <div className="flex justify-between items-center pt-2 mt-1">
-                        {/* Quantity Counter */}
-                        <div className="flex items-center h-7 rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 px-1">
-                          <button
-                            onClick={() => updateQuantity(item.productVariantId, item.quantity - 1)}
-                            className="p-1 rounded hover:bg-zinc-100 text-zinc-500"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white px-2">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.productVariantId, item.quantity + 1)}
-                            className="p-1 rounded hover:bg-zinc-100 text-zinc-500"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
-                        </div>
-
-                        {/* Price */}
-                        <div className="text-right">
-                          <span className="font-sans text-xs font-black text-[#3B0C04] dark:text-white">
-                            {formatBDT(itemPrice * item.quantity)}
-                          </span>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Drawer Footer Summary */}
-          {cartItems.length > 0 && (
-            <div className="border-t border-[#E8DCD2] p-5 bg-[#FFF7EE]/60 dark:border-zinc-800 dark:bg-zinc-900/60 space-y-3">
-              
-              {/* Promo Coupon Form */}
-              <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                <div className="relative flex-1">
-                  <Tag className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Coupon code (WELCOME10)"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    disabled={isCouponApplied}
-                    className="w-full h-9 pl-9 pr-3 rounded-lg border border-[#E8DCD2] bg-white text-xs font-medium outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
+              <div>
+                <h3 className="text-base font-bold text-[#2B160F]">আপনার কার্ট এখনো খালি</h3>
+                <p className="text-xs text-[#8C7B72] mt-1">
+                  আপনার পছন্দের পণ্য খুঁজে শপিং শুরু করুন।
+                </p>
+              </div>
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="px-6 py-2.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold shadow-xs hover:bg-[#260700]"
+              >
+                এখনই শপিং শুরু করুন
+              </button>
+            </div>
+          ) : (
+            cartItems.map((item) => (
+              <div
+                key={item.productVariantId}
+                className="flex gap-3 p-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] relative group"
+              >
+                {/* Product Thumbnail */}
+                <div className="w-18 h-18 rounded-lg bg-white border border-[#E8DCD2]/60 p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                  <img
+                    src={item.product.images?.[0]?.imageUrl}
+                    alt={item.product.name}
+                    className="w-full h-full object-contain mix-blend-multiply"
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={isCouponApplied}
-                  className={`h-9 px-4 rounded-lg text-xs font-bold transition-all ${
-                    isCouponApplied
-                      ? "bg-emerald-600 text-white"
-                      : "bg-[#3B0C04] text-white hover:bg-[#260700]"
-                  }`}
-                >
-                  {isCouponApplied ? <Check className="h-4 w-4" /> : "Apply"}
-                </button>
-              </form>
-              {couponError && <p className="text-[10px] text-rose-600 font-bold pl-1">{couponError}</p>}
-              {isCouponApplied && (
-                <p className="text-[10px] text-emerald-600 font-bold pl-1 flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Coupon applied (10% Off)!
-                </p>
-              )}
 
-              {/* Fee Breakdown */}
-              <div className="space-y-1.5 text-xs font-semibold text-[#6B5A52] dark:text-zinc-400">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span className="font-bold text-[#2B160F] dark:text-white">{formatBDT(cartSubtotal)}</span>
-                </div>
-                
-                {finalDiscount > 0 && (
-                  <div className="flex justify-between text-rose-600 font-bold">
-                    <span>Discount</span>
-                    <span>-{formatBDT(finalDiscount)}</span>
+                {/* Info */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <Link
+                        href={`/product/${item.product.slug}`}
+                        onClick={() => setIsCartOpen(false)}
+                        className="text-xs font-semibold text-[#2B160F] hover:text-[#3B0C04] line-clamp-1"
+                      >
+                        {item.product.name}
+                      </Link>
+                      <button
+                        onClick={() => removeFromCart(item.productVariantId)}
+                        className="text-[#8C7B72] hover:text-[#D64545] p-0.5"
+                        title="রিমুভ করুন"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {item.variant.selectedOptions?.[0] && (
+                      <span className="text-[11px] text-[#8C7B72]">
+                        অপশন: {item.variant.selectedOptions[0].value}
+                      </span>
+                    )}
                   </div>
-                )}
 
-                <div className="flex justify-between pt-2 border-t border-[#E8DCD2] dark:border-zinc-800 text-sm font-black text-[#3B0C04] dark:text-white">
-                  <span>Total</span>
-                  <span className="text-base text-rose-600">{formatBDT(finalTotal)}</span>
+                  {/* Price & Quantity Controls */}
+                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-[#E8DCD2]/40">
+                    <span className="text-xs font-bold text-[#3B0C04]">
+                      ৳{item.variant.price * item.quantity}
+                    </span>
+
+                    <div className="flex items-center border border-[#E8DCD2] rounded-md bg-white">
+                      <button
+                        onClick={() => updateQuantity(item.productVariantId, item.quantity - 1)}
+                        className="w-6 h-6 flex items-center justify-center text-xs text-[#2B160F] hover:bg-[#FFF7EE]"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="w-7 text-center text-xs font-bold text-[#2B160F]">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.productVariantId, item.quantity + 1)}
+                        className="w-6 h-6 flex items-center justify-center text-xs text-[#2B160F] hover:bg-[#FFF7EE]"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+            ))
+          )}
+        </div>
 
-              {/* Checkout Button */}
-              <div className="pt-2 flex flex-col gap-2">
-                <button
-                  onClick={handleProceedCheckout}
-                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#3B0C04] text-white hover:bg-[#260700] font-bold text-sm transition-all shadow-md active:scale-98"
-                >
-                  <CreditCard className="h-4 w-4 text-[#FFC40E]" />
-                  Proceed to Checkout
-                </button>
+        {/* Footer Summary & Checkout CTA */}
+        {cartItems.length > 0 && (
+          <div className="p-4 bg-white border-t border-[#E8DCD2] space-y-3">
+            {/* Coupon Code Input */}
+            <div>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[#E8F6F1] border border-[#16834A]/30 text-xs">
+                  <div className="flex items-center gap-1.5 text-[#16834A] font-bold">
+                    <Tag className="w-3.5 h-3.5" />
+                    <span>কুপন কোড: {appliedCoupon.code}</span>
+                  </div>
+                  <button
+                    onClick={removeCoupon}
+                    className="text-[#D64545] hover:underline text-[11px] font-semibold"
+                  >
+                    মুছুন
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="কুপন কোড (যেমন: PONCHO10)"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    className="flex-1 h-9 px-3 text-xs rounded-lg border border-[#E8DCD2] uppercase placeholder:normal-case focus:outline-none focus:border-[#3B0C04]"
+                  />
+                  <button
+                    type="submit"
+                    className="h-9 px-3.5 rounded-lg bg-[#FFF7EE] hover:bg-[#3B0C04] text-[#3B0C04] hover:text-[#FFC40E] border border-[#E8DCD2] text-xs font-bold transition-colors"
+                  >
+                    প্রয়োগ
+                  </button>
+                </form>
+              )}
+              {couponError && (
+                <p className="text-[11px] text-[#D64545] mt-1">{couponError}</p>
+              )}
+            </div>
 
-                <button
-                  onClick={clearCart}
-                  className="text-center text-[10px] font-bold text-zinc-400 hover:text-rose-600 py-1 transition-colors"
-                >
-                  Clear Cart
-                </button>
+            {/* Price Calculations */}
+            <div className="space-y-1.5 text-xs text-[#6B5A52] border-t border-[#E8DCD2]/60 pt-2">
+              <div className="flex justify-between">
+                <span>সাব-টোটাল</span>
+                <span className="font-semibold text-[#2B160F]">৳{cartSubtotal}</span>
+              </div>
+              {cartDiscount > 0 && (
+                <div className="flex justify-between text-[#16834A]">
+                  <span>ডিসকাউন্ট</span>
+                  <span className="font-semibold">-৳{cartDiscount}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span>ডেলিভারি চার্জ</span>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={deliveryZone}
+                    onChange={(e) => setDeliveryZone(e.target.value as any)}
+                    className="text-[11px] py-0.5 px-1.5 border border-[#E8DCD2] rounded bg-[#FFFDF9] text-[#2B160F]"
+                  >
+                    <option value="INSIDE_DHAKA">ঢাকা সিটি (৳৬০)</option>
+                    <option value="OUTSIDE_DHAKA">ঢাকার বাইরে (৳১২০)</option>
+                  </select>
+                  <span className="font-semibold text-[#2B160F]">৳{cartShippingFee}</span>
+                </div>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-[#3B0C04] pt-1.5 border-t border-[#E8DCD2]">
+                <span>সর্বমোট (Total)</span>
+                <span className="text-base font-black">৳{cartTotal}</span>
               </div>
             </div>
-          )}
 
-        </div>
+            {/* Direct Checkout & View Cart Buttons */}
+            <div className="space-y-2 pt-1">
+              <Link
+                href="/checkout"
+                onClick={() => setIsCartOpen(false)}
+                className="w-full h-11 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
+              >
+                <span>অর্ডার সম্পন্ন করুন (Checkout)</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/cart"
+                onClick={() => setIsCartOpen(false)}
+                className="block text-center text-xs font-semibold text-[#6B5A52] hover:text-[#3B0C04] py-1"
+              >
+                কার্ট পেজ দেখুন →
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

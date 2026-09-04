@@ -1,25 +1,72 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navbar } from "@/components/navbar";
-import { CartProvider } from "@/context/cart-context";
+import { Footer } from "@/components/footer";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { Truck, Clock, ShieldCheck, MapPin } from "lucide-react";
 
 export default function ShippingPolicyPage() {
   return (
-    <CartProvider>
-      <div className="min-h-screen bg-[#FFFDF9] text-[#2B160F] dark:bg-zinc-950 dark:text-zinc-50">
-        <Navbar />
-        <main className="mx-auto max-w-4xl px-4 py-12 text-left space-y-6">
-          <h1 className="font-sans font-black text-2xl sm:text-3xl text-[#3B0C04]">Shipping Policy</h1>
-          <div className="bg-white p-8 rounded-3xl border border-[#E8DCD2] text-xs sm:text-sm font-medium space-y-4 leading-relaxed">
-            <h2 className="font-bold text-base text-[#3B0C04]">Delivery Zones & Charges</h2>
-            <p><strong>Inside Dhaka:</strong> Delivery charge is ৳60. Estimated delivery within 24 to 48 hours.</p>
-            <p><strong>Outside Dhaka:</strong> Delivery charge is ৳120. Estimated delivery within 2 to 4 days.</p>
-            <h2 className="font-bold text-base text-[#3B0C04]">Cash on Delivery</h2>
-            <p>We provide 100% Cash on Delivery across all 64 districts of Bangladesh.</p>
+    <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
+      <AnnouncementBar />
+      <Navbar />
+
+      <main className="flex-1 pb-16">
+        <div className="bg-[#FFF7EE] border-b border-[#E8DCD2] py-8 text-center">
+          <div className="container-custom max-w-xl space-y-2">
+            <h1 className="text-2xl sm:text-4xl font-black text-[#3B0C04]">
+              ডেলিভারি পলিসি (Shipping Policy)
+            </h1>
+            <p className="text-xs sm:text-sm text-[#6B5A52]">
+              আমাদের ডেলিভারি সময়সীমা, চার্জ এবং শর্তাবলী
+            </p>
           </div>
-        </main>
-      </div>
-    </CartProvider>
+        </div>
+
+        <div className="container-custom py-10 max-w-3xl space-y-6 text-xs sm:text-sm text-[#2B160F] leading-relaxed">
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
+            <h2 className="text-base font-bold text-[#3B0C04] flex items-center gap-2">
+              <Truck className="w-5 h-5 text-[#3B0C04]" />
+              <span>১. ডেলিভারি এলাকা ও চার্জসমূহ</span>
+            </h2>
+            <p>
+              পঞ্চমুখ সমগ্র বাংলাদেশে অত্যন্ত দ্রুততম সময়ে নির্ভরযোগ্য হোম ডেলিভারি সেবা প্রদান করে থাকে।
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-[#6B5A52]">
+              <li><strong>ঢাকা সিটির ভেতরে:</strong> ডেলিভারি চার্জ মাত্র ৳৬০।</li>
+              <li><strong>ঢাকার বাইরে (সমগ্র বাংলাদেশ):</strong> হোম ডেলিভারি চার্জ ৳১২০।</li>
+            </ul>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
+            <h2 className="text-base font-bold text-[#3B0C04] flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#3B0C04]" />
+              <span>২. ডেলিভারি সময়সীমা</span>
+            </h2>
+            <ul className="list-disc pl-5 space-y-1.5 text-[#6B5A52]">
+              <li>অর্ডার সফলভাবে প্লেস করার পর আমাদের প্রতিনিধি গ্রাহকের সাথে ফোনে যোগাযোগ করে অর্ডার কনফার্ম করবেন।</li>
+              <li>ঢাকা সিটির ভেতরে অর্ডার কনফার্মেশনের ২৪ থেকে ৪৮ ঘণ্টার মধ্যে পণ্য পৌঁছে দেওয়া হয়।</li>
+              <li>ঢাকার বাইরে সমগ্র বাংলাদেশে ২ থেকে ৩ কার্যদিবসের মধ্যে কুরিয়ারের মাধ্যমে ডেলিভারি করা হয়।</li>
+            </ul>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
+            <h2 className="text-base font-bold text-[#3B0C04] flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#16834A]" />
+              <span>৩. ক্যাশ অন ডেলিভারি এবং পার্সেল চেকিং</span>
+            </h2>
+            <p className="text-[#6B5A52]">
+              গ্রাহক ডেলিভারি ম্যানের উপস্থিতিতে পার্সেল চেক করে সঠিক পণ্য বুঝে পাওয়ার পর মূল্য পরিশোধ করতে পারবেন। কোনো অসঙ্গতি থাকলে তাৎক্ষণিকভাবে আমাদের হেল্পলাইনে (+880 1700-000000) অবহিত করুন।
+            </p>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+      <MobileBottomNav />
+    </div>
   );
 }

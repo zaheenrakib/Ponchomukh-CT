@@ -1,47 +1,72 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navbar } from "@/components/navbar";
-import { CartDrawer } from "@/components/cart-drawer";
-import { ProductModal } from "@/components/product-modal";
-import { CartProvider } from "@/context/cart-context";
-import { Heart } from "lucide-react";
+import { Footer } from "@/components/footer";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { ProductCard } from "@/components/product-card";
+import { useCart } from "@/context/cart-context";
+import { Heart, ChevronRight, ShoppingBag, ArrowLeft } from "lucide-react";
 
-function WishlistContent() {
+export default function WishlistPage() {
+  const { wishlist, wishlistCount } = useCart();
+
   return (
-    <div className="min-h-screen bg-[#FFFDF9] text-[#2B160F] dark:bg-zinc-950 dark:text-zinc-50">
+    <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
+      <AnnouncementBar />
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 text-left">
-        <h1 className="font-sans font-black text-2xl sm:text-3xl text-[#3B0C04] dark:text-white mb-6">
-          My Wishlist
-        </h1>
-
-        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-[#E8DCD2] rounded-3xl bg-[#FFF7EE]/30 text-center">
-          <div className="h-16 w-16 rounded-full bg-[#FFF7EE] border border-[#E8DCD2] flex items-center justify-center mb-4">
-            <Heart className="h-8 w-8 text-rose-500" />
+      <main className="flex-1 pb-16">
+        {/* Header Breadcrumb */}
+        <div className="bg-[#FFF7EE] border-b border-[#E8DCD2] py-6">
+          <div className="container-custom">
+            <div className="flex items-center gap-1.5 text-xs text-[#8C7B72] mb-2">
+              <Link href="/" className="hover:text-[#3B0C04]">হোম</Link>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-[#3B0C04] font-semibold">উইশলিস্ট (Wishlist)</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#3B0C04]">
+              আমার পছন্দের তালিকা ({wishlistCount})
+            </h1>
           </div>
-          <h3 className="font-sans text-base font-black text-[#3B0C04]">আপনার wishlist এখনো খালি।</h3>
-          <p className="text-xs text-zinc-500 mt-1 max-w-xs">Explore our shop and tap the heart icon to save products to your wishlist.</p>
-          <a
-            href="/shop"
-            className="mt-6 flex h-10 items-center justify-center px-6 rounded-xl bg-[#3B0C04] text-white text-xs font-bold shadow-md"
-          >
-            Explore Shop
-          </a>
+        </div>
+
+        <div className="container-custom py-8">
+          {wishlist.length === 0 ? (
+            /* Empty State */
+            <div className="p-12 text-center rounded-2xl bg-white border border-[#E8DCD2] max-w-lg mx-auto space-y-4 shadow-xs">
+              <div className="w-20 h-20 rounded-full bg-[#FFF7EE] text-[#D64545] mx-auto flex items-center justify-center">
+                <Heart className="w-10 h-10 text-[#D64545]" />
+              </div>
+              <h2 className="text-xl font-bold text-[#2B160F]">
+                আপনার wishlist এখনো খালি।
+              </h2>
+              <p className="text-xs text-[#8C7B72]">
+                পণ্য ব্রাউজ করার সময় হার্ট আইকনে ক্লিক করে পছন্দের পণ্য সংরক্ষণ করুন।
+              </p>
+              <div className="pt-3">
+                <Link
+                  href="/shop"
+                  className="inline-block px-7 py-3 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700]"
+                >
+                  Shop Now (শপিং শুরু করুন)
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
+              {wishlist.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
-      <CartDrawer />
-      <ProductModal />
+      <Footer />
+      <MobileBottomNav />
     </div>
-  );
-}
-
-export default function WishlistPage() {
-  return (
-    <CartProvider>
-      <WishlistContent />
-    </CartProvider>
   );
 }
