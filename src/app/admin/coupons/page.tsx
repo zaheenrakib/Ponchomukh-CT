@@ -1,45 +1,82 @@
 "use client";
 
-import React, { useState } from "react";
-import { Percent, Plus, Trash2, X, Tag } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, X, RefreshCw } from "lucide-react";
+
+interface CouponItem {
+  id: string;
+  code: string;
+  type: "PERCENTAGE" | "FIXED";
+  value: number;
+  minOrder: number;
+  maxDiscount: number;
+  usageCount: number;
+  expiryDate: string;
+  status: string;
+}
+
+const fallbackCoupons: CouponItem[] = [
+  {
+    id: "coup-1",
+    code: "PONCHO10",
+    type: "PERCENTAGE",
+    value: 10,
+    minOrder: 500,
+    maxDiscount: 300,
+    usageCount: 42,
+    expiryDate: "2026-12-31",
+    status: "ACTIVE"
+  },
+  {
+    id: "coup-2",
+    code: "WELCOME50",
+    type: "FIXED",
+    value: 50,
+    minOrder: 300,
+    maxDiscount: 50,
+    usageCount: 89,
+    expiryDate: "2026-10-31",
+    status: "ACTIVE"
+  }
+];
 
 export default function AdminCouponsPage() {
-  const [coupons, setCoupons] = useState([
-    {
-      id: "coup-1",
-      code: "PONCHO10",
-      type: "PERCENTAGE",
-      value: 10,
-      minOrder: 500,
-      maxDiscount: 300,
-      usageCount: 42,
-      expiryDate: "2026-12-31",
-      status: "ACTIVE"
-    },
-    {
-      id: "coup-2",
-      code: "WELCOME50",
-      type: "FIXED",
-      value: 50,
-      minOrder: 300,
-      maxDiscount: 50,
-      usageCount: 89,
-      expiryDate: "2026-10-31",
-      status: "ACTIVE"
-    }
-  ]);
-
+  const [coupons, setCoupons] = useState<CouponItem[]>(fallbackCoupons);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [code, setCode] = useState("");
   const [type, setType] = useState<"PERCENTAGE" | "FIXED">("PERCENTAGE");
   const [val, setVal] = useState(10);
   const [minOrder, setMinOrder] = useState(500);
 
-  const handleAddCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!code.trim()) return;
+  const fetchCoupons = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/coupons");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.coupons) && data.coupons.length > 0) {
+          setCoupons(data.coupons);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load coupons from DB, using fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const newC = {
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  const handleAddCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const newCoupon: CouponItem = {
       id: `coup-${Date.now()}`,
       code: code.trim().toUpperCase(),
       type,
@@ -51,13 +88,45 @@ export default function AdminCouponsPage() {
       status: "ACTIVE"
     };
 
-    setCoupons([...coupons, newC]);
-    setIsAddOpen(false);
-    setCode("");
+    try {
+      const res = await fetch("/api/admin/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: newCoupon.code,
+          type,
+          value: newCoupon.value,
+          minOrder: newCoupon.minOrder,
+          maxDiscount: newCoupon.maxDiscount,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.coupon) {
+          newCoupon.id = data.coupon.id;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not persist coupon to DB:", err);
+    } finally {
+      setCoupons((prev) => [newCoupon, ...prev]);
+      setIsSubmitting(false);
+      setIsAddOpen(false);
+      setCode("");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setCoupons(coupons.filter((c) => c.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm("আপনি কি নিশ্চিতভাবে এই কুপনটি মুছে ফেলতে চান?")) return;
+    setCoupons((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await fetch(`/api/admin/coupons?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.warn("Could not delete coupon from DB:", err);
+    }
   };
 
   return (
@@ -72,13 +141,23 @@ export default function AdminCouponsPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>নতুন কুপন কোড তৈরি করুন</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchCoupons}
+            disabled={isLoading}
+            className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50"
+            title="রিফ্রেশ করুন"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>নতুন কুপন কোড তৈরি করুন</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-[#E8DCD2] shadow-xs overflow-hidden">
@@ -192,9 +271,10 @@ export default function AdminCouponsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#3B0C04] text-[#FFC40E] font-bold"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-lg bg-[#3B0C04] text-[#FFC40E] font-bold disabled:opacity-50"
                 >
-                  কুপন তৈরি করুন
+                  {isSubmitting ? "তৈরি হচ্ছে..." : "কুপন তৈরি করুন"}
                 </button>
               </div>
             </form>

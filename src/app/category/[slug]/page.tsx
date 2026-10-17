@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AnnouncementBar } from "@/components/announcement-bar";
@@ -10,29 +10,118 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ProductCard } from "@/components/product-card";
 import { ProductModal } from "@/components/product-modal";
 import { CartDrawer } from "@/components/cart-drawer";
-import { mockCategories, mockProducts } from "@/lib/mockData";
-import { ChevronRight, Filter, ArrowLeft, PackageOpen } from "lucide-react";
+import { mockCategories, mockProducts, Category, Product } from "@/lib/mockData";
+import { ChevronRight, PackageOpen } from "lucide-react";
 
 export default function CategoryPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
+  const [currentCategory, setCurrentCategory] = useState<Category | null>(() => {
+    return mockCategories.find((c) => c.slug === slug) || null;
+  });
+  const [allProducts, setAllProducts] = useState<Product[]>(() => {
+    return mockProducts.filter((p) => p.category.slug === slug || p.categoryId.includes(slug));
+  });
+  const [isLoading, setIsLoading] = useState(!currentCategory);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("featured");
 
-  const currentCategory = mockCategories.find((c) => c.slug === slug) || mockCategories[0];
+  useEffect(() => {
+    async function loadCategoryData() {
+      setIsLoading(true);
+      try {
+        const [catRes, prodRes] = await Promise.all([
+          fetch("/api/categories"),
+          fetch(`/api/products?category=${encodeURIComponent(slug)}&limit=50`),
+        ]);
 
-  // Filter products by category
-  const categoryProducts = mockProducts.filter((p) => p.category.slug === slug || p.categoryId.includes(slug));
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (catData.success && Array.isArray(catData.categories)) {
+            const found = catData.categories.find((c: any) => c.slug === slug);
+            if (found) {
+              setCurrentCategory({
+                id: found.id,
+                name: found.name,
+                slug: found.slug,
+                description: found.description || "",
+                imageUrl: found.imageUrl,
+                subcategories: (found.children || []).map((ch: any) => ({
+                  id: ch.id,
+                  name: ch.name,
+                  slug: ch.slug,
+                })),
+              });
+            }
+          }
+        }
 
-  // Sorting
-  if (sortBy === "price-low") {
-    categoryProducts.sort((a, b) => (a.salePrice ?? a.basePrice) - (b.salePrice ?? b.basePrice));
-  } else if (sortBy === "price-high") {
-    categoryProducts.sort((a, b) => (b.salePrice ?? b.basePrice) - (a.salePrice ?? a.basePrice));
-  } else if (sortBy === "rating") {
-    categoryProducts.sort((a, b) => b.averageRating - a.averageRating);
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          if (prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
+            const dbIds = new Set(prodData.products.map((p: any) => p.id));
+            const mockMatches = mockProducts.filter(
+              (p) => (p.category.slug === slug || p.categoryId.includes(slug)) && !dbIds.has(p.id)
+            );
+            setAllProducts([...prodData.products, ...mockMatches]);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic category data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadCategoryData();
+  }, [slug]);
+
+  const filteredProducts = useMemo(() => {
+    let list = [...allProducts];
+
+    if (selectedSubcategory) {
+      list = list.filter((p) => p.categoryId.includes(selectedSubcategory));
+    }
+
+    if (sortBy === "price-low") {
+      list.sort((a, b) => (a.salePrice ?? a.basePrice) - (b.salePrice ?? b.basePrice));
+    } else if (sortBy === "price-high") {
+      list.sort((a, b) => (b.salePrice ?? b.basePrice) - (a.salePrice ?? a.basePrice));
+    } else if (sortBy === "rating") {
+      list.sort((a, b) => b.averageRating - a.averageRating);
+    }
+
+    return list;
+  }, [allProducts, selectedSubcategory, sortBy]);
+
+  if (!isLoading && !currentCategory) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
+        <AnnouncementBar />
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-20 px-4 text-center">
+          <div className="max-w-md mx-auto space-y-4">
+            <PackageOpen className="w-16 h-16 text-[#8C7B72] mx-auto" />
+            <h1 className="text-2xl font-black text-[#3B0C04]">ক্যাটাগরিটি পাওয়া যায়নি</h1>
+            <p className="text-sm text-[#6B5A52]">
+              অনুরোধকৃত ক্যাটাগরিটি খুঁজে পাওয়া যায়নি অথবা মুছে ফেলা হয়েছে।
+            </p>
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3B0C04] text-[#FFC40E] font-bold text-sm shadow-xs"
+            >
+              সব ক্যাটাগরি ও পণ্য দেখুন
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
+
+  const categoryTitle = currentCategory?.name || "ক্যাটাগরি";
+  const categoryDesc = currentCategory?.description || "সকল প্রিমিয়াম কোয়ালিটি এবং আকর্ষণীয় পণ্যের কালেকশন।";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
@@ -49,28 +138,28 @@ export default function CategoryPage() {
               <ChevronRight className="w-3 h-3" />
               <Link href="/shop" className="hover:text-[#3B0C04]">ক্যাটাগরি</Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-[#3B0C04] font-semibold">{currentCategory.name}</span>
+              <span className="text-[#3B0C04] font-semibold">{categoryTitle}</span>
             </div>
 
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="max-w-xl space-y-2">
                 <h1 className="text-2xl sm:text-4xl font-black text-[#3B0C04]">
-                  {currentCategory.name}
+                  {categoryTitle}
                 </h1>
                 <p className="text-xs sm:text-sm text-[#6B5A52] leading-relaxed">
-                  {currentCategory.description || "সকল প্রিমিয়াম কোয়ালিটি এবং আকর্ষণীয় পণ্যের বিশাল কালেকশন।"}
+                  {categoryDesc}
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-[#3B0C04] text-[#FFC40E]">
-                  {categoryProducts.length} টি পণ্য পাওয়া গেছে
+                  {filteredProducts.length} টি পণ্য পাওয়া গেছে
                 </span>
               </div>
             </div>
 
             {/* Subcategories Filter Pills */}
-            {currentCategory.subcategories && currentCategory.subcategories.length > 0 && (
+            {currentCategory?.subcategories && currentCategory.subcategories.length > 0 && (
               <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2 no-scrollbar">
                 <button
                   onClick={() => setSelectedSubcategory(null)}
@@ -80,7 +169,7 @@ export default function CategoryPage() {
                       : "bg-white text-[#2B160F] border border-[#E8DCD2] hover:bg-[#FFF7EE]"
                   }`}
                 >
-                  সব ({categoryProducts.length})
+                  সব ({allProducts.length})
                 </button>
                 {currentCategory.subcategories.map((sub) => (
                   <button
@@ -104,7 +193,7 @@ export default function CategoryPage() {
         <div className="container-custom py-8">
           <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#E8DCD2]">
             <p className="text-xs text-[#6B5A52]">
-              দেখাচ্ছে <span className="font-bold text-[#2B160F]">{categoryProducts.length}</span> টি পণ্য
+              দেখাচ্ছে <span className="font-bold text-[#2B160F]">{filteredProducts.length}</span> টি পণ্য
             </p>
 
             <div className="flex items-center gap-2 text-xs">
@@ -122,9 +211,9 @@ export default function CategoryPage() {
             </div>
           </div>
 
-          {categoryProducts.length > 0 ? (
+          {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
-              {categoryProducts.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>

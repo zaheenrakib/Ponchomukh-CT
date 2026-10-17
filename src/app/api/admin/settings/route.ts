@@ -1,11 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export async function GET() {
+  try {
+    const settings = await prisma.siteSetting.findMany();
+    const settingsMap: Record<string, string> = {};
+    settings.forEach((s) => {
+      settingsMap[s.key] = s.value;
+    });
+    return NextResponse.json({ success: true, settings: settingsMap });
+  } catch (error) {
+    console.error("API /api/admin/settings GET error:", error);
+    return NextResponse.json({ success: false, error: "Failed to fetch site settings." }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json(); // Array of { key, value, group } or key-value map
 
-    if (typeof body === "object") {
+    if (typeof body === "object" && body !== null) {
       for (const [key, value] of Object.entries(body)) {
         await prisma.siteSetting.upsert({
           where: { key },

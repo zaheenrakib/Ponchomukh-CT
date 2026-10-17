@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { mockProducts, mockCategories, mockBrands, Product } from "@/lib/mockData";
 import {
   ShoppingBag,
@@ -21,6 +21,47 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
+
+  // Fetch real products from database API on load
+  useEffect(() => {
+    async function loadDbProducts() {
+      try {
+        const res = await fetch("/api/admin/products");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+            const mapped: Product[] = data.products.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              slug: p.slug,
+              sku: p.sku,
+              basePrice: p.basePrice,
+              salePrice: p.salePrice || p.basePrice,
+              stock: p.stock,
+              status: p.status,
+              averageRating: 5.0,
+              reviewsCount: 0,
+              isFeatured: true,
+              category: p.category || mockCategories[0],
+              brand: p.brand || undefined,
+              description: p.description,
+              images: p.images?.length > 0 ? p.images : [{ id: `img-${p.id}`, productId: p.id, imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600", isPrimary: true }],
+              variants: p.variants?.length > 0 ? p.variants : [{ id: `var-${p.id}`, productId: p.id, sku: p.sku, price: p.salePrice || p.basePrice, stock: p.stock, selectedOptions: [] }],
+            }));
+
+            // Merge with mock products ensuring no duplicates
+            const dbIds = new Set(mapped.map((m) => m.id));
+            const remainingMocks = mockProducts.filter((m) => !dbIds.has(m.id));
+            setProducts([...mapped, ...remainingMocks]);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch DB products:", err);
+      }
+    }
+
+    loadDbProducts();
+  }, []);
 
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -52,9 +93,16 @@ export default function AdminProductsPage() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("আপনি কি নিশ্চিতভাবে এই পণ্যটি মুছে ফেলতে চান?")) {
       setProducts(products.filter((p) => p.id !== id));
+      try {
+        await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        console.warn("Could not sync product delete to API:", err);
+      }
     }
   };
 
@@ -113,7 +161,7 @@ export default function AdminProductsPage() {
     setIsAddModalOpen(true);
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const cat = mockCategories.find((c) => c.slug === formData.categorySlug) || mockCategories[0];
     const brnd = mockBrands.find((b) => b.slug === formData.brandSlug);
@@ -143,10 +191,54 @@ export default function AdminProductsPage() {
           : p
       );
       setProducts(updated);
+
+      try {
+        await fetch("/api/admin/products", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingProduct.id,
+            name: formData.name,
+            basePrice: formData.basePrice,
+            salePrice: formData.salePrice,
+            stock: formData.stock,
+            description: formData.description,
+          }),
+        });
+      } catch (err) {
+        console.warn("Could not sync product update to API:", err);
+      }
     } else {
       // Create new
+      let createdId = `prod-${Date.now()}`;
+      try {
+        const res = await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            sku: formData.sku,
+            basePrice: formData.basePrice,
+            salePrice: formData.salePrice,
+            stock: formData.stock,
+            description: formData.description,
+            imageUrl: formData.imageUrl,
+            categoryId: cat.id,
+            brandId: brnd?.id,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.product?.id) {
+            createdId = data.product.id;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not save new product to API:", err);
+      }
+
       const newProd: Product = {
-        id: `prod-${Date.now()}`,
+        id: createdId,
         name: formData.name,
         slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `prod-${Date.now()}`,
         sku: formData.sku,
@@ -166,11 +258,11 @@ export default function AdminProductsPage() {
         category: cat,
         brand: brnd,
         description: formData.description,
-        images: [{ id: `img-${Date.now()}`, productId: `prod-${Date.now()}`, imageUrl: formData.imageUrl, isPrimary: true }],
+        images: [{ id: `img-${Date.now()}`, productId: createdId, imageUrl: formData.imageUrl, isPrimary: true }],
         variants: [
           {
             id: `var-${Date.now()}`,
-            productId: `prod-${Date.now()}`,
+            productId: createdId,
             sku: formData.sku,
             price: Number(formData.salePrice || formData.basePrice),
             stock: Number(formData.stock),

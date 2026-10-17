@@ -7,11 +7,8 @@ import { useCart } from "@/context/cart-context";
 import { Footer } from "@/components/footer";
 import {
   Lock,
-  ShieldCheck,
-  Truck,
   CreditCard,
   CheckCircle2,
-  ChevronRight,
   ArrowLeft,
   Loader2
 } from "lucide-react";
@@ -26,6 +23,7 @@ export default function CheckoutPage() {
     cartTotal,
     deliveryZone,
     setDeliveryZone,
+    appliedCoupon,
     clearCart
   } = useCart();
 
@@ -42,7 +40,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cartItems.length === 0) {
       setErrorMessage("আপনার কার্ট খালি। অর্ডার সম্পন্ন করতে কিছু পণ্য যোগ করুন।");
@@ -57,59 +55,91 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     setErrorMessage("");
 
-    // Generate Human-Readable Order ID (e.g. PN10025)
-    const randomOrderNumber = `PN${Math.floor(10000 + Math.random() * 90000)}`;
-
-    // Store in recent orders for Order Tracking lookup demo
     try {
-      const existingOrders = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
-      const newOrder = {
-        orderId: randomOrderNumber,
-        date: new Date().toISOString(),
-        customer: {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           name: fullName.trim(),
           phone: phoneNumber.trim(),
-          email: email.trim(),
-          address: `${fullAddress.trim()}, ${thana ? thana + ", " : ""}${district}, ${division}`
-        },
-        items: cartItems.map((item) => ({
-          name: item.product.name,
-          quantity: item.quantity,
-          price: item.variant.price,
-          total: item.variant.price * item.quantity,
-          image: item.product.images?.[0]?.imageUrl
-        })),
-        subtotal: cartSubtotal,
-        discount: cartDiscount,
-        shippingFee: cartShippingFee,
-        total: cartTotal,
-        paymentMethod: paymentMethod === "COD" ? "Cash on Delivery" : paymentMethod,
-        status: "PENDING",
-        timeline: [
-          { status: "Order Placed", date: "আজকে", completed: true },
-          { status: "Confirmed", date: "অপেক্ষমান", completed: false },
-          { status: "Processing", date: "অপেক্ষমান", completed: false },
-          { status: "Shipped", date: "অপেক্ষমান", completed: false },
-          { status: "Out for Delivery", date: "অপেক্ষমান", completed: false },
-          { status: "Delivered", date: "অপেক্ষমান", completed: false }
-        ]
-      };
+          email: email.trim() || undefined,
+          division,
+          district,
+          upazila: thana || undefined,
+          addressLine: fullAddress.trim(),
+          deliveryArea: deliveryZone,
+          couponCode: appliedCoupon?.code,
+          orderNotes: orderNotes || undefined,
+          items: cartItems.map((item) => ({
+            productVariantId: item.productVariantId,
+            quantity: item.quantity,
+            price: item.variant.price,
+            name: item.product.name,
+            image: item.product.images?.[0]?.imageUrl,
+          })),
+        }),
+      });
 
-      existingOrders.unshift(newOrder);
-      localStorage.setItem("ponchomukh_all_orders", JSON.stringify(existingOrders));
-    } catch (err) {
-      console.error("Failed to save order to localStorage", err);
-    }
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "অর্ডার সম্পন্ন করা সম্ভব হয়নি। আবার চেষ্টা করুন।");
+      }
 
-    setTimeout(() => {
+      const assignedOrderId = data.orderNumber || `PN${Math.floor(10000 + Math.random() * 90000)}`;
+
+      // Save order in localStorage for instant tracking lookup
+      try {
+        const existingOrders = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
+        const newOrder = {
+          orderId: assignedOrderId,
+          date: new Date().toISOString(),
+          customer: {
+            name: fullName.trim(),
+            phone: phoneNumber.trim(),
+            email: email.trim(),
+            address: `${fullAddress.trim()}, ${thana ? thana + ", " : ""}${district}, ${division}`
+          },
+          items: cartItems.map((item) => ({
+            name: item.product.name,
+            quantity: item.quantity,
+            price: item.variant.price,
+            total: item.variant.price * item.quantity,
+            image: item.product.images?.[0]?.imageUrl
+          })),
+          subtotal: cartSubtotal,
+          discount: cartDiscount,
+          shippingFee: cartShippingFee,
+          total: cartTotal,
+          paymentMethod: paymentMethod === "COD" ? "Cash on Delivery" : paymentMethod,
+          status: "PENDING",
+          timeline: [
+            { status: "Order Placed", date: "আজকে", completed: true },
+            { status: "Confirmed", date: "অপেক্ষমান", completed: false },
+            { status: "Processing", date: "অপেক্ষমান", completed: false },
+            { status: "Shipped", date: "অপেক্ষমান", completed: false },
+            { status: "Out for Delivery", date: "অপেক্ষমান", completed: false },
+            { status: "Delivered", date: "অপেক্ষমান", completed: false }
+          ]
+        };
+
+        existingOrders.unshift(newOrder);
+        localStorage.setItem("ponchomukh_all_orders", JSON.stringify(existingOrders));
+      } catch (err) {
+        console.warn("Failed to save local order backup:", err);
+      }
+
       clearCart();
       setIsSubmitting(false);
       router.push(
-        `/order-success?orderId=${randomOrderNumber}&name=${encodeURIComponent(
+        `/order-success?orderId=${assignedOrderId}&name=${encodeURIComponent(
           fullName.trim()
         )}&phone=${encodeURIComponent(phoneNumber.trim())}&total=${cartTotal}&method=${paymentMethod}`
       );
-    }, 1200);
+    } catch (err: any) {
+      console.error("Order submission failed:", err);
+      setErrorMessage(err.message || "অর্ডার প্রসেসিং ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -317,6 +347,19 @@ export default function CheckoutPage() {
                         value={fullAddress}
                         onChange={(e) => setFullAddress(e.target.value)}
                         className="w-full p-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#2B160F] mb-1">
+                        অর্ডার সম্পর্কিত বিশেষ নোট (ঐচ্ছিক)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="যেমন: বিকেলে ডেলিভারি করবেন বা কল দিয়ে আসবেন..."
+                        value={orderNotes}
+                        onChange={(e) => setOrderNotes(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs"
                       />
                     </div>
                   </div>

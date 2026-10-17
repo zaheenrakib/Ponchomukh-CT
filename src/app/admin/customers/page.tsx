@@ -1,50 +1,96 @@
 "use client";
 
-import React, { useState } from "react";
-import { Users, Search, ShieldAlert, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, RefreshCw } from "lucide-react";
+
+interface CustomerItem {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  joinedDate: string;
+  totalOrders: number;
+  totalSpent: number;
+  status: string;
+}
+
+const fallbackCustomers: CustomerItem[] = [
+  {
+    id: "cust-1",
+    name: "তানভীর আহমেদ",
+    phone: "01712-345678",
+    email: "tanvir.ahmed@example.com",
+    joinedDate: "০১ আগস্ট, ২০২৬",
+    totalOrders: 4,
+    totalSpent: 6450,
+    status: "ACTIVE"
+  },
+  {
+    id: "cust-2",
+    name: "সুমাইয়া আক্তার",
+    phone: "01823-456789",
+    email: "sumaiya.akter@example.com",
+    joinedDate: "১৫ আগস্ট, ২০২৬",
+    totalOrders: 2,
+    totalSpent: 3850,
+    status: "ACTIVE"
+  },
+  {
+    id: "cust-3",
+    name: "রফিকুল ইসলাম",
+    phone: "01934-567890",
+    email: "rafiqul.islam@example.com",
+    joinedDate: "২০ আগস্ট, ২০২৬",
+    totalOrders: 1,
+    totalSpent: 1299,
+    status: "ACTIVE"
+  }
+];
 
 export default function AdminCustomersPage() {
-  const [customers, setCustomers] = useState([
-    {
-      id: "cust-1",
-      name: "তানভীর আহমেদ",
-      phone: "01712-345678",
-      email: "tanvir.ahmed@example.com",
-      joinedDate: "০১ আগস্ট, ২০২৬",
-      totalOrders: 4,
-      totalSpent: 6450,
-      status: "ACTIVE"
-    },
-    {
-      id: "cust-2",
-      name: "সুমাইয়া আক্তার",
-      phone: "01823-456789",
-      email: "sumaiya.akter@example.com",
-      joinedDate: "১৫ আগস্ট, ২০২৬",
-      totalOrders: 2,
-      totalSpent: 3850,
-      status: "ACTIVE"
-    },
-    {
-      id: "cust-3",
-      name: "রফিকুল ইসলাম",
-      phone: "01934-567890",
-      email: "rafiqul.islam@example.com",
-      joinedDate: "২০ আগস্ট, ২০২৬",
-      totalOrders: 1,
-      totalSpent: 1299,
-      status: "ACTIVE"
-    }
-  ]);
-
+  const [customers, setCustomers] = useState<CustomerItem[]>(fallbackCustomers);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const toggleStatus = (id: string) => {
-    setCustomers(
-      customers.map((c) =>
-        c.id === id ? { ...c, status: c.status === "ACTIVE" ? "BLOCKED" : "ACTIVE" } : c
-      )
+  const fetchCustomers = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/customers");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.customers) && data.customers.length > 0) {
+          setCustomers(data.customers);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load customers from DB, using fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const toggleStatus = async (id: string) => {
+    const target = customers.find((c) => c.id === id);
+    if (!target) return;
+    const nextStatus = target.status === "ACTIVE" ? "BLOCKED" : "ACTIVE";
+
+    setCustomers((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, status: nextStatus } : c))
     );
+
+    try {
+      await fetch("/api/admin/customers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: nextStatus }),
+      });
+    } catch (err) {
+      console.warn("Could not update customer status in DB:", err);
+    }
   };
 
   const filtered = customers.filter(
@@ -65,6 +111,15 @@ export default function AdminCustomersPage() {
             নিবন্ধিত কাস্টমারদের অর্ডার ও লেনদেন পর্যবেক্ষণ করুন
           </p>
         </div>
+
+        <button
+          onClick={fetchCustomers}
+          disabled={isLoading}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 self-start sm:self-auto"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          <span>রিফ্রেশ</span>
+        </button>
       </div>
 
       <div className="p-4 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-3 text-xs">

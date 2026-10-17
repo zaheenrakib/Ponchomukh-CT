@@ -47,7 +47,7 @@ interface CartContextType {
   deliveryZone: DeliveryZone;
   setDeliveryZone: (zone: DeliveryZone) => void;
   appliedCoupon: AppliedCoupon | null;
-  applyCoupon: (code: string) => { success: boolean; message: string };
+  applyCoupon: (code: string) => Promise<{ success: boolean; message: string }>;
   removeCoupon: () => void;
 
   // Wishlist
@@ -81,6 +81,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryZone, setDeliveryZone] = useState<DeliveryZone>("INSIDE_DHAKA");
+  const [insideDhakaFee, setInsideDhakaFee] = useState(60);
+  const [outsideDhakaFee, setOutsideDhakaFee] = useState(120);
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [toasts, setToasts] = useState<ToastInfo[]>([]);
 
@@ -118,6 +120,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedCoupon = localStorage.getItem("ponchomukh_coupon");
       if (storedCoupon) {
         setAppliedCoupon(JSON.parse(storedCoupon));
+      }
+      const storedSettings = localStorage.getItem("ponchomukh_site_settings");
+      if (storedSettings) {
+        const parsed = JSON.parse(storedSettings);
+        if (parsed.delivery_inside_dhaka) setInsideDhakaFee(Number(parsed.delivery_inside_dhaka) || 60);
+        if (parsed.delivery_outside_dhaka) setOutsideDhakaFee(Number(parsed.delivery_outside_dhaka) || 120);
       }
     } catch (e) {
       console.error("Failed to load initial storage", e);
@@ -271,28 +279,50 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Coupon Logic
-  const applyCoupon = (code: string): { success: boolean; message: string } => {
+  const applyCoupon = async (code: string): Promise<{ success: boolean; message: string }> => {
     const cleanCode = code.trim().toUpperCase();
-    if (cleanCode === "PONCHO10") {
-      setAppliedCoupon({
-        code: "PONCHO10",
-        type: "PERCENTAGE",
-        value: 10,
-        minOrderAmount: 500,
-        maxDiscountAmount: 300,
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: cleanCode, subtotal: cartSubtotal }),
       });
-      showToast("🎉 কুপন 'PONCHO10' সফলভাবে প্রয়োগ করা হয়েছে!");
-      return { success: true, message: "১০% ছাড় প্রয়োগ করা হয়েছে!" };
-    } else if (cleanCode === "WELCOME50") {
-      setAppliedCoupon({
-        code: "WELCOME50",
-        type: "FIXED",
-        value: 50,
-        minOrderAmount: 300,
-      });
-      showToast("🎉 কুপন 'WELCOME50' সফলভাবে প্রয়োগ করা হয়েছে!");
-      return { success: true, message: "৳৫০ ফ্ল্যাট ছাড় প্রয়োগ করা হয়েছে!" };
-    } else {
+      const data = await res.json();
+      if (res.ok && data.success && data.valid) {
+        setAppliedCoupon({
+          code: data.code,
+          type: "FIXED",
+          value: data.discountAmount,
+        });
+        showToast(data.message || `🎉 কুপন '${cleanCode}' সফলভাবে প্রয়োগ করা হয়েছে!`);
+        return { success: true, message: data.message || "কুপন কোড প্রয়োগ করা হয়েছে!" };
+      } else {
+        const errorMsg = data.error || "অকার্যকর কুপন কোড।";
+        showToast(errorMsg, "error");
+        return { success: false, message: errorMsg };
+      }
+    } catch {
+      if (cleanCode === "PONCHO10") {
+        setAppliedCoupon({
+          code: "PONCHO10",
+          type: "PERCENTAGE",
+          value: 10,
+          minOrderAmount: 500,
+          maxDiscountAmount: 300,
+        });
+        showToast("🎉 কুপন 'PONCHO10' সফলভাবে প্রয়োগ করা হয়েছে!");
+        return { success: true, message: "১০% ছাড় প্রয়োগ করা হয়েছে!" };
+      } else if (cleanCode === "WELCOME50") {
+        setAppliedCoupon({
+          code: "WELCOME50",
+          type: "FIXED",
+          value: 50,
+          minOrderAmount: 300,
+        });
+        showToast("🎉 কুপন 'WELCOME50' সফলভাবে প্রয়োগ করা হয়েছে!");
+        return { success: true, message: "৳৫০ ফ্ল্যাট ছাড় প্রয়োগ করা হয়েছে!" };
+      }
+      showToast("অকার্যকর কুপন কোড।", "error");
       return { success: false, message: "অকার্যকর কুপন কোড।" };
     }
   };
@@ -322,8 +352,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  // Delivery charge rule: Inside Dhaka ৳60, Outside Dhaka ৳120
-  const cartShippingFee = cartItems.length === 0 ? 0 : deliveryZone === "INSIDE_DHAKA" ? 60 : 120;
+  // Delivery charge rule: Inside Dhaka or Outside Dhaka from site settings
+  const cartShippingFee = cartItems.length === 0 ? 0 : deliveryZone === "INSIDE_DHAKA" ? insideDhakaFee : outsideDhakaFee;
 
   const cartTotal = Math.max(0, cartSubtotal - cartDiscount + cartShippingFee);
 

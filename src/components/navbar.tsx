@@ -15,7 +15,6 @@ import {
   ChevronDown,
   Phone,
   MessageCircle,
-  ExternalLink,
   ShieldCheck,
   PackageCheck,
   Sparkles

@@ -22,10 +22,58 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
-      if (stored.length > 0) {
-        setOrders(stored);
+    async function loadOrders() {
+      let combinedOrders: any[] = [];
+      try {
+        const res = await fetch("/api/admin/orders");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.orders) && data.orders.length > 0) {
+            combinedOrders = data.orders.map((o: any) => ({
+              orderId: o.orderNumber,
+              id: o.id,
+              date: new Date(o.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }),
+              customer: {
+                name: o.shippingAddress?.name || o.user?.name || "Customer",
+                phone: o.shippingAddress?.phone || o.user?.phoneNumber || "",
+                email: o.user?.email || "",
+                address: `${o.shippingAddress?.addressLine1 || ""}, ${o.shippingAddress?.district || ""}`
+              },
+              items: o.items?.map((item: any) => ({
+                name: item.variant?.product?.name || "Product Item",
+                quantity: item.quantity,
+                price: item.price,
+                image: item.variant?.product?.images?.[0]?.imageUrl || "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200"
+              })) || [],
+              subtotal: o.subtotal,
+              discount: o.discount,
+              shippingFee: o.shippingFee,
+              total: o.total,
+              paymentMethod: o.paymentMethod === "COD" ? "Cash on Delivery" : o.paymentMethod,
+              paymentStatus: o.paymentStatus,
+              status: o.status,
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch orders from API:", err);
+      }
+
+      // Merge with localStorage
+      try {
+        const stored = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
+        const existingIds = new Set(combinedOrders.map(o => o.orderId));
+        for (const s of stored) {
+          if (!existingIds.has(s.orderId)) {
+            combinedOrders.push(s);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      if (combinedOrders.length > 0) {
+        setOrders(combinedOrders);
       } else {
         setOrders([
           {
@@ -75,12 +123,12 @@ export default function AdminOrdersPage() {
           }
         ]);
       }
-    } catch (e) {
-      console.error(e);
     }
+
+    loadOrders();
   }, []);
 
-  const handleUpdateStatus = (orderId: string, newStatus: string) => {
+  const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     const updated = orders.map((o) => (o.orderId === orderId ? { ...o, status: newStatus } : o));
     setOrders(updated);
     if (selectedOrder && selectedOrder.orderId === orderId) {
@@ -90,6 +138,17 @@ export default function AdminOrdersPage() {
       localStorage.setItem("ponchomukh_all_orders", JSON.stringify(updated));
     } catch (e) {
       console.error(e);
+    }
+
+    // Persist status change to database API
+    try {
+      await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderNumber: orderId, status: newStatus }),
+      });
+    } catch (err) {
+      console.warn("Could not sync status update to server:", err);
     }
   };
 

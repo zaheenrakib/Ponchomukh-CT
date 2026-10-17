@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProducts } from "@/lib/services";
+import { mapPrismaProductToFrontend } from "@/lib/product-mapper";
 
 export async function GET(request: Request) {
   try {
@@ -18,7 +19,9 @@ export async function GET(request: Request) {
       limit,
     });
 
-    return NextResponse.json({ success: true, products });
+    const mappedProducts = products.map(mapPrismaProductToFrontend);
+
+    return NextResponse.json({ success: true, products: mappedProducts });
   } catch (error) {
     console.error("API /api/products error:", error);
     return NextResponse.json({ success: false, error: "Failed to fetch products" }, { status: 500 });

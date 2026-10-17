@@ -9,7 +9,6 @@ import {
   Clock,
   ChevronDown,
   MessageCircle,
-  Video,
   ShieldCheck,
   Truck,
   RotateCcw,

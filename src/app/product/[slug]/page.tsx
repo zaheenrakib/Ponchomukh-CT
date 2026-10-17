@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { AnnouncementBar } from "@/components/announcement-bar";
@@ -15,10 +15,7 @@ import {
   Star,
   ShoppingBag,
   Heart,
-  Share2,
   Truck,
-  RotateCcw,
-  ShieldCheck,
   CreditCard,
   ChevronRight,
   CheckCircle2,
@@ -44,8 +41,9 @@ export default function ProductDetailPage() {
     showToast
   } = useCart();
 
-  // Find product by slug
-  const product = mockProducts.find((p) => p.slug === slug) || mockProducts[0];
+  const initialMockProduct = mockProducts.find((p) => p.slug === slug) || null;
+  const [product, setProduct] = useState<Product | null>(initialMockProduct);
+  const [isLoading, setIsLoading] = useState(!initialMockProduct);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -57,7 +55,81 @@ export default function ProductDetailPage() {
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
-  const [customReviews, setCustomReviews] = useState<ProductReview[]>(product.reviews || []);
+  const [customReviews, setCustomReviews] = useState<ProductReview[]>(initialMockProduct?.reviews || []);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!slug) return;
+      try {
+        const res = await fetch(`/api/products/${encodeURIComponent(slug)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.product) {
+            setProduct(data.product);
+            if (data.product.reviews && data.product.reviews.length > 0) {
+              setCustomReviews(data.product.reviews);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load product from DB:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchProduct();
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
+        <AnnouncementBar />
+        <Navbar />
+        <main className="flex-1 container-custom py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-pulse">
+            <div className="aspect-square bg-[#E8DCD2]/40 rounded-2xl" />
+            <div className="space-y-4">
+              <div className="h-6 w-32 bg-[#E8DCD2]/50 rounded-lg" />
+              <div className="h-10 w-3/4 bg-[#E8DCD2]/50 rounded-lg" />
+              <div className="h-8 w-40 bg-[#E8DCD2]/50 rounded-lg" />
+              <div className="h-24 w-full bg-[#E8DCD2]/30 rounded-lg" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FFFDF9]">
+        <AnnouncementBar />
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-20 px-4 text-center">
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#FFF7EE] border border-[#E8DCD2] flex items-center justify-center mx-auto text-[#3B0C04]">
+              <ShoppingBag className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-black text-[#3B0C04]">পণ্যটি পাওয়া যায়নি</h1>
+            <p className="text-sm text-[#6B5A52]">
+              দুঃখিত, আপনি যে পণ্যটি খুঁজছেন তা বর্তমানে উপলব্ধ নেই অথবা সরিয়ে নেওয়া হয়েছে।
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-sm shadow-xs"
+              >
+                সব পণ্য দেখুন
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const isFavorited = isInWishlist(product.id);
   const activeVariant = product.variants?.[selectedVariantIndex] || {
@@ -98,7 +170,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewName.trim() || !reviewComment.trim()) return;
 
@@ -116,6 +188,21 @@ export default function ProductDetailPage() {
     setReviewName("");
     setReviewComment("");
     showToast("✓ আপনার রিভিউ জমা হয়েছে ও অনুমোদিত হয়েছে!");
+
+    try {
+      await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          name: newReview.userName,
+          rating: newReview.rating,
+          comment: newReview.comment,
+        }),
+      });
+    } catch (err) {
+      console.warn("Could not persist review to DB:", err);
+    }
   };
 
   // Related products

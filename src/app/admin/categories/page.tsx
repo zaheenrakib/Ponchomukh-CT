@@ -1,39 +1,105 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { mockCategories, Category } from "@/lib/mockData";
-import { FolderTree, Plus, Edit2, Trash2, X, Check } from "lucide-react";
+import { FolderTree, Plus, Trash2, X, RefreshCw } from "lucide-react";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [catName, setCatName] = useState("");
   const [catSlug, setCatSlug] = useState("");
   const [catDesc, setCatDesc] = useState("");
 
-  const handleAddCategory = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!catName.trim()) return;
+  const fetchCategories = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/categories");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+          const mapped: Category[] = data.categories.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description || "",
+            imageUrl: c.imageUrl || "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500&auto=format&fit=crop&q=80",
+            subcategories: (c.children || []).map((ch: any) => ({
+              id: ch.id,
+              name: ch.name,
+              slug: ch.slug,
+            })),
+          }));
+          setCategories(mapped);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load categories from DB, using fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!catName.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const newSlug = catSlug.trim() || catName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const newCat: Category = {
       id: `cat-${Date.now()}`,
       name: catName.trim(),
-      slug: catSlug.trim() || catName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      slug: newSlug,
       description: catDesc.trim(),
       imageUrl: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500&auto=format&fit=crop&q=80",
       subcategories: []
     };
 
-    setCategories([...categories, newCat]);
-    setIsAddOpen(false);
-    setCatName("");
-    setCatSlug("");
-    setCatDesc("");
+    try {
+      const res = await fetch("/api/admin/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: catName.trim(),
+          slug: newSlug,
+          description: catDesc.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.category) {
+          newCat.id = data.category.id;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not persist category to DB, saving locally:", err);
+    } finally {
+      setCategories((prev) => [newCat, ...prev]);
+      setIsSubmitting(false);
+      setIsAddOpen(false);
+      setCatName("");
+      setCatSlug("");
+      setCatDesc("");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("আপনি কি নিশ্চিতভাবে এই ক্যাটাগরিটি মুছে ফেলতে চান?")) {
-      setCategories(categories.filter((c) => c.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm("আপনি কি নিশ্চিতভাবে এই ক্যাটাগরিটি মুছে ফেলতে চান?")) return;
+
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await fetch(`/api/admin/categories?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.warn("Could not delete category from DB:", err);
     }
   };
 
@@ -49,13 +115,23 @@ export default function AdminCategoriesPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs"
-        >
-          <Plus className="w-4 h-4" />
-          <span>নতুন ক্যাটাগরি তৈরি করুন</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchCategories}
+            disabled={isLoading}
+            className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50"
+            title="রিফ্রেশ করুন"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>নতুন ক্যাটাগরি তৈরি করুন</span>
+          </button>
+        </div>
       </div>
 
       {/* Categories Grid */}

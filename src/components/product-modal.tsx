@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useCart } from "@/context/cart-context";
-import { Star, X, ShoppingBag, Heart, ShieldCheck, Truck, RotateCcw, Check } from "lucide-react";
+import { Star, X, ShoppingBag, Heart } from "lucide-react";
 import Link from "next/link";
 
 export const ProductModal: React.FC = () => {

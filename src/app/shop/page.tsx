@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnnouncementBar } from "@/components/announcement-bar";
@@ -10,7 +10,7 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ProductCard } from "@/components/product-card";
 import { ProductModal } from "@/components/product-modal";
 import { CartDrawer } from "@/components/cart-drawer";
-import { mockProducts, mockCategories, mockBrands } from "@/lib/mockData";
+import { mockProducts, mockCategories, mockBrands, Product, Category } from "@/lib/mockData";
 import {
   Filter,
   SlidersHorizontal,
@@ -18,13 +18,58 @@ import {
   X,
   Star,
   Check,
-  RotateCcw,
-  Sparkles
+  RotateCcw
 } from "lucide-react";
 
 function ShopContent() {
   const searchParams = useSearchParams();
   const filterQuery = searchParams.get("filter");
+
+  // Products and Categories Data
+  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [categories, setCategories] = useState<Category[]>(mockCategories);
+
+  useEffect(() => {
+    async function loadShopData() {
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          fetch("/api/products?limit=100"),
+          fetch("/api/categories")
+        ]);
+
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          if (prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
+            const dbIds = new Set(prodData.products.map((p: any) => p.id));
+            const remainingMocks = mockProducts.filter((m) => !dbIds.has(m.id));
+            setProducts([...prodData.products, ...remainingMocks]);
+          }
+        }
+
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (catData.success && Array.isArray(catData.categories) && catData.categories.length > 0) {
+            const mappedCats: Category[] = catData.categories.map((c: any) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              description: c.description || "",
+              imageUrl: c.imageUrl,
+              subcategories: (c.children || []).map((ch: any) => ({
+                id: ch.id,
+                name: ch.name,
+                slug: ch.slug
+              }))
+            }));
+            setCategories(mappedCats);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic shop catalog:", err);
+      }
+    }
+    loadShopData();
+  }, []);
 
   // Filter States
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -64,7 +109,7 @@ function ShopContent() {
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let result = [...mockProducts];
+    let result = [...products];
 
     // Filter query param presets
     if (filterQuery === "new") {
@@ -123,6 +168,7 @@ function ShopContent() {
 
     return result;
   }, [
+    products,
     filterQuery,
     selectedCategories,
     selectedBrands,
@@ -216,7 +262,7 @@ function ShopContent() {
                   ক্যাটাগরি
                 </h3>
                 <div className="space-y-2 max-h-56 overflow-y-auto">
-                  {mockCategories.map((cat) => (
+                  {categories.map((cat) => (
                     <label
                       key={cat.id}
                       className="flex items-center gap-2.5 text-xs text-[#2B160F] hover:text-[#3B0C04] cursor-pointer"
@@ -409,7 +455,7 @@ function ShopContent() {
                 <div>
                   <h4 className="text-xs font-bold uppercase text-[#3B0C04] mb-2">ক্যাটাগরি</h4>
                   <div className="grid grid-cols-2 gap-2">
-                    {mockCategories.map((cat) => (
+                    {categories.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => toggleCategory(cat.slug)}

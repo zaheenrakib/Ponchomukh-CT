@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Truck, Sparkles } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 interface AnnouncementBarProps {

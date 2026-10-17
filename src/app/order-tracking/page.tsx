@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnnouncementBar } from "@/components/announcement-bar";
@@ -11,15 +11,40 @@ import {
   Search,
   CheckCircle2,
   Clock,
-  Truck,
-  Package,
-  MapPin,
   ChevronRight,
-  Phone,
-  ShieldCheck,
-  RotateCcw,
   AlertCircle
 } from "lucide-react";
+
+// Default demo order for instant preview if no orders in storage
+const demoOrder = {
+  orderId: "PN10025",
+  date: "০৪ সেপ্টেম্বর, ২০২৬",
+  customer: {
+    name: "তানভীর আহমেদ",
+    phone: "01712-345678",
+    address: "বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা-১২০৫"
+  },
+  items: [
+    {
+      name: "Sonifer SF-350 Portable Rechargeable Juicer & Blender (350ml)",
+      quantity: 1,
+      price: 1299,
+      image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=200&auto=format&fit=crop&q=80"
+    }
+  ],
+  total: 1359,
+  shippingFee: 60,
+  paymentMethod: "Cash on Delivery",
+  status: "PROCESSING",
+  timeline: [
+    { title: "অর্ডার গ্রহণ (Order Placed)", time: "০৪ সেপ্টেম্বর, ১০:৩০ AM", done: true },
+    { title: "অর্ডার নিশ্চিত (Confirmed)", time: "০৪ সেপ্টেম্বর, ১১:১৫ AM", done: true },
+    { title: "প্যাকেজিং ও প্রসেসিং (Processing)", time: "০৪ সেপ্টেম্বর, ০৩:৪৫ PM", done: true, current: true },
+    { title: "কুরিয়ারে হস্তান্তর (Shipped)", time: "প্রত্যাশিত: ০৫ সেপ্টেম্বর", done: false },
+    { title: "ডেলিভারির জন্য বের হয়েছে (Out for Delivery)", time: "প্রত্যাশিত: ০৫ সেপ্টেম্বর", done: false },
+    { title: "ডেলিভারি সম্পন্ন (Delivered)", time: "প্রত্যাশিত: ০৬ সেপ্টেম্বর", done: false }
+  ]
+};
 
 function OrderTrackingContent() {
   const searchParams = useSearchParams();
@@ -30,49 +55,57 @@ function OrderTrackingContent() {
   const [searchedOrder, setSearchedOrder] = useState<any | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Default demo order for instant preview if no orders in storage
-  const demoOrder = {
-    orderId: "PN10025",
-    date: "০৪ সেপ্টেম্বর, ২০২৬",
-    customer: {
-      name: "তানভীর আহমেদ",
-      phone: "01712-345678",
-      address: "বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা-১২০৫"
-    },
-    items: [
-      {
-        name: "Sonifer SF-350 Portable Rechargeable Juicer & Blender (350ml)",
-        quantity: 1,
-        price: 1299,
-        image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=200&auto=format&fit=crop&q=80"
-      }
-    ],
-    total: 1359,
-    shippingFee: 60,
-    paymentMethod: "Cash on Delivery",
-    status: "PROCESSING",
-    timeline: [
-      { title: "অর্ডার গ্রহণ (Order Placed)", time: "০৪ সেপ্টেম্বর, ১০:৩০ AM", done: true },
-      { title: "অর্ডার নিশ্চিত (Confirmed)", time: "০৪ সেপ্টেম্বর, ১১:১৫ AM", done: true },
-      { title: "প্যাকেজিং ও প্রসেসিং (Processing)", time: "০৪ সেপ্টেম্বর, ০৩:৪৫ PM", done: true, current: true },
-      { title: "কুরিয়ারে হস্তান্তর (Shipped)", time: "প্রত্যাশিত: ০৫ সেপ্টেম্বর", done: false },
-      { title: "ডেলিভারির জন্য বের হয়েছে (Out for Delivery)", time: "প্রত্যাশিত: ০৫ সেপ্টেম্বর", done: false },
-      { title: "ডেলিভারি সম্পন্ন (Delivered)", time: "প্রত্যাশিত: ০৬ সেপ্টেম্বর", done: false }
-    ]
-  };
 
-  useEffect(() => {
-    if (initialOrderId) {
-      handleSearch(initialOrderId);
-    }
-  }, [initialOrderId]);
 
-  const handleSearch = (idToSearch?: string) => {
+  const handleSearch = useCallback(async (idToSearch?: string) => {
     const targetId = (idToSearch || orderInput).trim().toUpperCase();
     if (!targetId) return;
 
     setHasSearched(true);
 
+    // 1. First, attempt to query the live backend API for the real order
+    try {
+      const res = await fetch(`/api/orders?orderNumber=${encodeURIComponent(targetId)}${phoneInput ? `&phone=${encodeURIComponent(phoneInput)}` : ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.order) {
+          const o = data.order;
+          setSearchedOrder({
+            orderId: o.orderNumber,
+            date: new Date(o.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }),
+            customer: {
+              name: o.shippingAddress?.name || "Customer",
+              phone: o.shippingAddress?.phone || phoneInput,
+              address: `${o.shippingAddress?.addressLine1 || ""}, ${o.shippingAddress?.district || ""}`,
+            },
+            items: o.items?.map((item: any) => ({
+              name: item.variant?.product?.name || "Product Item",
+              quantity: item.quantity,
+              price: item.price,
+              image: item.variant?.product?.images?.[0]?.imageUrl || "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200",
+            })) || [],
+            subtotal: o.subtotal,
+            discount: o.discount,
+            shippingFee: o.shippingFee,
+            total: o.total,
+            paymentMethod: o.paymentMethod === "COD" ? "Cash on Delivery" : o.paymentMethod,
+            status: o.status,
+            timeline: [
+              { title: "অর্ডার গ্রহণ (Order Placed)", time: "সম্পন্ন", done: true, current: o.status === "PENDING" },
+              { title: "অর্ডার নিশ্চিত (Confirmed)", time: ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"].includes(o.status) ? "সম্পন্ন" : "অপেক্ষমান", done: ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"].includes(o.status), current: o.status === "CONFIRMED" },
+              { title: "প্রসেসিং (Processing)", time: ["PROCESSING", "SHIPPED", "DELIVERED"].includes(o.status) ? "সম্পন্ন" : "অপেক্ষমান", done: ["PROCESSING", "SHIPPED", "DELIVERED"].includes(o.status), current: o.status === "PROCESSING" },
+              { title: "কুরিয়ারে হস্তান্তর (Shipped)", time: ["SHIPPED", "DELIVERED"].includes(o.status) ? "সম্পন্ন" : "অপেক্ষমান", done: ["SHIPPED", "DELIVERED"].includes(o.status), current: o.status === "SHIPPED" },
+              { title: "ডেলিভারি সম্পন্ন (Delivered)", time: o.status === "DELIVERED" ? "সম্পন্ন" : "অপেক্ষমান", done: o.status === "DELIVERED", current: o.status === "DELIVERED" },
+            ],
+          });
+          return;
+        }
+      }
+    } catch (apiErr) {
+      console.warn("Could not query /api/orders:", apiErr);
+    }
+
+    // 2. Fallback to localStorage
     try {
       const storedOrders = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
       const found = storedOrders.find(
@@ -87,7 +120,6 @@ function OrderTrackingContent() {
             { title: "অর্ডার নিশ্চিত (Confirmed)", time: found.status !== "PENDING" ? "আজকে" : "অপেক্ষমান", done: found.status !== "PENDING" },
             { title: "প্রসেসিং (Processing)", time: ["PROCESSING", "SHIPPED", "DELIVERED"].includes(found.status) ? "আজকে" : "অপেক্ষমান", done: ["PROCESSING", "SHIPPED", "DELIVERED"].includes(found.status) },
             { title: "কুরিয়ারে হস্তান্তর (Shipped)", time: ["SHIPPED", "DELIVERED"].includes(found.status) ? "আজকে" : "অপেক্ষমান", done: ["SHIPPED", "DELIVERED"].includes(found.status) },
-            { title: "আউট ফর ডেলিভারি (Out for Delivery)", time: found.status === "DELIVERED" ? "আজকে" : "অপেক্ষমান", done: found.status === "DELIVERED" },
             { title: "ডেলিভারি সম্পন্ন (Delivered)", time: found.status === "DELIVERED" ? "সম্পন্ন" : "অপেক্ষমান", done: found.status === "DELIVERED" }
           ]
         });
@@ -97,13 +129,19 @@ function OrderTrackingContent() {
       console.error(e);
     }
 
-    // Fallback demo order
+    // 3. Fallback demo order
     if (targetId.includes("10025") || targetId === "PN10025" || targetId === "#PN10025") {
       setSearchedOrder(demoOrder);
     } else {
       setSearchedOrder(null);
     }
-  };
+  }, [orderInput, phoneInput]);
+
+  useEffect(() => {
+    if (initialOrderId) {
+      handleSearch(initialOrderId);
+    }
+  }, [initialOrderId, handleSearch]);
 
   const onSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

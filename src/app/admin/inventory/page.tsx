@@ -1,24 +1,74 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { mockProducts, Product } from "@/lib/mockData";
-import { Warehouse, Plus, Minus, Search, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Search, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 
 export default function AdminInventoryPage() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
 
-  const handleAdjustStock = (id: string, delta: number) => {
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          const newStock = Math.max(0, p.stock + delta);
-          return { ...p, stock: newStock };
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/products");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          const mapped: Product[] = data.products.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            sku: p.sku || `SKU-${p.id.slice(0, 6)}`,
+            basePrice: p.basePrice,
+            salePrice: p.salePrice || p.basePrice,
+            stock: p.stock ?? 0,
+            lowStockThreshold: p.lowStockThreshold || 10,
+            status: p.status || "ACTIVE",
+            averageRating: p.averageRating || 5.0,
+            reviewsCount: p.reviewsCount || 0,
+            isFeatured: p.isFeatured ?? true,
+            categoryId: p.categoryId || "general",
+            category: p.category || { id: "general", name: "General", slug: "general" },
+            images: p.images?.length > 0
+              ? p.images
+              : [{ id: "def-img", productId: p.id, imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", isPrimary: true }],
+            variants: p.variants || [],
+          }));
+          setProducts(mapped);
         }
-        return p;
-      })
+      }
+    } catch (err) {
+      console.warn("Could not load inventory from DB, using fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const handleAdjustStock = async (id: string, delta: number) => {
+    const target = products.find((p) => p.id === id);
+    if (!target) return;
+    const newStock = Math.max(0, target.stock + delta);
+
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))
     );
+
+    try {
+      await fetch("/api/admin/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, stock: newStock }),
+      });
+    } catch (e) {
+      console.warn("Could not persist stock update to DB:", e);
+    }
   };
 
   const filtered = products.filter((p) => {
@@ -38,6 +88,15 @@ export default function AdminInventoryPage() {
             পণ্যভিত্তিক লাইভ স্টক সংখ্যা পর্যবেক্ষণ এবং রিস্টক সমন্বয় করুন
           </p>
         </div>
+
+        <button
+          onClick={fetchProducts}
+          disabled={isLoading}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 self-start sm:self-auto"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          <span>রিফ্রেশ</span>
+        </button>
       </div>
 
       {/* Filter Toolbar */}

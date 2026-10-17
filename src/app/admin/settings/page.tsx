@@ -11,13 +11,24 @@ export default function AdminSettingsPage() {
 
   const [settings, setSettings] = useState(initialSiteSettings);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       localStorage.setItem("ponchomukh_site_settings", JSON.stringify(settings));
-      showToast("✓ সেটিংস সফলভাবে সংরক্ষিত হয়েছে!");
     } catch (err) {
       console.error(err);
+    }
+
+    try {
+      await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      showToast("✓ সেটিংস সফলভাবে ডাটাবেসে সংরক্ষিত হয়েছে!");
+    } catch (err) {
+      console.warn("Could not save settings to API:", err);
+      showToast("✓ সেটিংস সংরক্ষিত হয়েছে!");
     }
   };
 

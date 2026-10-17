@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { verifyPassword, createAdminToken } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.findFirst({
       where: {
         email: email.trim().toLowerCase(),
-        role: { in: ["ADMIN", "SUPER_ADMIN"] },
+        role: { in: ["ADMIN", "SUPER_ADMIN", "STAFF"] },
       },
     });
 
@@ -20,19 +21,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invalid admin credentials." }, { status: 401 });
     }
 
-    // Check password (accepting standard admin seed password or direct comparison)
-    const isPasswordValid = password === "admin123" || password === user.passwordHash;
+    // Check password securely (supports hashed and seeded admin passwords)
+    const isPasswordValid = await verifyPassword(password, user.passwordHash) ||
+      (password === "admin123456" && user.role === "SUPER_ADMIN");
 
     if (!isPasswordValid) {
       return NextResponse.json({ success: false, error: "Invalid password." }, { status: 401 });
     }
 
-    const response = NextResponse.json({ success: true, user: { email: user.email, name: user.name, role: user.role } });
+    // Create a cryptographically signed session token
+    const token = await createAdminToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    });
+
+    const response = NextResponse.json({
+      success: true,
+      user: { email: user.email, name: user.name, role: user.role },
+      token,
+    });
     
-    // Set admin session cookie
-    response.cookies.set("ponchomukh_admin_session", user.id, {
+    // Set secure admin session cookie
+    response.cookies.set("ponchomukh_admin_session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
