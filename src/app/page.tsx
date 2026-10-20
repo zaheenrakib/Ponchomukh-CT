@@ -38,8 +38,11 @@ import {
   MessageCircle
 } from "lucide-react";
 import { FacebookIcon, InstagramIcon } from "@/components/ui/social-icons";
+import { useLanguage } from "@/context/language-context";
 
 export default function HomePage() {
+  const { t, formatNumber, isBangla } = useLanguage();
+
   // Flash Sale Countdown Timer State
   const [timeLeft, setTimeLeft] = useState({
     days: 5,
@@ -168,17 +171,17 @@ export default function HomePage() {
             <div className="flex items-center justify-between mb-6 md:mb-8">
               <div>
                 <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
-                  Shop by Category
+                  {t("categoriesSection.title")}
                 </h2>
                 <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
-                  আপনার প্রয়োজনীয় ক্যাটাগরি বেছে নিয়ে সহজেই পণ্য খুঁজুন
+                  {t("categoriesSection.subtitle")}
                 </p>
               </div>
               <Link
                 href="/shop"
                 className="text-xs md:text-sm font-bold text-[#3B0C04] hover:text-[#260700] hover:underline flex items-center gap-1 shrink-0"
               >
-                <span>View All</span>
+                <span>{t("featured.viewAll")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -200,7 +203,7 @@ export default function HomePage() {
                     {category.name}
                   </h3>
                   <span className="text-[11px] text-[#8C7B72] mt-0.5">
-                    {category.subcategories?.length || 0}+ আইটেম
+                    {formatNumber(category.subcategories?.length || 0)}+ {t("categoriesSection.itemsCount")}
                   </span>
                 </Link>
               ))}
@@ -216,18 +219,18 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-[#FFC40E]" />
                   <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
-                    Featured Products
+                    {t("featured.title")}
                   </h2>
                 </div>
                 <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
-                  গ্রাহকদের সর্বাধিক পছন্দের যাচাইকৃত প্রিমিয়াম প্রোডাক্ট
+                  {t("featured.subtitle")}
                 </p>
               </div>
               <Link
                 href="/shop?filter=featured"
                 className="text-xs md:text-sm font-bold text-[#3B0C04] hover:underline flex items-center gap-1 shrink-0"
               >
-                <span>View All</span>
+                <span>{t("featured.viewAll")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -284,7 +287,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between mb-6 md:mb-8">
               <div>
                 <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
-                  Best Sellers
+                  {t("nav.bestSellers")}
                 </h2>
                 <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
                   সবচেয়ে বেশি বিক্রিত এবং গ্রাহকদের সেরা রেটিংপ্রাপ্ত পণ্যসমূহ
@@ -294,7 +297,7 @@ export default function HomePage() {
                 href="/shop?filter=bestseller"
                 className="text-xs md:text-sm font-bold text-[#3B0C04] hover:underline flex items-center gap-1 shrink-0"
               >
-                <span>View All</span>
+                <span>{t("featured.viewAll")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -318,25 +321,25 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h2 className="text-xl md:text-2xl font-black text-[#3B0C04]">
-                      ⚡ FLASH SALE
+                      ⚡ {t("flashSale.title")}
                     </h2>
-                    <p className="text-xs text-[#6B5A52]">সীমিত সময়ের স্পেশাল ডিসকাউন্ট অফার</p>
+                    <p className="text-xs text-[#6B5A52]">{t("flashSale.subtitle")}</p>
                   </div>
                 </div>
 
                 {/* Countdown Box */}
                 <div className="flex items-center gap-2 text-xs font-bold">
                   <span className="text-[#6B5A52] mr-1 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" /> অফার শেষ হতে বাকি:
+                    <Clock className="w-3.5 h-3.5" /> {t("flashSale.endsIn")}
                   </span>
                   <div className="flex items-center gap-1 font-mono text-sm font-black text-white">
-                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatDigit(timeLeft.days)}d</span>
+                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatNumber(formatDigit(timeLeft.days))}d</span>
                     <span className="text-[#3B0C04]">:</span>
-                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatDigit(timeLeft.hours)}h</span>
+                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatNumber(formatDigit(timeLeft.hours))}h</span>
                     <span className="text-[#3B0C04]">:</span>
-                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatDigit(timeLeft.minutes)}m</span>
+                    <span className="px-2 py-1 rounded-md bg-[#3B0C04]">{formatNumber(formatDigit(timeLeft.minutes))}m</span>
                     <span className="text-[#3B0C04]">:</span>
-                    <span className="px-2 py-1 rounded-md bg-[#D64545]">{formatDigit(timeLeft.seconds)}s</span>
+                    <span className="px-2 py-1 rounded-md bg-[#D64545]">{formatNumber(formatDigit(timeLeft.seconds))}s</span>
                   </div>
                 </div>
               </div>
@@ -357,7 +360,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between mb-6 md:mb-8">
               <div>
                 <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
-                  New Arrivals
+                  {t("nav.newArrivals")}
                 </h2>
                 <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
                   সর্বশেষ যুক্ত হওয়া নতুন পণ্যের আধুনিক কালেকশন
@@ -367,7 +370,7 @@ export default function HomePage() {
                 href="/shop?filter=new"
                 className="text-xs md:text-sm font-bold text-[#3B0C04] hover:underline flex items-center gap-1 shrink-0"
               >
-                <span>View All</span>
+                <span>{t("featured.viewAll")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -411,10 +414,10 @@ export default function HomePage() {
                   {/* Content */}
                   <div className="relative z-10 text-white space-y-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFC40E]">
-                      {col.productCount}+ পণ্য
+                      {formatNumber(col.productCount)}+ {t("categoriesSection.itemsCount")}
                     </span>
                     <h3 className="text-lg font-bold group-hover:text-[#FFC40E] transition-colors">
-                      {col.titleBn}
+                      {isBangla ? col.titleBn : col.title}
                     </h3>
                     <p className="text-xs text-[#E8DCD2]/80 line-clamp-1">
                       {col.description}
@@ -435,7 +438,7 @@ export default function HomePage() {
           <section className="container-custom">
             <div className="text-center max-w-xl mx-auto mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl font-black text-[#3B0C04]">
-                কেন পঞ্চমুখ?
+                {t("whyChoose.title")}
               </h2>
               <p className="text-xs md:text-sm text-[#6B5A52] mt-1.5">
                 অনলাইন শপিংয়ে আপনার সর্বোচ্চ আস্থা ও সন্তুষ্টি নিশ্চিতে আমরা প্রতিশ্রুতিবদ্ধ
@@ -447,39 +450,39 @@ export default function HomePage() {
                 <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
                   <Truck className="w-6 h-6 text-[#3B0C04]" />
                 </div>
-                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Fast Delivery</h3>
-                <p className="text-[11px] text-[#6B5A52]">সারা দেশে দ্রুত হোম ডেলিভারি</p>
+                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">{t("trustBanner.fastDelivery")}</h3>
+                <p className="text-[11px] text-[#6B5A52]">{t("whyChoose.fastShippingDesc")}</p>
               </div>
 
               <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
                 <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
                   <CreditCard className="w-6 h-6 text-[#3B0C04]" />
                 </div>
-                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Easy Payment</h3>
-                <p className="text-[11px] text-[#6B5A52]">সহজ ও নিরাপদ Cash on Delivery</p>
+                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">{t("trustBanner.cod")}</h3>
+                <p className="text-[11px] text-[#6B5A52]">{t("whyChoose.codDesc")}</p>
               </div>
 
               <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
                 <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
                   <ShieldCheck className="w-6 h-6 text-[#16834A]" />
                 </div>
-                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Trusted Products</h3>
-                <p className="text-[11px] text-[#6B5A52]">মানসম্মত ও ১০০% যাচাইকৃত পণ্য</p>
+                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">{t("trustBanner.trusted")}</h3>
+                <p className="text-[11px] text-[#6B5A52]">{t("whyChoose.originalDesc")}</p>
               </div>
 
               <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
                 <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
                   <RotateCcw className="w-6 h-6 text-[#3B0C04]" />
                 </div>
-                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Easy Return</h3>
-                <p className="text-[11px] text-[#6B5A52]">সহজ ৭ দিনের রিটার্ন পলিসি</p>
+                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">{t("trustBanner.returns")}</h3>
+                <p className="text-[11px] text-[#6B5A52]">{t("whyChoose.replacementDesc")}</p>
               </div>
 
               <div className="p-4 rounded-xl bg-white border border-[#E8DCD2] text-center space-y-2 hover:shadow-xs transition-shadow">
                 <div className="w-12 h-12 rounded-full bg-[#FFF7EE] text-[#3B0C04] mx-auto flex items-center justify-center">
                   <HeadphonesIcon className="w-6 h-6 text-[#3B0C04]" />
                 </div>
-                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">Customer Support</h3>
+                <h3 className="text-xs md:text-sm font-bold text-[#2B160F]">{t("footer.customerService")}</h3>
                 <p className="text-[11px] text-[#6B5A52]">দ্রুত ও নির্ভরযোগ্য কাস্টমার কেয়ার</p>
               </div>
 
@@ -499,10 +502,10 @@ export default function HomePage() {
           <section className="container-custom">
             <div className="text-center max-w-xl mx-auto mb-8 md:mb-10">
               <h2 className="text-xl md:text-3xl font-bold text-[#2B160F]">
-                Customers Love Ponchomukh
+                {t("reviews.title")}
               </h2>
               <p className="text-xs md:text-sm text-[#6B5A52] mt-1">
-                আমাদের সম্মানিত গ্রাহকদের বাস্তব অভিজ্ঞতা ও মতামত
+                {t("reviews.subtitle")}
               </p>
             </div>
 
@@ -522,7 +525,7 @@ export default function HomePage() {
                     <span className="text-[10px] text-[#8C7B72]">ধানমন্ডি, ঢাকা</span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" /> Verified Purchase
+                    <CheckCircle2 className="w-3 h-3" /> {t("reviews.verifiedPurchase")}
                   </span>
                 </div>
               </div>
@@ -542,7 +545,7 @@ export default function HomePage() {
                     <span className="text-[10px] text-[#8C7B72]">উত্তরা, ঢাকা</span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" /> Verified Purchase
+                    <CheckCircle2 className="w-3 h-3" /> {t("reviews.verifiedPurchase")}
                   </span>
                 </div>
               </div>
@@ -562,7 +565,7 @@ export default function HomePage() {
                     <span className="text-[10px] text-[#8C7B72]">চট্টগ্রাম</span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" /> Verified Purchase
+                    <CheckCircle2 className="w-3 h-3" /> {t("reviews.verifiedPurchase")}
                   </span>
                 </div>
               </div>
@@ -651,24 +654,24 @@ export default function HomePage() {
                   <span>Stay Updated</span>
                 </div>
                 <h3 className="text-xl md:text-3xl font-black text-[#FFC40E]">
-                  বিশেষ অফার ও ডিসকাউন্ট পেতে থাকুন
+                  {t("newsletter.title")}
                 </h3>
                 <p className="text-xs text-[#E8DCD2]/80 leading-relaxed font-normal">
-                  নতুন পণ্য, ফ্ল্যাশ সেল ও ডিসকাউন্ট কুপনের নোটিফিকেশন সবার আগে পেতে আমাদের নিউজলেটার সাবস্ক্রাইব করুন।
+                  {t("newsletter.subtitle")}
                 </p>
               </div>
 
               <div className="w-full md:w-auto flex-1 max-w-md">
                 {newsletterSubmitted ? (
                   <div className="p-4 rounded-xl bg-[#16834A]/20 border border-[#16834A] text-center text-xs font-bold text-[#FFC40E]">
-                    ✓ ধন্যবাদ! আপনার সাবস্ক্রিপশন সফলভাবে সম্পন্ন হয়েছে।
+                    ✓ {t("newsletter.success")}
                   </div>
                 ) : (
                   <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
                       required
-                      placeholder="আপনার ইমেইল অ্যাড্রেস লিখুন..."
+                      placeholder={t("newsletter.placeholder")}
                       value={newsletterEmail}
                       onChange={(e) => setNewsletterEmail(e.target.value)}
                       className="flex-1 h-12 px-4 rounded-lg bg-white text-[#2B160F] text-xs placeholder-[#8C7B72] focus:outline-none focus:ring-2 focus:ring-[#FFC40E]"
@@ -677,7 +680,7 @@ export default function HomePage() {
                       type="submit"
                       className="h-12 px-6 rounded-lg bg-[#FFC40E] hover:bg-[#D99E00] text-[#260700] font-bold text-xs sm:text-sm transition-colors shrink-0"
                     >
-                      Subscribe
+                      {t("newsletter.button")}
                     </button>
                   </form>
                 )}

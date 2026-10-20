@@ -10,6 +10,7 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ProductCard } from "@/components/product-card";
 import { ProductModal } from "@/components/product-modal";
 import { CartDrawer } from "@/components/cart-drawer";
+import { useLanguage } from "@/context/language-context";
 import { mockProducts, mockCategories, mockBrands, Product, Category } from "@/lib/mockData";
 import {
   Filter,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 
 function ShopContent() {
+  const { language, t, formatPrice, formatNumber } = useLanguage();
   const searchParams = useSearchParams();
   const filterQuery = searchParams.get("filter");
 
@@ -189,17 +191,19 @@ function ShopContent() {
         <div className="bg-[#FFF7EE] border-b border-[#E8DCD2] py-6">
           <div className="container-custom">
             <div className="flex items-center gap-1.5 text-xs text-[#8C7B72] mb-2">
-              <Link href="/" className="hover:text-[#3B0C04]">হোম</Link>
+              <Link href="/" className="hover:text-[#3B0C04]">{t("nav.home")}</Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-[#3B0C04] font-semibold">সকল পণ্য (Shop)</span>
+              <span className="text-[#3B0C04] font-semibold">{t("nav.shop")}</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black text-[#3B0C04]">
-                  সকল পণ্য সম্ভার
+                  {language === "bn" ? "সকল পণ্য সম্ভার" : "All Products Catalog"}
                 </h1>
                 <p className="text-xs sm:text-sm text-[#6B5A52] mt-0.5">
-                  মোট {filteredProducts.length}টি পণ্য পাওয়া গেছে
+                  {language === "bn"
+                    ? `মোট ${formatNumber(filteredProducts.length)}টি পণ্য পাওয়া গেছে`
+                    : `Found ${filteredProducts.length} items`}
                 </p>
               </div>
 
@@ -210,7 +214,11 @@ function ShopContent() {
                   className="flex-1 h-10 px-4 rounded-lg bg-white border border-[#E8DCD2] text-xs font-bold text-[#3B0C04] flex items-center justify-center gap-2"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
-                  <span>ফিল্টার ({selectedCategories.length + selectedBrands.length})</span>
+                  <span>
+                    {language === "bn"
+                      ? `ফিল্টার (${formatNumber(selectedCategories.length + selectedBrands.length)})`
+                      : `Filters (${selectedCategories.length + selectedBrands.length})`}
+                  </span>
                 </button>
 
                 <select
@@ -218,12 +226,12 @@ function ShopContent() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="flex-1 h-10 px-3 rounded-lg bg-white border border-[#E8DCD2] text-xs font-semibold text-[#2B160F] focus:outline-none"
                 >
-                  <option value="featured">Featured</option>
-                  <option value="newest">নতুন পণ্য</option>
-                  <option value="popular">জনপ্রিয়</option>
-                  <option value="price-low">দাম: কম থেকে বেশি</option>
-                  <option value="price-high">দাম: বেশি থেকে কম</option>
-                  <option value="rating">সেরা রেটিং</option>
+                  <option value="featured">{language === "bn" ? "Featured (প্রস্তাবিত)" : "Featured"}</option>
+                  <option value="newest">{language === "bn" ? "নতুন পণ্য" : "Newest Arrivals"}</option>
+                  <option value="popular">{language === "bn" ? "জনপ্রিয়" : "Most Popular"}</option>
+                  <option value="price-low">{language === "bn" ? "দাম: কম থেকে বেশি" : "Price: Low to High"}</option>
+                  <option value="price-high">{language === "bn" ? "দাম: বেশি থেকে কম" : "Price: High to Low"}</option>
+                  <option value="rating">{language === "bn" ? "সেরা রেটিং" : "Top Rated"}</option>
                 </select>
               </div>
             </div>
@@ -238,7 +246,7 @@ function ShopContent() {
               <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
                 <div className="flex items-center gap-2 font-bold text-sm text-[#3B0C04]">
                   <SlidersHorizontal className="w-4 h-4" />
-                  <span>ফিল্টার অপশন</span>
+                  <span>{language === "bn" ? "ফিল্টার অপশন" : "Filter Options"}</span>
                 </div>
                 {(selectedCategories.length > 0 ||
                   selectedBrands.length > 0 ||
@@ -251,7 +259,7 @@ function ShopContent() {
                     className="text-xs text-[#D64545] hover:underline flex items-center gap-1 font-semibold"
                   >
                     <RotateCcw className="w-3 h-3" />
-                    <span>রিসেট</span>
+                    <span>{language === "bn" ? "রিসেট" : "Reset"}</span>
                   </button>
                 )}
               </div>
@@ -259,7 +267,7 @@ function ShopContent() {
               {/* Categories */}
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#3B0C04] mb-3">
-                  ক্যাটাগরি
+                  {t("nav.categories")}
                 </h3>
                 <div className="space-y-2 max-h-56 overflow-y-auto">
                   {categories.map((cat) => (
@@ -282,7 +290,7 @@ function ShopContent() {
               {/* Brands */}
               <div className="pt-4 border-t border-[#E8DCD2]/60">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#3B0C04] mb-3">
-                  ব্র্যান্ড
+                  {language === "bn" ? "ব্র্যান্ড" : "Brands"}
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {mockBrands.map((brand) => (
@@ -305,8 +313,8 @@ function ShopContent() {
               {/* Price Range Slider */}
               <div className="pt-4 border-t border-[#E8DCD2]/60">
                 <div className="flex items-center justify-between text-xs font-bold text-[#3B0C04] mb-2">
-                  <span className="uppercase tracking-wider">সর্বোচ্চ বাজেট</span>
-                  <span className="text-[#3B0C04] font-black">৳{priceRange}</span>
+                  <span className="uppercase tracking-wider">{language === "bn" ? "সর্বোচ্চ বাজেট" : "Max Budget"}</span>
+                  <span className="text-[#3B0C04] font-black">{formatPrice(priceRange)}</span>
                 </div>
                 <input
                   type="range"
@@ -318,15 +326,15 @@ function ShopContent() {
                   className="w-full accent-[#3B0C04]"
                 />
                 <div className="flex justify-between text-[11px] text-[#8C7B72] mt-1">
-                  <span>৳৫০০</span>
-                  <span>৳৬,০০০+</span>
+                  <span>{formatPrice(500)}</span>
+                  <span>{formatPrice(6000)}+</span>
                 </div>
               </div>
 
               {/* Rating Filter */}
               <div className="pt-4 border-t border-[#E8DCD2]/60">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#3B0C04] mb-3">
-                  রেটিং
+                  {language === "bn" ? "রেটিং" : "Rating"}
                 </h3>
                 <div className="space-y-1.5">
                   {[4, 3, 2].map((stars) => (
@@ -341,7 +349,11 @@ function ShopContent() {
                     >
                       <div className="flex items-center gap-1">
                         <Star className="w-3.5 h-3.5 fill-current text-[#FFC40E]" />
-                        <span>{stars} স্টার ও তদূর্ধ্ব</span>
+                        <span>
+                          {language === "bn"
+                            ? `${formatNumber(stars)} স্টার ও তদূর্ধ্ব`
+                            : `${stars} Stars & up`}
+                        </span>
                       </div>
                       {minRating === stars && <Check className="w-3.5 h-3.5" />}
                     </button>
@@ -358,7 +370,7 @@ function ShopContent() {
                     onChange={(e) => setInStockOnly(e.target.checked)}
                     className="w-4 h-4 rounded text-[#3B0C04] focus:ring-[#3B0C04] border-[#E8DCD2]"
                   />
-                  <span>শুধুমাত্র ইন-স্টক পণ্য</span>
+                  <span>{language === "bn" ? "শুধুমাত্র ইন-স্টক পণ্য" : "In-stock items only"}</span>
                 </label>
 
                 <label className="flex items-center gap-2.5 text-xs text-[#2B160F] font-semibold cursor-pointer">
@@ -368,7 +380,7 @@ function ShopContent() {
                     onChange={(e) => setHasDiscountOnly(e.target.checked)}
                     className="w-4 h-4 rounded text-[#3B0C04] focus:ring-[#3B0C04] border-[#E8DCD2]"
                   />
-                  <span>ডিসকাউন্ট অফার যুক্ত পণ্য</span>
+                  <span>{language === "bn" ? "ডিসকাউন্ট অফার যুক্ত পণ্য" : "Discounted items only"}</span>
                 </label>
               </div>
             </aside>
@@ -378,22 +390,24 @@ function ShopContent() {
               {/* Desktop Sort & Active Count Toolbar */}
               <div className="hidden sm:flex items-center justify-between pb-4 mb-6 border-b border-[#E8DCD2]">
                 <p className="text-xs text-[#6B5A52]">
-                  দেখাচ্ছে <span className="font-bold text-[#2B160F]">{filteredProducts.length}</span> টি পণ্য
+                  {language === "bn"
+                    ? <>দেখাচ্ছে <span className="font-bold text-[#2B160F]">{formatNumber(filteredProducts.length)}</span> টি পণ্য</>
+                    : <>Showing <span className="font-bold text-[#2B160F]">{filteredProducts.length}</span> items</>}
                 </p>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-[#6B5A52] font-semibold">সর্ট করুন:</span>
+                  <span className="text-[#6B5A52] font-semibold">{language === "bn" ? "সর্ট করুন:" : "Sort By:"}</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="h-9 px-3 rounded-lg bg-white border border-[#E8DCD2] text-xs font-semibold text-[#2B160F] focus:outline-none focus:border-[#3B0C04]"
                   >
-                    <option value="featured">Featured (প্রস্তাবিত)</option>
-                    <option value="newest">নতুন পণ্য (Newest First)</option>
-                    <option value="popular">জনপ্রিয় (Most Popular)</option>
-                    <option value="price-low">দাম: কম থেকে বেশি</option>
-                    <option value="price-high">দাম: বেশি থেকে কম</option>
-                    <option value="rating">সেরা রেটিং (Top Rated)</option>
+                    <option value="featured">{language === "bn" ? "Featured (প্রস্তাবিত)" : "Featured"}</option>
+                    <option value="newest">{language === "bn" ? "নতুন পণ্য (Newest First)" : "Newest Arrivals"}</option>
+                    <option value="popular">{language === "bn" ? "জনপ্রিয় (Most Popular)" : "Most Popular"}</option>
+                    <option value="price-low">{language === "bn" ? "দাম: কম থেকে বেশি" : "Price: Low to High"}</option>
+                    <option value="price-high">{language === "bn" ? "দাম: বেশি থেকে কম" : "Price: High to Low"}</option>
+                    <option value="rating">{language === "bn" ? "সেরা রেটিং (Top Rated)" : "Top Rated"}</option>
                   </select>
                 </div>
               </div>
@@ -412,16 +426,18 @@ function ShopContent() {
                     <Filter className="w-8 h-8 text-[#3B0C04]" />
                   </div>
                   <h3 className="text-base font-bold text-[#2B160F]">
-                    কোনো পণ্য খুঁজে পাওয়া যায়নি
+                    {language === "bn" ? "কোনো পণ্য খুঁজে পাওয়া যায়নি" : "No products found"}
                   </h3>
                   <p className="text-xs text-[#8C7B72] max-w-sm mx-auto">
-                    আপনার ফিল্টার অপশন পরিবর্তন করে আবার চেষ্টা করুন অথবা রিসেট করুন।
+                    {language === "bn"
+                      ? "আপনার ফিল্টার অপশন পরিবর্তন করে আবার চেষ্টা করুন অথবা রিসেট করুন।"
+                      : "Try adjusting your filter options or clear filters to see all products."}
                   </p>
                   <button
                     onClick={handleResetFilters}
-                    className="px-6 py-2.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700]"
+                    className="px-6 py-2.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700] transition-colors"
                   >
-                    সকল ফিল্টার মুছুন
+                    {language === "bn" ? "সকল ফিল্টার মুছুন" : "Clear All Filters"}
                   </button>
                 </div>
               )}
@@ -440,7 +456,7 @@ function ShopContent() {
               <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2] mb-4">
                 <h3 className="font-bold text-sm text-[#3B0C04] flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4" />
-                  <span>ফিল্টার অপশন</span>
+                  <span>{language === "bn" ? "ফিল্টার অপশন" : "Filter Options"}</span>
                 </h3>
                 <button
                   onClick={() => setIsMobileFilterOpen(false)}
@@ -453,7 +469,9 @@ function ShopContent() {
               {/* Mobile Filter Options */}
               <div className="space-y-5 pb-6">
                 <div>
-                  <h4 className="text-xs font-bold uppercase text-[#3B0C04] mb-2">ক্যাটাগরি</h4>
+                  <h4 className="text-xs font-bold uppercase text-[#3B0C04] mb-2">
+                    {t("nav.categories")}
+                  </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {categories.map((cat) => (
                       <button
@@ -472,10 +490,12 @@ function ShopContent() {
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-bold uppercase text-[#3B0C04] mb-2">সর্বোচ্চ বাজেট</h4>
+                  <h4 className="text-xs font-bold uppercase text-[#3B0C04] mb-2">
+                    {language === "bn" ? "সর্বোচ্চ বাজেট" : "Max Budget"}
+                  </h4>
                   <div className="flex justify-between text-xs font-bold text-[#3B0C04] mb-1">
-                    <span>৳৫০০</span>
-                    <span>৳{priceRange}</span>
+                    <span>{formatPrice(500)}</span>
+                    <span>{formatPrice(priceRange)}</span>
                   </div>
                   <input
                     type="range"
@@ -494,13 +514,15 @@ function ShopContent() {
                   onClick={handleResetFilters}
                   className="flex-1 h-11 rounded-lg bg-[#FFF7EE] border border-[#E8DCD2] text-xs font-bold text-[#3B0C04]"
                 >
-                  রিসেট
+                  {language === "bn" ? "রিসেট" : "Reset"}
                 </button>
                 <button
                   onClick={() => setIsMobileFilterOpen(false)}
                   className="flex-1 h-11 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold"
                 >
-                  ফিল্টার প্রয়োগ করুন ({filteredProducts.length})
+                  {language === "bn"
+                    ? `ফিল্টার প্রয়োগ করুন (${formatNumber(filteredProducts.length)})`
+                    : `Apply Filters (${filteredProducts.length})`}
                 </button>
               </div>
             </div>

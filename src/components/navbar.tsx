@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { mockCategories, mockProducts } from "@/lib/mockData";
 import {
   Search,
@@ -24,6 +26,7 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount, wishlistCount, setIsCartOpen, searchQuery, setSearchQuery } = useCart();
+  const { t, formatPrice } = useLanguage();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -100,7 +103,7 @@ export const Navbar: React.FC = () => {
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
-                placeholder="আপনি কী খুঁজছেন? (পণ্য বা ক্যাটাগরি)"
+                placeholder={t("nav.searchPlaceholder")}
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
@@ -111,7 +114,7 @@ export const Navbar: React.FC = () => {
                 type="submit"
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3.5 bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-semibold rounded-md transition-colors"
               >
-                খুঁজুন
+                {t("nav.searchBtn")}
               </button>
             </form>
 
@@ -119,8 +122,8 @@ export const Navbar: React.FC = () => {
             {searchFocused && localSearch.trim().length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-[#E8DCD2] rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in-50 duration-150">
                 <div className="p-2 border-b border-[#E8DCD2] bg-[#FFF7EE] text-xs font-semibold text-[#3B0C04] flex items-center justify-between">
-                  <span>অনুসন্ধান ফলাফল ({searchSuggestions.length})</span>
-                  <span className="text-[11px] text-[#6B5A52]">Enter চাপুন</span>
+                  <span>{t("nav.searchResults")} ({searchSuggestions.length})</span>
+                  <span className="text-[11px] text-[#6B5A52]">{t("nav.pressEnter")}</span>
                 </div>
                 {searchSuggestions.length > 0 ? (
                   <div className="divide-y divide-[#E8DCD2]/40 max-h-72 overflow-y-auto">
@@ -141,10 +144,10 @@ export const Navbar: React.FC = () => {
                             {item.name}
                           </p>
                           <p className="text-[11px] text-[#3B0C04] font-bold mt-0.5">
-                            ৳{item.salePrice || item.basePrice}
+                            {formatPrice(item.salePrice || item.basePrice)}
                             {item.salePrice && (
                               <span className="text-[#8C7B72] line-through font-normal ml-1.5">
-                                ৳{item.basePrice}
+                                {formatPrice(item.basePrice)}
                               </span>
                             )}
                           </p>
@@ -154,7 +157,7 @@ export const Navbar: React.FC = () => {
                   </div>
                 ) : (
                   <div className="p-4 text-center text-xs text-[#8C7B72]">
-                    কোনো ফলাফল পাওয়া যায়নি।
+                    {t("nav.noResults")}
                   </div>
                 )}
               </div>
@@ -162,12 +165,15 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Header Actions (Right) */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Language Switcher */}
+            <LanguageSwitcher variant="pill" />
+
             {/* Wishlist */}
             <Link
               href="/wishlist"
               className="relative p-2 rounded-lg text-[#2B160F] hover:text-[#3B0C04] hover:bg-[#FFF7EE] transition-colors flex items-center gap-1.5"
-              title="উইশলিস্ট"
+              title={t("nav.wishlist")}
             >
               <div className="relative">
                 <Heart className="w-5 h-5" />
@@ -177,7 +183,7 @@ export const Navbar: React.FC = () => {
                   </span>
                 )}
               </div>
-              <span className="text-xs font-medium hidden xl:inline">উইশলিস্ট</span>
+              <span className="text-xs font-medium hidden xl:inline">{t("nav.wishlist")}</span>
             </Link>
 
             {/* Account Dropdown */}
@@ -187,36 +193,36 @@ export const Navbar: React.FC = () => {
                 className="p-2 rounded-lg text-[#2B160F] hover:text-[#3B0C04] hover:bg-[#FFF7EE] transition-colors flex items-center gap-1.5"
               >
                 <User className="w-5 h-5" />
-                <span className="text-xs font-medium hidden xl:inline">অ্যাকাউন্ট</span>
+                <span className="text-xs font-medium hidden xl:inline">{t("nav.account")}</span>
                 <ChevronDown className="w-3.5 h-3.5 text-[#8C7B72]" />
               </button>
 
               {isAccountDropdownOpen && (
                 <div className="absolute right-0 top-full mt-1.5 w-52 bg-white border border-[#E8DCD2] rounded-xl shadow-xl py-2 z-50 animate-in fade-in-50 duration-150">
                   <div className="px-4 py-2 border-b border-[#E8DCD2]/60 mb-1">
-                    <p className="text-xs font-bold text-[#3B0C04]">স্বাগতম!</p>
-                    <p className="text-[11px] text-[#6B5A52]">আপনার অ্যাকাউন্ট পরিচালনা করুন</p>
+                    <p className="text-xs font-bold text-[#3B0C04]">{t("nav.welcome")}</p>
+                    <p className="text-[11px] text-[#6B5A52]">{t("nav.manageAccount")}</p>
                   </div>
                   <Link
                     href="/account"
                     className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04]"
                   >
                     <User className="w-4 h-4 text-[#8C7B72]" />
-                    <span>মাই অ্যাকাউন্ট</span>
+                    <span>{t("nav.myAccount")}</span>
                   </Link>
                   <Link
                     href="/account?tab=orders"
                     className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04]"
                   >
                     <PackageCheck className="w-4 h-4 text-[#8C7B72]" />
-                    <span>আমার অর্ডারসমূহ</span>
+                    <span>{t("nav.myOrders")}</span>
                   </Link>
                   <Link
                     href="/order-tracking"
                     className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04]"
                   >
                     <ShieldCheck className="w-4 h-4 text-[#8C7B72]" />
-                    <span>অর্ডার ট্র্যাকিং</span>
+                    <span>{t("nav.orderTracking")}</span>
                   </Link>
                   <div className="border-t border-[#E8DCD2]/60 my-1 pt-1">
                     <Link
@@ -224,7 +230,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#3B0C04] font-semibold hover:bg-[#FFF7EE]"
                     >
                       <Sparkles className="w-4 h-4 text-[#FFC40E]" />
-                      <span>অ্যাডমিন প্যানেল</span>
+                      <span>{t("nav.adminPanel")}</span>
                     </Link>
                   </div>
                 </div>
@@ -245,7 +251,7 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
               <span className="text-xs font-bold tracking-wide">
-                কার্ট {cartCount > 0 && `(${cartCount})`}
+                {t("nav.cart")} {cartCount > 0 && `(${cartCount})`}
               </span>
             </button>
           </div>
@@ -262,7 +268,7 @@ export const Navbar: React.FC = () => {
                 pathname === "/" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
               }`}
             >
-              হোম
+              {t("nav.home")}
             </Link>
 
             {/* Categories Mega Dropdown */}
@@ -275,14 +281,14 @@ export const Navbar: React.FC = () => {
                     : "text-[#2B160F]"
                 }`}
               >
-                <span>ক্যাটাগরি সমূহ</span>
+                <span>{t("nav.categories")}</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
               {isCategoryDropdownOpen && (
                 <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-[#E8DCD2] rounded-xl shadow-xl py-2 z-50 animate-in fade-in-50 duration-150">
                   <div className="px-3 py-1.5 text-xs font-bold text-[#6B5A52] uppercase tracking-wider border-b border-[#E8DCD2]/40 mb-1">
-                    সকল ক্যাটাগরি
+                    {t("nav.allCategories")}
                   </div>
                   {mockCategories.map((cat) => (
                     <Link
@@ -291,7 +297,7 @@ export const Navbar: React.FC = () => {
                       className="flex items-center justify-between px-4 py-2.5 text-xs text-[#2B160F] hover:bg-[#FFF7EE] hover:text-[#3B0C04] transition-colors"
                     >
                       <span className="font-semibold">{cat.name}</span>
-                      <span className="text-[10px] text-[#8C7B72]">{cat.subcategories?.length || 0} সাব-ক্যাটাগরি</span>
+                      <span className="text-[10px] text-[#8C7B72]">{cat.subcategories?.length || 0} {t("nav.subcategoriesCount")}</span>
                     </Link>
                   ))}
                   <div className="border-t border-[#E8DCD2]/60 mt-1 pt-1 px-3">
@@ -299,7 +305,7 @@ export const Navbar: React.FC = () => {
                       href="/shop"
                       className="block text-center text-xs font-bold text-[#3B0C04] py-1.5 hover:underline"
                     >
-                      সব পণ্য দেখুন →
+                      {t("nav.viewAllProducts")}
                     </Link>
                   </div>
                 </div>
@@ -312,14 +318,14 @@ export const Navbar: React.FC = () => {
                 pathname === "/shop" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
               }`}
             >
-              সকল পণ্য
+              {t("nav.allProducts")}
             </Link>
 
             <Link
               href="/shop?filter=new"
               className="transition-colors hover:text-[#3B0C04] text-[#2B160F] flex items-center gap-1.5"
             >
-              <span>নতুন পণ্য</span>
+              <span>{t("nav.newArrivals")}</span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FFC40E] text-[#3B0C04]">
                 New
               </span>
@@ -329,14 +335,14 @@ export const Navbar: React.FC = () => {
               href="/shop?filter=bestseller"
               className="transition-colors hover:text-[#3B0C04] text-[#2B160F]"
             >
-              বেস্ট সেলার
+              {t("nav.bestSellers")}
             </Link>
 
             <Link
               href="/shop?filter=offers"
               className="transition-colors hover:text-[#3B0C04] text-[#D64545] font-semibold flex items-center gap-1"
             >
-              <span>স্পেশাল অফার</span>
+              <span>{t("nav.specialOffers")}</span>
               <span className="w-2 h-2 rounded-full bg-[#D64545] animate-pulse"></span>
             </Link>
 
@@ -346,7 +352,7 @@ export const Navbar: React.FC = () => {
                 pathname === "/about" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
               }`}
             >
-              আমাদের সম্পর্কে
+              {t("nav.about")}
             </Link>
 
             <Link
@@ -355,7 +361,7 @@ export const Navbar: React.FC = () => {
                 pathname === "/contact" ? "text-[#3B0C04] font-bold" : "text-[#2B160F]"
               }`}
             >
-              যোগাযোগ
+              {t("nav.contact")}
             </Link>
           </nav>
 
@@ -366,7 +372,7 @@ export const Navbar: React.FC = () => {
               className="flex items-center gap-1.5 hover:text-[#3B0C04] transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-[#3B0C04]" />
-              <span>হটলাইন: 01700-000000</span>
+              <span>{t("nav.hotline")}</span>
             </a>
           </div>
         </div>
@@ -395,19 +401,24 @@ export const Navbar: React.FC = () => {
             </span>
           </Link>
 
-          {/* Cart Trigger */}
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative p-2 -mr-2 text-[#3B0C04] hover:bg-[#FFF7EE] rounded-lg transition-colors"
-            aria-label="Open Cart"
-          >
-            <ShoppingBag className="w-6 h-6" />
-            {cartCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#FFC40E] text-[#260700] text-[10px] font-black flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          {/* Right Mobile Actions: Language Switcher + Cart */}
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher variant="compact" />
+
+            {/* Cart Trigger */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 -mr-1 text-[#3B0C04] hover:bg-[#FFF7EE] rounded-lg transition-colors"
+              aria-label="Open Cart"
+            >
+              <ShoppingBag className="w-6 h-6" />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#FFC40E] text-[#260700] text-[10px] font-black flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Second Row: Full Width Sticky Search Bar (44px) */}
@@ -415,7 +426,7 @@ export const Navbar: React.FC = () => {
           <form onSubmit={handleSearchSubmit} className="relative">
             <input
               type="text"
-              placeholder="আপনি কী খুঁজছেন?"
+              placeholder={t("nav.searchPlaceholder")}
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="w-full h-10 pl-9 pr-14 rounded-lg bg-[#FFFDF9] border border-[#E8DCD2] text-xs text-[#2B160F] placeholder-[#8C7B72] focus:outline-none focus:border-[#3B0C04]"
@@ -425,7 +436,7 @@ export const Navbar: React.FC = () => {
               type="submit"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2.5 bg-[#3B0C04] text-[#FFC40E] text-[11px] font-semibold rounded-md"
             >
-              Search
+              {t("nav.searchBtn")}
             </button>
           </form>
         </div>
@@ -448,49 +459,55 @@ export const Navbar: React.FC = () => {
                 <div className="w-7 h-7 rounded-lg bg-[#FFC40E] text-[#260700] flex items-center justify-center font-bold text-sm">
                   প
                 </div>
-                <span className="font-bold text-base text-[#FFC40E]">পঞ্চমুখ</span>
+                <span className="font-bold text-base text-[#FFC40E]">{t("common.brandName")}</span>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-1 rounded-md text-white/80 hover:text-white"
+                aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Navigation Links */}
+            {/* Navigation Links & Language Switcher */}
             <div className="p-4 flex-1 divide-y divide-[#E8DCD2]/60">
+              {/* Language Switcher in Drawer */}
+              <div className="pb-3">
+                <LanguageSwitcher variant="drawer" />
+              </div>
+
               <div className="py-2 space-y-1">
                 <Link
                   href="/"
                   className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
-                  হোম
+                  {t("nav.home")}
                 </Link>
                 <Link
                   href="/shop"
                   className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
-                  সকল পণ্য (Shop)
+                  {t("nav.allProducts")}
                 </Link>
                 <Link
                   href="/shop?filter=new"
                   className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
-                  নতুন পণ্য (New Arrivals)
+                  {t("nav.newArrivals")}
                 </Link>
                 <Link
                   href="/shop?filter=bestseller"
                   className="block px-3 py-2 rounded-lg text-sm font-semibold text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
-                  বেস্ট সেলার (Best Sellers)
+                  {t("nav.bestSellers")}
                 </Link>
               </div>
 
               {/* Category Section */}
               <div className="py-3">
                 <p className="px-3 text-xs font-bold text-[#6B5A52] uppercase mb-2">
-                  ক্যাটাগরি সমূহ
+                  {t("nav.categories")}
                 </p>
                 <div className="space-y-1">
                   {mockCategories.map((cat) => (
@@ -512,28 +529,28 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
                   <User className="w-4 h-4 text-[#3B0C04]" />
-                  <span>আমার অ্যাকাউন্ট</span>
+                  <span>{t("nav.myAccount")}</span>
                 </Link>
                 <Link
                   href="/order-tracking"
                   className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
                   <ShieldCheck className="w-4 h-4 text-[#3B0C04]" />
-                  <span>অর্ডার ট্র্যাকিং</span>
+                  <span>{t("nav.orderTracking")}</span>
                 </Link>
                 <Link
                   href="/wishlist"
                   className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2B160F] hover:bg-[#FFF7EE]"
                 >
                   <Heart className="w-4 h-4 text-[#D64545]" />
-                  <span>উইশলিস্ট ({wishlistCount})</span>
+                  <span>{t("nav.wishlist")} ({wishlistCount})</span>
                 </Link>
                 <Link
                   href="/admin"
                   className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[#3B0C04] hover:bg-[#FFF7EE]"
                 >
                   <Sparkles className="w-4 h-4 text-[#FFC40E]" />
-                  <span>অ্যাডমিন প্যানেল</span>
+                  <span>{t("nav.adminPanel")}</span>
                 </Link>
               </div>
 
@@ -544,7 +561,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#FFF7EE] text-[#3B0C04] font-semibold"
                 >
                   <Phone className="w-4 h-4" />
-                  <span>হটলাইন: 01700-000000</span>
+                  <span>{t("nav.hotline")}</span>
                 </a>
                 <a
                   href="https://wa.me/8801700000000"
@@ -553,7 +570,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 text-[#075E54] font-semibold"
                 >
                   <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                  <span>হোয়াটসঅ্যাপ মেসেজ</span>
+                  <span>{t("common.whatsapp")}</span>
                 </a>
               </div>
             </div>

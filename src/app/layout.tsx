@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/cart-context";
+import { LanguageProvider } from "@/context/language-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,9 +46,11 @@ export default function RootLayout({
   return (
     <html lang="bn" className={`${inter.variable} ${notoSansBengali.variable}`}>
       <body className="bg-[#FFFDF9] text-[#2B160F] font-sans antialiased selection:bg-[#FFC40E]/30 selection:text-[#3B0C04] min-h-screen flex flex-col">
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <LanguageProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

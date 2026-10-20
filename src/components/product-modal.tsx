@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
 import { Star, X, ShoppingBag, Heart } from "lucide-react";
 import Link from "next/link";
 
@@ -15,6 +16,7 @@ export const ProductModal: React.FC = () => {
     toggleWishlist,
     isInWishlist
   } = useCart();
+  const { t, formatPrice, formatNumber, language } = useLanguage();
 
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -35,6 +37,8 @@ export const ProductModal: React.FC = () => {
   const images = selectedProduct.images?.length > 0
     ? selectedProduct.images
     : [{ id: "def-img", productId: selectedProduct.id, imageUrl: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&auto=format&fit=crop&q=80", isPrimary: true }];
+
+  const productName = (language === "en" && selectedProduct.nameEn) ? selectedProduct.nameEn : selectedProduct.name;
 
   const handleClose = () => {
     setIsProductModalOpen(false);
@@ -68,7 +72,7 @@ export const ProductModal: React.FC = () => {
           <div className="relative w-full aspect-square flex items-center justify-center overflow-hidden rounded-xl bg-white border border-[#E8DCD2]/60 p-4">
             <img
               src={images[selectedImageIndex]?.imageUrl}
-              alt={selectedProduct.name}
+              alt={productName}
               className="w-full h-full object-contain mix-blend-multiply"
             />
           </div>
@@ -98,29 +102,29 @@ export const ProductModal: React.FC = () => {
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-[#FFC40E] fill-current" />
-                <span className="text-xs font-bold text-[#2B160F]">{selectedProduct.averageRating}</span>
-                <span className="text-xs text-[#8C7B72]">({selectedProduct.reviewsCount} রিভিউ)</span>
+                <span className="text-xs font-bold text-[#2B160F]">{formatNumber(selectedProduct.averageRating)}</span>
+                <span className="text-xs text-[#8C7B72]">({formatNumber(selectedProduct.reviewsCount)} {t("productCard.reviews")})</span>
               </div>
               <span className="text-[11px] text-[#8C7B72] font-mono">SKU: {selectedProduct.sku}</span>
             </div>
 
             {/* Title */}
             <h2 className="text-lg font-bold text-[#2B160F] leading-snug mb-2">
-              {selectedProduct.name}
+              {productName}
             </h2>
 
             {/* Price */}
             <div className="flex items-baseline gap-2.5 mb-4">
               <span className="text-2xl font-black text-[#3B0C04]">
-                ৳{selectedProduct.salePrice ?? selectedProduct.basePrice}
+                {formatPrice(selectedProduct.salePrice ?? selectedProduct.basePrice)}
               </span>
               {selectedProduct.salePrice && selectedProduct.salePrice < selectedProduct.basePrice && (
                 <span className="text-sm text-[#8C7B72] line-through">
-                  ৳{selectedProduct.basePrice}
+                  {formatPrice(selectedProduct.basePrice)}
                 </span>
               )}
               <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[#E8F6F1] text-[#16834A]">
-                ✓ ইন স্টক
+                ✓ {t("productModal.inStock")}
               </span>
             </div>
 
@@ -133,7 +137,7 @@ export const ProductModal: React.FC = () => {
             {selectedProduct.variants && selectedProduct.variants.length > 1 && (
               <div className="mb-4">
                 <label className="block text-xs font-bold text-[#2B160F] mb-1.5">
-                  ভ্যারিয়েন্ট নির্বাচন করুন:
+                  {t("productModal.color")}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {selectedProduct.variants.map((v, i) => (
@@ -155,7 +159,7 @@ export const ProductModal: React.FC = () => {
 
             {/* Quantity Stepper */}
             <div className="flex items-center gap-3 mb-6">
-              <label className="text-xs font-bold text-[#2B160F]">পরিমাণ:</label>
+              <label className="text-xs font-bold text-[#2B160F]">{t("productModal.quantity")}</label>
               <div className="flex items-center border border-[#E8DCD2] rounded-lg bg-[#FFFDF9] overflow-hidden">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -164,7 +168,7 @@ export const ProductModal: React.FC = () => {
                   -
                 </button>
                 <span className="w-10 text-center text-xs font-bold text-[#2B160F]">
-                  {quantity}
+                  {formatNumber(quantity)}
                 </span>
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
@@ -184,7 +188,7 @@ export const ProductModal: React.FC = () => {
                 className="flex-1 h-11 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-white text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 <ShoppingBag className="w-4 h-4 text-[#FFC40E]" />
-                <span>কার্টে যোগ করুন</span>
+                <span>{t("productModal.addToCart")}</span>
               </button>
 
               <button
@@ -205,7 +209,7 @@ export const ProductModal: React.FC = () => {
               onClick={handleClose}
               className="block text-center text-xs font-semibold text-[#3B0C04] hover:underline pt-1"
             >
-              বিস্তারিত বিস্তারিত তথ্য ও রিভিউ দেখুন →
+              {t("productModal.viewFullDetails")}
             </Link>
           </div>
         </div>

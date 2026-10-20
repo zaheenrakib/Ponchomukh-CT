@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Footer } from "@/components/footer";
 import {
   Lock,
@@ -15,6 +17,7 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { language, t, formatPrice, formatNumber } = useLanguage();
   const {
     cartItems,
     cartSubtotal,
@@ -43,12 +46,20 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cartItems.length === 0) {
-      setErrorMessage("আপনার কার্ট খালি। অর্ডার সম্পন্ন করতে কিছু পণ্য যোগ করুন।");
+      setErrorMessage(
+        language === "bn"
+          ? "আপনার কার্ট খালি। অর্ডার সম্পন্ন করতে কিছু পণ্য যোগ করুন।"
+          : "Your cart is empty. Please add items before placing an order."
+      );
       return;
     }
 
     if (!fullName.trim() || !phoneNumber.trim() || !fullAddress.trim()) {
-      setErrorMessage("অনুগ্রহ করে আপনার নাম, মোবাইল নম্বর এবং সম্পূর্ণ ঠিকানা পূরণ করুন।");
+      setErrorMessage(
+        language === "bn"
+          ? "অনুগ্রহ করে আপনার নাম, মোবাইল নম্বর এবং সম্পূর্ণ ঠিকানা পূরণ করুন।"
+          : "Please fill in your name, mobile number, and full delivery address."
+      );
       return;
     }
 
@@ -156,9 +167,13 @@ export default function CheckoutPage() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-[#16834A] bg-[#E8F6F1] px-3 py-1.5 rounded-full border border-[#16834A]/30">
-            <Lock className="w-3.5 h-3.5" />
-            <span>১০০% নিরাপদ চেকআউট</span>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher variant="pill" className="hidden sm:inline-flex" />
+            <LanguageSwitcher variant="compact" className="sm:hidden" />
+            <div className="flex items-center gap-2 text-xs font-bold text-[#16834A] bg-[#E8F6F1] px-3 py-1.5 rounded-full border border-[#16834A]/30">
+              <Lock className="w-3.5 h-3.5" />
+              <span>{language === "bn" ? "১০০% নিরাপদ চেকআউট" : "100% Secure Checkout"}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -172,7 +187,7 @@ export default function CheckoutPage() {
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6B5A52] hover:text-[#3B0C04]"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>কার্ট পেজে ফিরে যান</span>
+              <span>{language === "bn" ? "কার্ট পেজে ফিরে যান" : "Back to Cart"}</span>
             </Link>
           </div>
 
@@ -184,20 +199,20 @@ export default function CheckoutPage() {
                 <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
                   <h2 className="text-base font-bold text-[#3B0C04] flex items-center gap-2 border-b border-[#E8DCD2] pb-3">
                     <span className="w-6 h-6 rounded-full bg-[#3B0C04] text-[#FFC40E] text-xs font-black flex items-center justify-center">
-                      ১
+                      {formatNumber(1)}
                     </span>
-                    <span>গ্রাহকের তথ্য (Customer Information)</span>
+                    <span>{language === "bn" ? "গ্রাহকের তথ্য (Customer Information)" : "Customer Information"}</span>
                   </h2>
 
                   <div className="space-y-3 text-xs">
                     <div>
                       <label className="block font-bold text-[#2B160F] mb-1">
-                        আপনার সম্পূর্ণ নাম <span className="text-[#D64545]">*</span>
+                        {language === "bn" ? "আপনার সম্পূর্ণ নাম" : "Full Name"} <span className="text-[#D64545]">*</span>
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="যেমন: মোঃ সাকিব হাসান"
+                        placeholder={language === "bn" ? "যেমন: মোঃ সাকিব হাসান" : "e.g. John Doe"}
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs text-[#2B160F] focus:outline-none focus:border-[#3B0C04]"
@@ -206,12 +221,12 @@ export default function CheckoutPage() {
 
                     <div>
                       <label className="block font-bold text-[#2B160F] mb-1">
-                        মোবাইল নম্বর <span className="text-[#D64545]">*</span>
+                        {language === "bn" ? "মোবাইল নম্বর" : "Mobile Phone Number"} <span className="text-[#D64545]">*</span>
                       </label>
                       <input
                         type="tel"
                         required
-                        placeholder="যেমন: 017XXXXXXXX"
+                        placeholder={language === "bn" ? "যেমন: 017XXXXXXXX" : "e.g. 017XXXXXXXX"}
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs text-[#2B160F] focus:outline-none focus:border-[#3B0C04]"
@@ -220,11 +235,11 @@ export default function CheckoutPage() {
 
                     <div>
                       <label className="block font-bold text-[#2B160F] mb-1">
-                        ইমেইল অ্যাড্রেস (ঐচ্ছিক)
+                        {language === "bn" ? "ইমেইল অ্যাড্রেস (ঐচ্ছিক)" : "Email Address (Optional)"}
                       </label>
                       <input
                         type="email"
-                        placeholder="যেমন: example@gmail.com"
+                        placeholder={language === "bn" ? "যেমন: example@gmail.com" : "e.g. example@gmail.com"}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs text-[#2B160F] focus:outline-none focus:border-[#3B0C04]"
@@ -237,16 +252,16 @@ export default function CheckoutPage() {
                 <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
                   <h2 className="text-base font-bold text-[#3B0C04] flex items-center gap-2 border-b border-[#E8DCD2] pb-3">
                     <span className="w-6 h-6 rounded-full bg-[#3B0C04] text-[#FFC40E] text-xs font-black flex items-center justify-center">
-                      ২
+                      {formatNumber(2)}
                     </span>
-                    <span>ডেলিভারি ঠিকানা (Delivery Address)</span>
+                    <span>{language === "bn" ? "ডেলিভারি ঠিকানা (Delivery Address)" : "Delivery Address"}</span>
                   </h2>
 
                   <div className="space-y-3 text-xs">
                     {/* Delivery Zone Selection */}
                     <div>
                       <label className="block font-bold text-[#2B160F] mb-2">
-                        ডেলিভারি এলাকা নির্বাচন করুন: <span className="text-[#D64545]">*</span>
+                        {language === "bn" ? "ডেলিভারি এলাকা নির্বাচন করুন:" : "Select Delivery Zone:"} <span className="text-[#D64545]">*</span>
                       </label>
                       <div className="grid grid-cols-2 gap-3">
                         <label
@@ -257,7 +272,9 @@ export default function CheckoutPage() {
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-[#3B0C04]">ঢাকা সিটির ভেতর</span>
+                            <span className="font-bold text-[#3B0C04]">
+                              {language === "bn" ? "ঢাকা সিটির ভেতর" : "Inside Dhaka City"}
+                            </span>
                             <input
                               type="radio"
                               name="zone"
@@ -266,8 +283,12 @@ export default function CheckoutPage() {
                               className="text-[#3B0C04] focus:ring-[#3B0C04]"
                             />
                           </div>
-                          <span className="text-xs font-black text-[#2B160F]">চার্জ ৳৬০</span>
-                          <span className="text-[10px] text-[#8C7B72]">২৪-৪৮ ঘণ্টার মধ্যে</span>
+                          <span className="text-xs font-black text-[#2B160F]">
+                            {language === "bn" ? `চার্জ ${formatPrice(60)}` : `Fee ${formatPrice(60)}`}
+                          </span>
+                          <span className="text-[10px] text-[#8C7B72]">
+                            {language === "bn" ? "২৪-৪৮ ঘণ্টার মধ্যে" : "Within 24-48 Hours"}
+                          </span>
                         </label>
 
                         <label
@@ -278,7 +299,9 @@ export default function CheckoutPage() {
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-[#3B0C04]">ঢাকার বাইরে</span>
+                            <span className="font-bold text-[#3B0C04]">
+                              {language === "bn" ? "ঢাকার বাইরে" : "Outside Dhaka"}
+                            </span>
                             <input
                               type="radio"
                               name="zone"
@@ -287,37 +310,45 @@ export default function CheckoutPage() {
                               className="text-[#3B0C04] focus:ring-[#3B0C04]"
                             />
                           </div>
-                          <span className="text-xs font-black text-[#2B160F]">চার্জ ৳১২০</span>
-                          <span className="text-[10px] text-[#8C7B72]">২-৩ কার্যদিবসের মধ্যে</span>
+                          <span className="text-xs font-black text-[#2B160F]">
+                            {language === "bn" ? `চার্জ ${formatPrice(120)}` : `Fee ${formatPrice(120)}`}
+                          </span>
+                          <span className="text-[10px] text-[#8C7B72]">
+                            {language === "bn" ? "২-৩ কার্যদিবসের মধ্যে" : "Within 2-3 Work Days"}
+                          </span>
                         </label>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block font-bold text-[#2B160F] mb-1">বিভাগ (Division):</label>
+                        <label className="block font-bold text-[#2B160F] mb-1">
+                          {language === "bn" ? "বিভাগ (Division):" : "Division:"}
+                        </label>
                         <select
                           value={division}
                           onChange={(e) => setDivision(e.target.value)}
                           className="w-full h-11 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-semibold"
                         >
-                          <option value="Dhaka">ঢাকা (Dhaka)</option>
-                          <option value="Chattogram">চট্টগ্রাম (Chattogram)</option>
-                          <option value="Rajshahi">রাজশাহী (Rajshahi)</option>
-                          <option value="Khulna">খুলনা (Khulna)</option>
-                          <option value="Sylhet">সিলেট (Sylhet)</option>
-                          <option value="Barishal">বরিশাল (Barishal)</option>
-                          <option value="Rangpur">রংপুর (Rangpur)</option>
-                          <option value="Mymensingh">ময়মনসিংহ (Mymensingh)</option>
+                          <option value="Dhaka">{language === "bn" ? "ঢাকা (Dhaka)" : "Dhaka"}</option>
+                          <option value="Chattogram">{language === "bn" ? "চট্টগ্রাম (Chattogram)" : "Chattogram"}</option>
+                          <option value="Rajshahi">{language === "bn" ? "রাজশাহী (Rajshahi)" : "Rajshahi"}</option>
+                          <option value="Khulna">{language === "bn" ? "খুলনা (Khulna)" : "Khulna"}</option>
+                          <option value="Sylhet">{language === "bn" ? "সিলেট (Sylhet)" : "Sylhet"}</option>
+                          <option value="Barishal">{language === "bn" ? "বরিশাল (Barishal)" : "Barishal"}</option>
+                          <option value="Rangpur">{language === "bn" ? "রংপুর (Rangpur)" : "Rangpur"}</option>
+                          <option value="Mymensingh">{language === "bn" ? "ময়মনসিংহ (Mymensingh)" : "Mymensingh"}</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block font-bold text-[#2B160F] mb-1">জেলা (District):</label>
+                        <label className="block font-bold text-[#2B160F] mb-1">
+                          {language === "bn" ? "জেলা (District):" : "District:"}
+                        </label>
                         <input
                           type="text"
                           required
-                          placeholder="যেমন: ঢাকা / গাজীপুর"
+                          placeholder={language === "bn" ? "যেমন: ঢাকা / গাজীপুর" : "e.g. Dhaka / Gazipur"}
                           value={district}
                           onChange={(e) => setDistrict(e.target.value)}
                           className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs"
@@ -326,10 +357,12 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <label className="block font-bold text-[#2B160F] mb-1">থানা / উপজেলা:</label>
+                      <label className="block font-bold text-[#2B160F] mb-1">
+                        {language === "bn" ? "থানা / উপজেলা:" : "Thana / Upazila:"}
+                      </label>
                       <input
                         type="text"
-                        placeholder="যেমন: ধানমন্ডি / মিরপুর"
+                        placeholder={language === "bn" ? "যেমন: ধানমন্ডি / মিরপুর" : "e.g. Dhanmondi / Mirpur"}
                         value={thana}
                         onChange={(e) => setThana(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs"
@@ -338,12 +371,16 @@ export default function CheckoutPage() {
 
                     <div>
                       <label className="block font-bold text-[#2B160F] mb-1">
-                        সম্পূর্ণ ডেলিভারি ঠিকানা <span className="text-[#D64545]">*</span>
+                        {language === "bn" ? "সম্পূর্ণ ডেলিভারি ঠিকানা" : "Full Delivery Address"} <span className="text-[#D64545]">*</span>
                       </label>
                       <textarea
                         required
                         rows={2}
-                        placeholder="বাড়ি নম্বর, রোড নম্বর, এলাকা বা ল্যান্ডমার্ক..."
+                        placeholder={
+                          language === "bn"
+                            ? "বাড়ি নম্বর, রোড নম্বর, এলাকা বা ল্যান্ডমার্ক..."
+                            : "House number, street address, area or landmark..."
+                        }
                         value={fullAddress}
                         onChange={(e) => setFullAddress(e.target.value)}
                         className="w-full p-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
@@ -352,11 +389,15 @@ export default function CheckoutPage() {
 
                     <div>
                       <label className="block font-bold text-[#2B160F] mb-1">
-                        অর্ডার সম্পর্কিত বিশেষ নোট (ঐচ্ছিক)
+                        {language === "bn" ? "অর্ডার সম্পর্কিত বিশেষ নোট (ঐচ্ছিক)" : "Order Notes (Optional)"}
                       </label>
                       <input
                         type="text"
-                        placeholder="যেমন: বিকেলে ডেলিভারি করবেন বা কল দিয়ে আসবেন..."
+                        placeholder={
+                          language === "bn"
+                            ? "যেমন: বিকেলে ডেলিভারি করবেন বা কল দিয়ে আসবেন..."
+                            : "e.g. Please deliver in the afternoon or call upon arrival..."
+                        }
                         value={orderNotes}
                         onChange={(e) => setOrderNotes(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs"
@@ -369,9 +410,9 @@ export default function CheckoutPage() {
                 <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
                   <h2 className="text-base font-bold text-[#3B0C04] flex items-center gap-2 border-b border-[#E8DCD2] pb-3">
                     <span className="w-6 h-6 rounded-full bg-[#3B0C04] text-[#FFC40E] text-xs font-black flex items-center justify-center">
-                      ৩
+                      {formatNumber(3)}
                     </span>
-                    <span>মূল্য পরিশোধের পদ্ধতি (Payment Method)</span>
+                    <span>{language === "bn" ? "মূল্য পরিশোধের পদ্ধতি (Payment Method)" : "Payment Method"}</span>
                   </h2>
 
                   <div className="space-y-2.5 text-xs">
@@ -385,8 +426,12 @@ export default function CheckoutPage() {
                       <div className="flex items-center gap-3">
                         <CreditCard className="w-5 h-5 text-[#3B0C04]" />
                         <div>
-                          <p className="font-bold text-[#2B160F]">ক্যাশ অন ডেলিভারি (Cash on Delivery)</p>
-                          <p className="text-[11px] text-[#6B5A52]">পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</p>
+                          <p className="font-bold text-[#2B160F]">
+                            {language === "bn" ? "ক্যাশ অন ডেলিভারি (Cash on Delivery)" : "Cash on Delivery (COD)"}
+                          </p>
+                          <p className="text-[11px] text-[#6B5A52]">
+                            {language === "bn" ? "পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন" : "Pay with cash when your product arrives"}
+                          </p>
                         </div>
                       </div>
                       <input
@@ -410,8 +455,12 @@ export default function CheckoutPage() {
                           b
                         </span>
                         <div>
-                          <p className="font-bold text-[#2B160F]">bKash (বিকাশ অনলাইন পেমেন্ট)</p>
-                          <p className="text-[11px] text-[#6B5A52]">পেমেন্ট গেটওয়ে ইন্টিগ্রেশন শীঘ্রই আসছে</p>
+                          <p className="font-bold text-[#2B160F]">
+                            {language === "bn" ? "bKash (বিকাশ অনলাইন পেমেন্ট)" : "bKash Online Payment"}
+                          </p>
+                          <p className="text-[11px] text-[#6B5A52]">
+                            {language === "bn" ? "পেমেন্ট গেটওয়ে ইন্টিগ্রেশন শীঘ্রই আসছে" : "Payment gateway integration coming soon"}
+                          </p>
                         </div>
                       </div>
                       <input
@@ -430,51 +479,62 @@ export default function CheckoutPage() {
               <div className="lg:col-span-5 space-y-4">
                 <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 sticky top-24">
                   <h3 className="text-base font-black text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
-                    অর্ডার সামারি ({cartItems.reduce((acc, i) => acc + i.quantity, 0)} আইটেম)
+                    {language === "bn"
+                      ? `অর্ডার সামারি (${formatNumber(cartItems.reduce((acc, i) => acc + i.quantity, 0))} আইটেম)`
+                      : `Order Summary (${cartItems.reduce((acc, i) => acc + i.quantity, 0)} items)`}
                   </h3>
 
                   {/* Cart Item Preview */}
                   <div className="divide-y divide-[#E8DCD2]/60 max-h-60 overflow-y-auto pr-1">
-                    {cartItems.map((item) => (
-                      <div key={item.productVariantId} className="py-2.5 flex items-center gap-3">
-                        <img
-                          src={item.product.images?.[0]?.imageUrl}
-                          alt=""
-                          className="w-11 h-11 object-contain rounded-md border border-[#E8DCD2] p-0.5 bg-white shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-[#2B160F] truncate">{item.product.name}</p>
-                          <p className="text-[11px] text-[#8C7B72]">পরিমাণ: {item.quantity} × ৳{item.variant.price}</p>
+                    {cartItems.map((item) => {
+                      const displayName = (language === "en" && item.product.nameEn) ? item.product.nameEn : item.product.name;
+                      return (
+                        <div key={item.productVariantId} className="py-2.5 flex items-center gap-3">
+                          <img
+                            src={item.product.images?.[0]?.imageUrl}
+                            alt={displayName}
+                            className="w-11 h-11 object-contain rounded-md border border-[#E8DCD2] p-0.5 bg-white shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-[#2B160F] truncate">{displayName}</p>
+                            <p className="text-[11px] text-[#8C7B72]">
+                              {language === "bn"
+                                ? `পরিমাণ: ${formatNumber(item.quantity)} × ${formatPrice(item.variant.price)}`
+                                : `Qty: ${item.quantity} × ${formatPrice(item.variant.price)}`}
+                            </p>
+                          </div>
+                          <span className="text-xs font-black text-[#3B0C04] shrink-0">
+                            {formatPrice(item.variant.price * item.quantity)}
+                          </span>
                         </div>
-                        <span className="text-xs font-black text-[#3B0C04] shrink-0">
-                          ৳{item.variant.price * item.quantity}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Price Calculations */}
                   <div className="space-y-2 text-xs text-[#6B5A52] border-t border-[#E8DCD2] pt-3">
                     <div className="flex justify-between">
-                      <span>সাব-টোটাল</span>
-                      <span className="font-bold text-[#2B160F]">৳{cartSubtotal}</span>
+                      <span>{t("cart.subtotal")}</span>
+                      <span className="font-bold text-[#2B160F]">{formatPrice(cartSubtotal)}</span>
                     </div>
 
                     {cartDiscount > 0 && (
                       <div className="flex justify-between text-[#16834A]">
-                        <span>ডিসকাউন্ট ছাড়</span>
-                        <span className="font-bold">-৳{cartDiscount}</span>
+                        <span>{t("cart.discount")}</span>
+                        <span className="font-bold">-{formatPrice(cartDiscount)}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between">
-                      <span>ডেলিভারি চার্জ ({deliveryZone === "INSIDE_DHAKA" ? "ঢাকা" : "বাইরে"})</span>
-                      <span className="font-bold text-[#2B160F]">৳{cartShippingFee}</span>
+                      <span>
+                        {t("cart.shipping")} ({deliveryZone === "INSIDE_DHAKA" ? (language === "bn" ? "ঢাকা" : "Dhaka") : (language === "bn" ? "বাইরে" : "Outside")})
+                      </span>
+                      <span className="font-bold text-[#2B160F]">{formatPrice(cartShippingFee)}</span>
                     </div>
 
                     <div className="flex justify-between text-base font-black text-[#3B0C04] pt-3 border-t border-[#E8DCD2]">
-                      <span>সর্বমোট প্রদেয় বিল</span>
-                      <span className="text-xl font-black text-[#3B0C04]">৳{cartTotal}</span>
+                      <span>{t("cart.total")}</span>
+                      <span className="text-xl font-black text-[#3B0C04]">{formatPrice(cartTotal)}</span>
                     </div>
                   </div>
 
@@ -494,19 +554,21 @@ export default function CheckoutPage() {
                       {isSubmitting ? (
                         <>
                           <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>অর্ডার প্রসেসিং হচ্ছে...</span>
+                          <span>{language === "bn" ? "অর্ডার প্রসেসিং হচ্ছে..." : "Processing Order..."}</span>
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="w-5 h-5" />
-                          <span>অর্ডার কনফার্ম করুন (Place Order)</span>
+                          <span>{language === "bn" ? "অর্ডার কনফার্ম করুন (Place Order)" : "Confirm & Place Order"}</span>
                         </>
                       )}
                     </button>
                   </div>
 
                   <p className="text-[11px] text-center text-[#8C7B72]">
-                    অর্ডার প্লেস করার মাধ্যমে আপনি আমাদের শর্তাবলীর সাথে সম্মত হচ্ছেন।
+                    {language === "bn"
+                      ? "অর্ডার প্লেস করার মাধ্যমে আপনি আমাদের শর্তাবলীর সাথে সম্মত হচ্ছেন।"
+                      : "By placing this order, you agree to our Terms and Conditions."}
                   </p>
                 </div>
               </div>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
 import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag } from "lucide-react";
 
 export const CartDrawer: React.FC = () => {
@@ -22,6 +23,7 @@ export const CartDrawer: React.FC = () => {
     deliveryZone,
     setDeliveryZone
   } = useCart();
+  const { t, formatPrice, formatNumber } = useLanguage();
 
   const [couponInput, setCouponInput] = useState("");
   const [couponError, setCouponError] = useState("");
@@ -55,7 +57,7 @@ export const CartDrawer: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <ShoppingBag className="w-5 h-5 text-[#FFC40E]" />
             <h2 className="font-bold text-base text-[#FFC40E]">
-              আপনার কার্ট ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})
+              {t("cart.title")} ({formatNumber(cartItems.reduce((acc, item) => acc + item.quantity, 0))})
             </h2>
           </div>
           <button
@@ -70,7 +72,7 @@ export const CartDrawer: React.FC = () => {
         {/* Free Shipping or Offer Progress */}
         <div className="bg-[#FFF7EE] px-4 py-2.5 border-b border-[#E8DCD2] text-xs text-[#2B160F] flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-[#16834A] shrink-0" />
-          <span>সারা বাংলাদেশে ১০০% ক্যাশ অন ডেলিভারি সুবিধা!</span>
+          <span>{t("cart.codNotice")}</span>
         </div>
 
         {/* Cart Item List */}
@@ -81,16 +83,16 @@ export const CartDrawer: React.FC = () => {
                 <ShoppingBag className="w-8 h-8 text-[#3B0C04]" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#2B160F]">আপনার কার্ট এখনো খালি</h3>
+                <h3 className="text-base font-bold text-[#2B160F]">{t("cart.emptyTitle")}</h3>
                 <p className="text-xs text-[#8C7B72] mt-1">
-                  আপনার পছন্দের পণ্য খুঁজে শপিং শুরু করুন।
+                  {t("cart.emptySubtitle")}
                 </p>
               </div>
               <button
                 onClick={() => setIsCartOpen(false)}
                 className="px-6 py-2.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold shadow-xs hover:bg-[#260700]"
               >
-                এখনই শপিং শুরু করুন
+                {t("cart.startShopping")}
               </button>
             </div>
           ) : (
@@ -122,7 +124,7 @@ export const CartDrawer: React.FC = () => {
                       <button
                         onClick={() => removeFromCart(item.productVariantId)}
                         className="text-[#8C7B72] hover:text-[#D64545] p-0.5"
-                        title="রিমুভ করুন"
+                        title={t("cart.clearCart")}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -130,7 +132,7 @@ export const CartDrawer: React.FC = () => {
 
                     {item.variant.selectedOptions?.[0] && (
                       <span className="text-[11px] text-[#8C7B72]">
-                        অপশন: {item.variant.selectedOptions[0].value}
+                        {item.variant.selectedOptions[0].attributeName}: {item.variant.selectedOptions[0].value}
                       </span>
                     )}
                   </div>
@@ -138,7 +140,7 @@ export const CartDrawer: React.FC = () => {
                   {/* Price & Quantity Controls */}
                   <div className="flex items-center justify-between mt-2 pt-1 border-t border-[#E8DCD2]/40">
                     <span className="text-xs font-bold text-[#3B0C04]">
-                      ৳{item.variant.price * item.quantity}
+                      {formatPrice(item.variant.price * item.quantity)}
                     </span>
 
                     <div className="flex items-center border border-[#E8DCD2] rounded-md bg-white">
@@ -150,7 +152,7 @@ export const CartDrawer: React.FC = () => {
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="w-7 text-center text-xs font-bold text-[#2B160F]">
-                        {item.quantity}
+                        {formatNumber(item.quantity)}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.productVariantId, item.quantity + 1)}
@@ -176,20 +178,20 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex items-center justify-between p-2 rounded-lg bg-[#E8F6F1] border border-[#16834A]/30 text-xs">
                   <div className="flex items-center gap-1.5 text-[#16834A] font-bold">
                     <Tag className="w-3.5 h-3.5" />
-                    <span>কুপন কোড: {appliedCoupon.code}</span>
+                    <span>{t("cart.appliedCoupon")}: {appliedCoupon.code}</span>
                   </div>
                   <button
                     onClick={removeCoupon}
                     className="text-[#D64545] hover:underline text-[11px] font-semibold"
                   >
-                    মুছুন
+                    {t("cart.removeCoupon")}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleApplyCoupon} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="কুপন কোড (যেমন: PONCHO10)"
+                    placeholder={t("cart.couponPlaceholder")}
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value)}
                     className="flex-1 h-9 px-3 text-xs rounded-lg border border-[#E8DCD2] uppercase placeholder:normal-case focus:outline-none focus:border-[#3B0C04]"
@@ -198,7 +200,7 @@ export const CartDrawer: React.FC = () => {
                     type="submit"
                     className="h-9 px-3.5 rounded-lg bg-[#FFF7EE] hover:bg-[#3B0C04] text-[#3B0C04] hover:text-[#FFC40E] border border-[#E8DCD2] text-xs font-bold transition-colors"
                   >
-                    প্রয়োগ
+                    {t("cart.applyCoupon")}
                   </button>
                 </form>
               )}
@@ -210,32 +212,32 @@ export const CartDrawer: React.FC = () => {
             {/* Price Calculations */}
             <div className="space-y-1.5 text-xs text-[#6B5A52] border-t border-[#E8DCD2]/60 pt-2">
               <div className="flex justify-between">
-                <span>সাব-টোটাল</span>
-                <span className="font-semibold text-[#2B160F]">৳{cartSubtotal}</span>
+                <span>{t("cart.subtotal")}</span>
+                <span className="font-semibold text-[#2B160F]">{formatPrice(cartSubtotal)}</span>
               </div>
               {cartDiscount > 0 && (
                 <div className="flex justify-between text-[#16834A]">
-                  <span>ডিসকাউন্ট</span>
-                  <span className="font-semibold">-৳{cartDiscount}</span>
+                  <span>{t("cart.discount")}</span>
+                  <span className="font-semibold">-{formatPrice(cartDiscount)}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span>ডেলিভারি চার্জ</span>
+                <span>{t("cart.shipping")}</span>
                 <div className="flex items-center gap-2">
                   <select
                     value={deliveryZone}
                     onChange={(e) => setDeliveryZone(e.target.value as any)}
                     className="text-[11px] py-0.5 px-1.5 border border-[#E8DCD2] rounded bg-[#FFFDF9] text-[#2B160F]"
                   >
-                    <option value="INSIDE_DHAKA">ঢাকা সিটি (৳৬০)</option>
-                    <option value="OUTSIDE_DHAKA">ঢাকার বাইরে (৳১২০)</option>
+                    <option value="INSIDE_DHAKA">{t("cart.insideDhaka")}</option>
+                    <option value="OUTSIDE_DHAKA">{t("cart.outsideDhaka")}</option>
                   </select>
-                  <span className="font-semibold text-[#2B160F]">৳{cartShippingFee}</span>
+                  <span className="font-semibold text-[#2B160F]">{formatPrice(cartShippingFee)}</span>
                 </div>
               </div>
               <div className="flex justify-between text-sm font-bold text-[#3B0C04] pt-1.5 border-t border-[#E8DCD2]">
-                <span>সর্বমোট (Total)</span>
-                <span className="text-base font-black">৳{cartTotal}</span>
+                <span>{t("cart.total")}</span>
+                <span className="text-base font-black">{formatPrice(cartTotal)}</span>
               </div>
             </div>
 
@@ -246,7 +248,7 @@ export const CartDrawer: React.FC = () => {
                 onClick={() => setIsCartOpen(false)}
                 className="w-full h-11 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
               >
-                <span>অর্ডার সম্পন্ন করুন (Checkout)</span>
+                <span>{t("cart.checkout")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
@@ -254,7 +256,7 @@ export const CartDrawer: React.FC = () => {
                 onClick={() => setIsCartOpen(false)}
                 className="block text-center text-xs font-semibold text-[#6B5A52] hover:text-[#3B0C04] py-1"
               >
-                কার্ট পেজ দেখুন →
+                {t("cart.viewCart")} →
               </Link>
             </div>
           </div>

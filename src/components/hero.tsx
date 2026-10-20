@@ -3,8 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles, ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { useLanguage } from "@/context/language-context";
 
 export const Hero: React.FC = () => {
+  const { t, formatPrice } = useLanguage();
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#FFF7EE] via-[#FFFDF9] to-[#F3F7F5] border-b border-[#E8DCD2]">
       <div className="container-custom">
@@ -14,20 +17,20 @@ export const Hero: React.FC = () => {
             {/* Top Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3B0C04]/10 border border-[#3B0C04]/20 text-xs font-bold text-[#3B0C04] w-fit mx-auto lg:mx-0 shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 text-[#FFC40E]" />
-              <span>বাংলাদেশের নির্ভরযোগ্য অনলাইন স্টোর</span>
+              <span>{t("hero.badge")}</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#3B0C04] tracking-tight leading-[1.15]">
-              আপনার পছন্দের পণ্য, <br className="hidden sm:inline" />
+              {t("hero.titlePart1")} <br className="hidden sm:inline" />
               <span className="text-[#3B0C04] underline decoration-[#FFC40E] decoration-wavy decoration-2">
-                এখন এক ঠিকানায়।
+                {t("hero.titlePart2")}
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-sm md:text-base text-[#6B5A52] max-w-lg mx-auto lg:mx-0 leading-relaxed font-normal">
-              দৈনন্দিন জীবনের প্রয়োজনীয় গ্যাজেট, ইলেকট্রনিক্স ও লাইফস্টাইল পণ্য নির্বাচন করুন পঞ্চমুখ থেকে। বিশ্বস্ত সেবা ও দ্রুততম হোম ডেলিভারি।
+              {t("hero.subtitle")}
             </p>
 
             {/* CTA Buttons */}
@@ -36,14 +39,14 @@ export const Hero: React.FC = () => {
                 href="/shop"
                 className="w-full sm:w-auto h-11 md:h-12 px-7 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-95"
               >
-                <span>Shop Now</span>
+                <span>{t("hero.shopNow")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/shop?filter=new"
                 className="w-full sm:w-auto h-11 md:h-12 px-6 rounded-lg bg-white hover:bg-[#FFF7EE] text-[#3B0C04] border border-[#3B0C04] font-bold text-sm md:text-base flex items-center justify-center gap-2 transition-all active:scale-95"
               >
-                <span>Explore Products</span>
+                <span>{t("hero.exploreProducts")}</span>
               </Link>
             </div>
 
@@ -51,17 +54,17 @@ export const Hero: React.FC = () => {
             <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-semibold text-[#6B5A52]">
               <div className="flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-[#3B0C04]" />
-                <span>সারা দেশে হোম ডেলিভারি</span>
+                <span>{t("hero.homeDelivery")}</span>
               </div>
               <span className="hidden sm:inline text-[#E8DCD2]">•</span>
               <div className="flex items-center gap-1.5">
                 <CreditCard className="w-4 h-4 text-[#3B0C04]" />
-                <span>ক্যাশ অন ডেলিভারি</span>
+                <span>{t("hero.cashOnDelivery")}</span>
               </div>
               <span className="hidden sm:inline text-[#E8DCD2]">•</span>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#16834A]" />
-                <span>১০০% অরিজিনাল পণ্য</span>
+                <span>{t("hero.originalProducts")}</span>
               </div>
             </div>
           </div>
@@ -83,14 +86,14 @@ export const Hero: React.FC = () => {
               {/* Floating Highlight Pill */}
               <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-white/95 border border-[#E8DCD2] shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-[#2B160F]">Hoco Y12 Ultra Smartwatch</p>
-                  <p className="text-xs text-[#3B0C04] font-black">৳1,999 <span className="text-[10px] text-[#8C7B72] line-through">৳2,899</span></p>
+                  <p className="text-xs font-bold text-[#2B160F]">{t("hero.featuredWatchTitle")}</p>
+                  <p className="text-xs text-[#3B0C04] font-black">{formatPrice(1999)} <span className="text-[10px] text-[#8C7B72] line-through">{formatPrice(2899)}</span></p>
                 </div>
                 <Link
                   href="/shop"
                   className="px-3 py-1.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700]"
                 >
-                  দেখুন
+                  {t("hero.view")}
                 </Link>
               </div>
             </div>

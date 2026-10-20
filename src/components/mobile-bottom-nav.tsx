@@ -5,10 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, Heart, User, Store } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
 
 export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
   const { cartCount, wishlistCount, setIsCartOpen } = useCart();
+  const { t } = useLanguage();
 
   // Don't show bottom nav inside admin panel
   if (pathname.startsWith("/admin")) {
@@ -26,7 +28,7 @@ export const MobileBottomNav: React.FC = () => {
           }`}
         >
           <Home className="w-5 h-5 mb-0.5" />
-          <span>হোম</span>
+          <span>{t("mobileNav.home")}</span>
         </Link>
 
         {/* Shop */}
@@ -39,7 +41,7 @@ export const MobileBottomNav: React.FC = () => {
           }`}
         >
           <Store className="w-5 h-5 mb-0.5" />
-          <span>শপ</span>
+          <span>{t("mobileNav.shop")}</span>
         </Link>
 
         {/* Wishlist */}
@@ -57,7 +59,7 @@ export const MobileBottomNav: React.FC = () => {
               </span>
             )}
           </div>
-          <span>উইশলিস্ট</span>
+          <span>{t("mobileNav.wishlist")}</span>
         </Link>
 
         {/* Account */}
@@ -70,7 +72,7 @@ export const MobileBottomNav: React.FC = () => {
           }`}
         >
           <User className="w-5 h-5 mb-0.5" />
-          <span>প্রোফাইল</span>
+          <span>{t("mobileNav.profile")}</span>
         </Link>
 
         {/* Cart Drawer Trigger */}
@@ -86,7 +88,7 @@ export const MobileBottomNav: React.FC = () => {
               </span>
             )}
           </div>
-          <span>কার্ট</span>
+          <span>{t("mobileNav.cart")}</span>
         </button>
       </div>
     </nav>

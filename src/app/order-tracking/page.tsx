@@ -7,6 +7,7 @@ import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { useLanguage } from "@/context/language-context";
 import {
   Search,
   CheckCircle2,
@@ -47,6 +48,7 @@ const demoOrder = {
 };
 
 function OrderTrackingContent() {
+  const { language, t, formatPrice, formatNumber } = useLanguage();
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get("orderId") || "";
 
@@ -158,15 +160,17 @@ function OrderTrackingContent() {
         <div className="bg-[#FFF7EE] border-b border-[#E8DCD2] py-8">
           <div className="container-custom">
             <div className="flex items-center gap-1.5 text-xs text-[#8C7B72] mb-2">
-              <Link href="/" className="hover:text-[#3B0C04]">হোম</Link>
+              <Link href="/" className="hover:text-[#3B0C04]">{t("nav.home")}</Link>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-[#3B0C04] font-semibold">অর্ডার ট্র্যাকিং</span>
+              <span className="text-[#3B0C04] font-semibold">{t("footer.trackOrder")}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#3B0C04]">
-              অর্ডার ট্র্যাকিং (Order Tracking)
+              {language === "bn" ? "অর্ডার ট্র্যাকিং" : "Order Tracking"}
             </h1>
             <p className="text-xs sm:text-sm text-[#6B5A52] mt-0.5">
-              আপনার অর্ডারের বর্তমান অবস্থা এবং ডেলিভারি অগ্রগতি সরাসরি ট্র্যাক করুন
+              {language === "bn"
+                ? "আপনার অর্ডারের বর্তমান অবস্থা এবং ডেলিভারি অগ্রগতি সরাসরি ট্র্যাক করুন"
+                : "Track real-time status and delivery progress of your order"}
             </p>
           </div>
         </div>
@@ -177,12 +181,12 @@ function OrderTrackingContent() {
             <form onSubmit={onSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <div className="sm:col-span-6">
                 <label className="block text-xs font-bold text-[#2B160F] mb-1">
-                  অর্ডার নম্বর (Order ID):
+                  {language === "bn" ? "অর্ডার নম্বর (Order ID):" : "Order Number (Order ID):"}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="যেমন: PN10025"
+                  placeholder={language === "bn" ? "যেমন: PN10025" : "e.g. PN10025"}
                   value={orderInput}
                   onChange={(e) => setOrderInput(e.target.value)}
                   className="w-full h-11 px-3.5 rounded-lg border border-[#E8DCD2] uppercase text-xs font-mono font-bold focus:outline-none focus:border-[#3B0C04]"
@@ -191,7 +195,7 @@ function OrderTrackingContent() {
 
               <div className="sm:col-span-4">
                 <label className="block text-xs font-bold text-[#2B160F] mb-1">
-                  মোবাইল নম্বর (ঐচ্ছিক):
+                  {language === "bn" ? "মোবাইল নম্বর (ঐচ্ছিক):" : "Phone Number (Optional):"}
                 </label>
                 <input
                   type="tel"
@@ -208,7 +212,7 @@ function OrderTrackingContent() {
                   className="w-full h-11 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Search className="w-4 h-4" />
-                  <span>ট্র্যাক করুন</span>
+                  <span>{language === "bn" ? "ট্র্যাক করুন" : "Track"}</span>
                 </button>
               </div>
             </form>
@@ -219,10 +223,12 @@ function OrderTrackingContent() {
             <div className="p-10 text-center rounded-2xl bg-white border border-[#E8DCD2] space-y-3">
               <AlertCircle className="w-10 h-10 text-[#D64545] mx-auto" />
               <h3 className="text-base font-bold text-[#2B160F]">
-                অর্ডারটি খুঁজে পাওয়া যায়নি
+                {language === "bn" ? "অর্ডারটি খুঁজে পাওয়া যায়নি" : "Order Not Found"}
               </h3>
               <p className="text-xs text-[#8C7B72]">
-                দয়া করে অর্ডার নম্বর (যেমন: PN10025) সঠিকভাবে পরীক্ষা করে আবার চেষ্টা করুন।
+                {language === "bn"
+                  ? "দয়া করে অর্ডার নম্বর (যেমন: PN10025) সঠিকভাবে পরীক্ষা করে আবার চেষ্টা করুন।"
+                  : "Please check your Order ID (e.g. PN10025) and try again."}
               </p>
             </div>
           )}
@@ -233,26 +239,28 @@ function OrderTrackingContent() {
               <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-[#8C7B72]">অর্ডার আইডি:</span>
+                    <span className="text-xs text-[#8C7B72]">
+                      {language === "bn" ? "অর্ডার আইডি:" : "Order ID:"}
+                    </span>
                     <strong className="font-mono text-base font-black text-[#3B0C04]">
                       {searchedOrder.orderId}
                     </strong>
                   </div>
                   <p className="text-xs text-[#6B5A52]">
-                    অর্ডারের তারিখ: {searchedOrder.date} | পেমেন্ট: {searchedOrder.paymentMethod}
+                    {language === "bn" ? "অর্ডারের তারিখ" : "Order Date"}: {searchedOrder.date} | {language === "bn" ? "পেমেন্ট" : "Payment"}: {searchedOrder.paymentMethod}
                   </p>
                 </div>
 
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E8F6F1] border border-[#16834A]/30 text-xs font-bold text-[#16834A]">
                   <Clock className="w-4 h-4" />
-                  <span>স্ট্যাটাস: {searchedOrder.status}</span>
+                  <span>{language === "bn" ? "স্ট্যাটাস" : "Status"}: {searchedOrder.status}</span>
                 </div>
               </div>
 
               {/* Vertical / Horizontal Timeline */}
               <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs">
                 <h3 className="text-sm font-bold text-[#3B0C04] uppercase tracking-wider mb-6 border-b border-[#E8DCD2] pb-3">
-                  ডেলিভারি ট্র্যাকিং টাইমলাইন (Live Timeline)
+                  {language === "bn" ? "ডেলিভারি ট্র্যাকিং টাইমলাইন" : "Delivery Progress Timeline"}
                 </h3>
 
                 <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-2.5 sm:before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E8DCD2]">
@@ -266,7 +274,7 @@ function OrderTrackingContent() {
                             : "bg-white border-2 border-[#E8DCD2] text-[#8C7B72]"
                         }`}
                       >
-                        {step.done ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
+                        {step.done ? <CheckCircle2 className="w-4 h-4" /> : formatNumber(idx + 1)}
                       </div>
 
                       {/* Step Text Info */}
@@ -291,21 +299,21 @@ function OrderTrackingContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-5 rounded-xl bg-white border border-[#E8DCD2] text-xs space-y-2">
                   <h4 className="font-bold text-[#3B0C04] uppercase border-b border-[#E8DCD2] pb-2">
-                    ডেলিভারি ঠিকানা
+                    {language === "bn" ? "ডেলিভারি ঠিকানা" : "Delivery Address"}
                   </h4>
-                  <p><strong>প্রাপক:</strong> {searchedOrder.customer.name}</p>
-                  <p><strong>ফোন:</strong> {searchedOrder.customer.phone}</p>
-                  <p><strong>ঠিকানা:</strong> {searchedOrder.customer.address}</p>
+                  <p><strong>{language === "bn" ? "প্রাপক:" : "Customer:"}</strong> {searchedOrder.customer.name}</p>
+                  <p><strong>{language === "bn" ? "ফোন:" : "Phone:"}</strong> {searchedOrder.customer.phone}</p>
+                  <p><strong>{language === "bn" ? "ঠিকানা:" : "Address:"}</strong> {searchedOrder.customer.address}</p>
                 </div>
 
                 <div className="p-5 rounded-xl bg-white border border-[#E8DCD2] text-xs space-y-2">
                   <h4 className="font-bold text-[#3B0C04] uppercase border-b border-[#E8DCD2] pb-2">
-                    পেমেন্ট ও বিলিং
+                    {language === "bn" ? "পেমেন্ট ও বিলিং" : "Payment & Billing"}
                   </h4>
-                  <p><strong>পেমেন্ট মেথড:</strong> {searchedOrder.paymentMethod}</p>
-                  <p><strong>ডেলিভারি চার্জ:</strong> ৳{searchedOrder.shippingFee || 60}</p>
+                  <p><strong>{language === "bn" ? "পেমেন্ট মেথড:" : "Payment Method:"}</strong> {searchedOrder.paymentMethod}</p>
+                  <p><strong>{language === "bn" ? "ডেলিভারি চার্জ:" : "Delivery Fee:"}</strong> {formatPrice(searchedOrder.shippingFee || 60)}</p>
                   <p className="text-sm font-bold text-[#3B0C04]">
-                    <strong>সর্বমোট বিল:</strong> ৳{searchedOrder.total}
+                    <strong>{language === "bn" ? "সর্বমোট বিল:" : "Total Amount:"}</strong> {formatPrice(searchedOrder.total)}
                   </p>
                 </div>
               </div>

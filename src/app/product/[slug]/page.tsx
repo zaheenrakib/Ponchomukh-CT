@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { ProductCard } from "@/components/product-card";
 import { CartDrawer } from "@/components/cart-drawer";
+import { useLanguage } from "@/context/language-context";
 import { mockProducts, Product, ProductReview } from "@/lib/mockData";
 import { useCart } from "@/context/cart-context";
 import {
@@ -33,6 +34,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params?.slug as string;
+  const { language, t, formatPrice, formatNumber } = useLanguage();
 
   const {
     addToCart,
@@ -218,13 +220,15 @@ export default function ProductDetailPage() {
         <div className="bg-[#FFF7EE] border-b border-[#E8DCD2] py-3.5">
           <div className="container-custom">
             <div className="flex items-center gap-1.5 text-xs text-[#8C7B72] truncate">
-              <Link href="/" className="hover:text-[#3B0C04]">হোম</Link>
+              <Link href="/" className="hover:text-[#3B0C04]">{t("nav.home")}</Link>
               <ChevronRight className="w-3 h-3 shrink-0" />
               <Link href={`/category/${product.category.slug}`} className="hover:text-[#3B0C04] shrink-0">
                 {product.category.name}
               </Link>
               <ChevronRight className="w-3 h-3 shrink-0" />
-              <span className="text-[#3B0C04] font-semibold truncate">{product.name}</span>
+              <span className="text-[#3B0C04] font-semibold truncate">
+                {(language === "en" && product.nameEn) ? product.nameEn : product.name}
+              </span>
             </div>
           </div>
         </div>
@@ -237,12 +241,12 @@ export default function ProductDetailPage() {
               <div className="relative aspect-square w-full rounded-2xl bg-white border border-[#E8DCD2] p-6 flex items-center justify-center overflow-hidden shadow-xs">
                 {discountPercent && (
                   <span className="absolute top-4 left-4 z-10 px-2.5 py-1 bg-[#D64545] text-white text-xs font-bold rounded-md">
-                    -{discountPercent}% OFF
+                    -{formatNumber(discountPercent)}% OFF
                   </span>
                 )}
                 <img
                   src={images[selectedImageIndex]?.imageUrl}
-                  alt={product.name}
+                  alt={(language === "en" && product.nameEn) ? product.nameEn : product.name}
                   className="w-full h-full object-contain mix-blend-multiply transition-all duration-300"
                 />
               </div>
@@ -272,13 +276,16 @@ export default function ProductDetailPage() {
               <div className="space-y-4">
                 {/* Brand & SKU */}
                 <div className="flex items-center justify-between text-xs text-[#8C7B72]">
-                  <span>ব্র্যান্ড: <strong className="text-[#3B0C04]">{product.brand?.name || "Ponchomukh"}</strong></span>
+                  <span>
+                    {language === "bn" ? "ব্র্যান্ড: " : "Brand: "}
+                    <strong className="text-[#3B0C04]">{product.brand?.name || "Ponchomukh"}</strong>
+                  </span>
                   <span className="font-mono">SKU: {product.sku}</span>
                 </div>
 
                 {/* Product Title */}
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#2B160F] leading-snug">
-                  {product.name}
+                  {(language === "en" && product.nameEn) ? product.nameEn : product.name}
                 </h1>
 
                 {/* Rating & Reviews */}
@@ -288,27 +295,36 @@ export default function ProductDetailPage() {
                       <Star key={i} className="w-4 h-4 fill-current" />
                     ))}
                   </div>
-                  <span className="font-bold text-[#2B160F]">{product.averageRating}</span>
-                  <span className="text-[#8C7B72]">({customReviews.length} কাস্টমার রিভিউ)</span>
+                  <span className="font-bold text-[#2B160F]">{formatNumber(product.averageRating)}</span>
+                  <span className="text-[#8C7B72]">
+                    {language === "bn"
+                      ? `(${formatNumber(customReviews.length)} কাস্টমার রিভিউ)`
+                      : `(${customReviews.length} customer reviews)`}
+                  </span>
                   <span className="text-[#E8DCD2]">•</span>
                   <span className="text-[#16834A] font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> স্টক এভেইলেবল ({product.stock || 20} পিস)
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {language === "bn"
+                      ? `স্টক এভেইলেবল (${formatNumber(product.stock || 20)} পিস)`
+                      : `In Stock (${product.stock || 20} available)`}
                   </span>
                 </div>
 
                 {/* Price Display */}
                 <div className="p-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] flex items-baseline gap-3">
                   <span className="text-3xl font-black text-[#3B0C04]">
-                    ৳{product.salePrice ?? product.basePrice}
+                    {formatPrice(product.salePrice ?? product.basePrice)}
                   </span>
                   {product.salePrice && product.salePrice < product.basePrice && (
                     <span className="text-base text-[#8C7B72] line-through">
-                      ৳{product.basePrice}
+                      {formatPrice(product.basePrice)}
                     </span>
                   )}
                   {discountPercent && (
                     <span className="px-2 py-0.5 rounded-md bg-[#D64545] text-white text-xs font-bold">
-                      ৳{product.basePrice - product.salePrice!} ছাড়
+                      {language === "bn"
+                        ? `${formatPrice(product.basePrice - product.salePrice!)} ছাড়`
+                        : `${formatPrice(product.basePrice - product.salePrice!)} OFF`}
                     </span>
                   )}
                 </div>
@@ -324,7 +340,7 @@ export default function ProductDetailPage() {
                 {product.variants && product.variants.length > 1 && (
                   <div>
                     <label className="block text-xs font-bold text-[#2B160F] mb-2">
-                      কালার / ভ্যারিয়েন্ট নির্বাচন:
+                      {language === "bn" ? "কালার / ভ্যারিয়েন্ট নির্বাচন:" : "Select Color / Variant:"}
                     </label>
                     <div className="flex flex-wrap gap-2.5">
                       {product.variants.map((v, i) => (
@@ -346,20 +362,24 @@ export default function ProductDetailPage() {
 
                 {/* Quantity Controls */}
                 <div className="flex items-center gap-4 pt-2">
-                  <span className="text-xs font-bold text-[#2B160F]">পরিমাণ:</span>
+                  <span className="text-xs font-bold text-[#2B160F]">
+                    {language === "bn" ? "পরিমাণ:" : "Quantity:"}
+                  </span>
                   <div className="flex items-center border border-[#E8DCD2] rounded-lg bg-white overflow-hidden">
                     <button
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       className="w-9 h-9 flex items-center justify-center text-sm font-bold text-[#2B160F] hover:bg-[#FFF7EE]"
+                      aria-label="Decrease quantity"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-12 text-center text-sm font-bold text-[#2B160F]">
-                      {quantity}
+                      {formatNumber(quantity)}
                     </span>
                     <button
                       onClick={() => setQuantity((q) => q + 1)}
                       className="w-9 h-9 flex items-center justify-center text-sm font-bold text-[#2B160F] hover:bg-[#FFF7EE]"
+                      aria-label="Increase quantity"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -373,7 +393,7 @@ export default function ProductDetailPage() {
                     className="flex-1 h-12 rounded-lg bg-white hover:bg-[#FFF7EE] border-2 border-[#3B0C04] text-[#3B0C04] font-bold text-sm flex items-center justify-center gap-2 transition-colors"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    <span>Add to Cart</span>
+                    <span>{t("productCard.addToCart")}</span>
                   </button>
 
                   <button
@@ -381,7 +401,7 @@ export default function ProductDetailPage() {
                     className="flex-1 h-12 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-md active:scale-95"
                   >
                     <Zap className="w-4 h-4" />
-                    <span>Buy Now (অর্ডার করুন)</span>
+                    <span>{language === "bn" ? "Buy Now (অর্ডার করুন)" : "Buy Now"}</span>
                   </button>
 
                   <button
@@ -391,7 +411,7 @@ export default function ProductDetailPage() {
                         ? "border-[#D64545] text-[#D64545] bg-[#D64545]/10"
                         : "border-[#E8DCD2] text-[#8C7B72] hover:text-[#D64545]"
                     }`}
-                    aria-label="উইশলিস্ট"
+                    aria-label="Wishlist"
                   >
                     <Heart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
                   </button>
@@ -400,7 +420,9 @@ export default function ProductDetailPage() {
                 {/* Social Share & Trust */}
                 <div className="pt-4 border-t border-[#E8DCD2]/60 flex items-center justify-between text-xs text-[#6B5A52]">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[#2B160F]">শেয়ার করুন:</span>
+                    <span className="font-semibold text-[#2B160F]">
+                      {language === "bn" ? "শেয়ার করুন:" : "Share:"}
+                    </span>
                     <button
                       onClick={() => handleShare("facebook")}
                       className="p-1.5 rounded-md hover:bg-[#1877F2]/10 text-[#1877F2]"
@@ -431,15 +453,23 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-2.5">
                   <Truck className="w-5 h-5 text-[#3B0C04] shrink-0" />
                   <div>
-                    <p className="font-bold text-[#2B160F]">ডেলিভারি চার্জ</p>
-                    <p className="text-[#8C7B72] text-[11px]">ঢাকা ৳৬০ | ঢাকার বাইরে ৳১২০</p>
+                    <p className="font-bold text-[#2B160F]">
+                      {language === "bn" ? "ডেলিভারি চার্জ" : "Delivery Fee"}
+                    </p>
+                    <p className="text-[#8C7B72] text-[11px]">
+                      {language === "bn" ? "ঢাকা ৳৬০ | ঢাকার বাইরে ৳১২০" : "Dhaka ৳60 | Outside ৳120"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CreditCard className="w-5 h-5 text-[#3B0C04] shrink-0" />
                   <div>
-                    <p className="font-bold text-[#2B160F]">ক্যাশ অন ডেলিভারি</p>
-                    <p className="text-[#8C7B72] text-[11px]">পণ্য দেখে টাকা দিন</p>
+                    <p className="font-bold text-[#2B160F]">
+                      {language === "bn" ? "ক্যাশ অন ডেলিভারি" : "Cash on Delivery"}
+                    </p>
+                    <p className="text-[#8C7B72] text-[11px]">
+                      {language === "bn" ? "পণ্য দেখে টাকা দিন" : "Pay upon receipt"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -458,7 +488,7 @@ export default function ProductDetailPage() {
                     : "border-transparent text-[#6B5A52] hover:text-[#2B160F]"
                 }`}
               >
-                পণ্য বিবরণ (Description)
+                {language === "bn" ? "পণ্য বিবরণ (Description)" : "Description"}
               </button>
               <button
                 onClick={() => setActiveTab("features")}
@@ -468,7 +498,7 @@ export default function ProductDetailPage() {
                     : "border-transparent text-[#6B5A52] hover:text-[#2B160F]"
                 }`}
               >
-                ফিচারসমূহ (Features)
+                {language === "bn" ? "ফিচারসমূহ (Features)" : "Features"}
               </button>
               <button
                 onClick={() => setActiveTab("specs")}
@@ -478,7 +508,7 @@ export default function ProductDetailPage() {
                     : "border-transparent text-[#6B5A52] hover:text-[#2B160F]"
                 }`}
               >
-                স্পেসিফিকেশন (Specifications)
+                {language === "bn" ? "স্পেসিফিকেশন (Specifications)" : "Specifications"}
               </button>
               <button
                 onClick={() => setActiveTab("delivery")}
@@ -488,7 +518,7 @@ export default function ProductDetailPage() {
                     : "border-transparent text-[#6B5A52] hover:text-[#2B160F]"
                 }`}
               >
-                ডেলিভারি তথ্য (Delivery Info)
+                {language === "bn" ? "ডেলিভারি তথ্য (Delivery Info)" : "Delivery Info"}
               </button>
               <button
                 onClick={() => setActiveTab("return")}
@@ -498,7 +528,7 @@ export default function ProductDetailPage() {
                     : "border-transparent text-[#6B5A52] hover:text-[#2B160F]"
                 }`}
               >
-                রিটার্ন পলিসি (Return Policy)
+                {language === "bn" ? "রিটার্ন পলিসি (Return Policy)" : "Return Policy"}
               </button>
             </div>
 
@@ -517,7 +547,7 @@ export default function ProductDetailPage() {
                       <CheckCircle2 className="w-4 h-4 text-[#16834A] shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
-                  )) || <li>প্রোডাক্টের বিস্তারিত ফিচার শীঘ্রই আসছে।</li>}
+                  )) || <li>{language === "bn" ? "প্রোডাক্টের বিস্তারিত ফিচার শীঘ্রই আসছে।" : "Features information coming soon."}</li>}
                 </ul>
               )}
 
@@ -536,7 +566,9 @@ export default function ProductDetailPage() {
                         </tr>
                       )) || (
                         <tr>
-                          <td className="p-4 text-center text-[#8C7B72]">কোনো স্পেসিফিকেশন তথ্য নেই।</td>
+                          <td className="p-4 text-center text-[#8C7B72]">
+                            {language === "bn" ? "কোনো স্পেসিফিকেশন তথ্য নেই।" : "No specifications available."}
+                          </td>
                         </tr>
                       )}
                     </tbody>
@@ -546,17 +578,43 @@ export default function ProductDetailPage() {
 
               {activeTab === "delivery" && (
                 <div className="space-y-3 text-xs sm:text-sm text-[#2B160F] max-w-2xl leading-relaxed">
-                  <p><strong>ঢাকা সিটির মধ্যে:</strong> ২৪ থেকে ৪৮ ঘণ্টার মধ্যে ডেলিভারি সম্পন্ন হয়। ডেলিভারি চার্জ মাত্র ৳৬০।</p>
-                  <p><strong>ঢাকার বাইরে (সমগ্র বাংলাদেশ):</strong> ২ থেকে ৩ কার্যদিবসের মধ্যে নির্ভরযোগ্য কুরিয়ারের মাধ্যমে আপনার ঠিকানায় সরাসরি হোম ডেলিভারি করা হয়। ডেলিভারি চার্জ ৳১২০।</p>
-                  <p className="text-[#16834A] font-semibold">✓ ডেলিভারি ম্যানের সামনে পণ্য চেক করে মূল্য পরিশোধের সুযোগ রয়েছে।</p>
+                  <p>
+                    <strong>{language === "bn" ? "ঢাকা সিটির মধ্যে: " : "Inside Dhaka City: "}</strong>
+                    {language === "bn"
+                      ? "২৪ থেকে ৪৮ ঘণ্টার মধ্যে ডেলিভারি সম্পন্ন হয়। ডেলিভারি চার্জ মাত্র ৳৬০।"
+                      : "Delivered within 24 to 48 hours. Delivery fee is only ৳60."}
+                  </p>
+                  <p>
+                    <strong>{language === "bn" ? "ঢাকার বাইরে (সমগ্র বাংলাদেশ): " : "Outside Dhaka (Nationwide): "}</strong>
+                    {language === "bn"
+                      ? "২ থেকে ৩ কার্যদিবসের মধ্যে নির্ভরযোগ্য কুরিয়ারের মাধ্যমে আপনার ঠিকানায় সরাসরি হোম ডেলিভারি করা হয়। ডেলিভারি চার্জ ৳১২০।"
+                      : "Delivered within 2 to 3 workdays directly to your doorstep via trusted couriers. Delivery fee is ৳120."}
+                  </p>
+                  <p className="text-[#16834A] font-semibold">
+                    {language === "bn"
+                      ? "✓ ডেলিভারি ম্যানের সামনে পণ্য চেক করে মূল্য পরিশোধের সুযোগ রয়েছে।"
+                      : "✓ Inspect the product in front of the delivery partner before paying."}
+                  </p>
                 </div>
               )}
 
               {activeTab === "return" && (
                 <div className="space-y-3 text-xs sm:text-sm text-[#2B160F] max-w-2xl leading-relaxed">
-                  <p><strong>৭ দিনের রিটার্ন ও রিপ্লেসমেন্ট গ্যারান্টি:</strong></p>
-                  <p>পণ্য হাতে পাওয়ার পর যদি কোনো ত্রুটি বা সমস্যা দেখা যায়, তবে ৭ দিনের মধ্যে আমাদের কাস্টমার সাপোর্টে জানালে তাৎক্ষণিক রিপ্লেসমেন্ট প্রদান করা হবে।</p>
-                  <p className="text-xs text-[#8C7B72]">শর্ত: পণ্যের আসল বক্স ও এক্সেসরিজ অক্ষত থাকতে হবে।</p>
+                  <p>
+                    <strong>
+                      {language === "bn" ? "৭ দিনের রিটার্ন ও রিপ্লেসমেন্ট গ্যারান্টি:" : "7-Day Easy Return & Replacement Guarantee:"}
+                    </strong>
+                  </p>
+                  <p>
+                    {language === "bn"
+                      ? "পণ্য হাতে পাওয়ার পর যদি কোনো ত্রুটি বা সমস্যা দেখা যায়, তবে ৭ দিনের মধ্যে আমাদের কাস্টমার সাপোর্টে জানালে তাৎক্ষণিক রিপ্লেসমেন্ট প্রদান করা হবে।"
+                      : "If any defect is found within 7 days of receiving your item, contact our support team for an instant hassle-free replacement."}
+                  </p>
+                  <p className="text-xs text-[#8C7B72]">
+                    {language === "bn"
+                      ? "শর্ত: পণ্যের আসল বক্স ও এক্সেসরিজ অক্ষত থাকতে হবে।"
+                      : "Condition: Original box and accessories must be intact."}
+                  </p>
                 </div>
               )}
             </div>
@@ -567,10 +625,14 @@ export default function ProductDetailPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h3 className="text-xl md:text-2xl font-bold text-[#2B160F]">
-                  কাস্টমার রিভিউ ({customReviews.length})
+                  {language === "bn"
+                    ? `কাস্টমার রিভিউ (${formatNumber(customReviews.length)})`
+                    : `Customer Reviews (${customReviews.length})`}
                 </h3>
                 <p className="text-xs text-[#6B5A52] mt-0.5">
-                  গড় রেটিং: {product.averageRating} / 5.0
+                  {language === "bn"
+                    ? `গড় রেটিং: ${formatNumber(product.averageRating)} / ৫.০`
+                    : `Average rating: ${product.averageRating} / 5.0`}
                 </p>
               </div>
 
@@ -579,7 +641,7 @@ export default function ProductDetailPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700] transition-colors"
               >
                 <MessageSquarePlus className="w-4 h-4" />
-                <span>রিভিউ লিখুন</span>
+                <span>{language === "bn" ? "রিভিউ লিখুন" : "Write a Review"}</span>
               </button>
             </div>
 
@@ -604,7 +666,7 @@ export default function ProductDetailPage() {
                     <span className="text-xs font-bold text-[#3B0C04]">{rev.userName}</span>
                     {rev.verified && (
                       <span className="text-[10px] font-semibold text-[#16834A] bg-[#E8F6F1] px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Verified Buyer
+                        <CheckCircle2 className="w-3 h-3" /> {language === "bn" ? "ভেরিফায়েড ক্রেতা" : "Verified Buyer"}
                       </span>
                     )}
                   </div>
@@ -617,7 +679,7 @@ export default function ProductDetailPage() {
           <div className="mt-16 pt-8 border-t border-[#E8DCD2]">
             <div className="mb-6">
               <h3 className="text-xl md:text-2xl font-bold text-[#2B160F]">
-                You May Also Like (সম্পর্কিত পণ্যসমূহ)
+                {language === "bn" ? "You May Also Like (সম্পর্কিত পণ্যসমূহ)" : "You May Also Like"}
               </h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 md:gap-6">
@@ -633,7 +695,9 @@ export default function ProductDetailPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
             <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-[#E8DCD2] space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
-                <h3 className="text-sm font-bold text-[#3B0C04]">আপনার মতামত / রিভিউ লিখুন</h3>
+                <h3 className="text-sm font-bold text-[#3B0C04]">
+                  {language === "bn" ? "আপনার মতামত / রিভিউ লিখুন" : "Submit Your Review"}
+                </h3>
                 <button
                   onClick={() => setIsReviewModalOpen(false)}
                   className="text-[#8C7B72] hover:text-[#2B160F]"
@@ -644,11 +708,13 @@ export default function ProductDetailPage() {
 
               <form onSubmit={handleReviewSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">আপনার নাম:</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">
+                    {language === "bn" ? "আপনার নাম:" : "Your Name:"}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="যেমন: মোঃ সাকিব হাসান"
+                    placeholder={language === "bn" ? "যেমন: মোঃ সাকিব হাসান" : "e.g. John Doe"}
                     value={reviewName}
                     onChange={(e) => setReviewName(e.target.value)}
                     className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] focus:outline-none focus:border-[#3B0C04]"
@@ -656,7 +722,9 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">রেটিং নির্বাচন করুন:</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">
+                    {language === "bn" ? "রেটিং নির্বাচন করুন:" : "Rating:"}
+                  </label>
                   <div className="flex items-center gap-2">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button
@@ -672,11 +740,17 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">আপনার রিভিউ লিখুন:</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">
+                    {language === "bn" ? "আপনার রিভিউ লিখুন:" : "Your Review:"}
+                  </label>
                   <textarea
                     required
                     rows={4}
-                    placeholder="পণ্যটির গুণমান ও অভিজ্ঞতা সম্পর্কে লিখুন..."
+                    placeholder={
+                      language === "bn"
+                        ? "পণ্যটির গুণমান ও অভিজ্ঞতা সম্পর্কে লিখুন..."
+                        : "Describe the quality and your experience with this item..."
+                    }
                     value={reviewComment}
                     onChange={(e) => setReviewComment(e.target.value)}
                     className="w-full p-3 rounded-lg border border-[#E8DCD2] focus:outline-none focus:border-[#3B0C04]"
@@ -685,9 +759,9 @@ export default function ProductDetailPage() {
 
                 <button
                   type="submit"
-                  className="w-full h-11 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold"
+                  className="w-full h-11 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold transition-colors"
                 >
-                  রিভিউ সাবমিট করুন
+                  {language === "bn" ? "রিভিউ সাবমিট করুন" : "Submit Review"}
                 </button>
               </form>
             </div>
@@ -697,9 +771,11 @@ export default function ProductDetailPage() {
         {/* MOBILE STICKY PURCHASE BAR (64px) - Non-Negotiable Blueprint Spec */}
         <div className="sm:hidden fixed bottom-14 left-0 right-0 z-30 bg-white border-t border-[#E8DCD2] shadow-2xl p-2.5 px-4 flex items-center justify-between gap-3 pb-[env(safe-area-inset-bottom)]">
           <div>
-            <span className="text-[10px] text-[#8C7B72] block">মূল্য:</span>
+            <span className="text-[10px] text-[#8C7B72] block">
+              {language === "bn" ? "মূল্য:" : "Price:"}
+            </span>
             <span className="text-base font-black text-[#3B0C04]">
-              ৳{product.salePrice ?? product.basePrice}
+              {formatPrice(product.salePrice ?? product.basePrice)}
             </span>
           </div>
 
@@ -709,14 +785,14 @@ export default function ProductDetailPage() {
               className="flex-1 h-10 rounded-lg bg-[#FFF7EE] border border-[#3B0C04] text-[#3B0C04] text-xs font-bold flex items-center justify-center gap-1"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>কার্টে নিন</span>
+              <span>{language === "bn" ? "কার্টে নিন" : "Cart"}</span>
             </button>
             <button
               onClick={handleBuyNow}
               className="flex-1 h-10 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
             >
               <Zap className="w-3.5 h-3.5" />
-              <span>অর্ডার</span>
+              <span>{language === "bn" ? "অর্ডার" : "Buy Now"}</span>
             </button>
           </div>
         </div>

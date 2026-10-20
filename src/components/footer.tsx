@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/language-context";
 import {
   Phone,
   Mail,
@@ -18,6 +19,7 @@ import { FacebookIcon, InstagramIcon } from "@/components/ui/social-icons";
 
 export const Footer: React.FC = () => {
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
@@ -33,8 +35,8 @@ export const Footer: React.FC = () => {
               <Truck className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-[#FFC40E]">দ্রুত ডেলিভারি</p>
-              <p className="text-[#8C7B72] text-[11px]">সারা বাংলাদেশে হোম ডেলিভারি</p>
+              <p className="font-bold text-[#FFC40E]">{t("trustBanner.fastDelivery")}</p>
+              <p className="text-[#8C7B72] text-[11px]">{t("trustBanner.fastDeliverySub")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -42,8 +44,8 @@ export const Footer: React.FC = () => {
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-[#FFC40E]">ক্যাশ অন ডেলিভারি</p>
-              <p className="text-[#8C7B72] text-[11px]">পণ্য হাতে পেয়ে মূল্য পরিশোধ</p>
+              <p className="font-bold text-[#FFC40E]">{t("trustBanner.cod")}</p>
+              <p className="text-[#8C7B72] text-[11px]">{t("trustBanner.codSub")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -51,8 +53,8 @@ export const Footer: React.FC = () => {
               <RotateCcw className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-[#FFC40E]">৭ দিনের রিটার্ন</p>
-              <p className="text-[#8C7B72] text-[11px]">সহজ রিটার্ন ও রিপ্লেসমেন্ট</p>
+              <p className="font-bold text-[#FFC40E]">{t("trustBanner.returns")}</p>
+              <p className="text-[#8C7B72] text-[11px]">{t("trustBanner.returnsSub")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -60,8 +62,8 @@ export const Footer: React.FC = () => {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-[#FFC40E]">১০০% বিশ্বস্ত শপিং</p>
-              <p className="text-[#8C7B72] text-[11px]">যাচাইকৃত ও অরিজিনাল পণ্য</p>
+              <p className="font-bold text-[#FFC40E]">{t("trustBanner.trusted")}</p>
+              <p className="text-[#8C7B72] text-[11px]">{t("trustBanner.trustedSub")}</p>
             </div>
           </div>
         </div>
@@ -81,10 +83,10 @@ export const Footer: React.FC = () => {
               </span>
             </Link>
             <p className="text-xs font-semibold text-[#FFC40E]/90 italic">
-              “পছন্দে, প্রয়োজনে, প্রাপ্তিতে — পঞ্চমুখ।”
+              {t("footer.quote")}
             </p>
             <p className="text-xs text-[#E8DCD2]/80 leading-relaxed">
-              পঞ্চমুখ একটি আধুনিক ও বিশ্বস্ত বাংলাদেশি ই-কমার্স প্ল্যাটফর্ম। দৈনন্দিন প্রয়োজনীয় গ্যাজেট, ইলেকট্রনিক্স, হোম-কিচেন ও লাইফস্টাইল পণ্য পৌঁছে দিচ্ছি আপনার দোরগোড়ায়।
+              {t("footer.brandStory")}
             </p>
             {/* Social Icons */}
             <div className="flex items-center gap-2.5 pt-2">
@@ -125,7 +127,7 @@ export const Footer: React.FC = () => {
               onClick={() => toggleSection("quick-links")}
             >
               <h3 className="text-sm font-bold text-[#FFC40E] uppercase tracking-wider mb-4">
-                কুইক লিঙ্কসমূহ
+                {t("footer.quickLinks")}
               </h3>
               <ChevronDown
                 className={`w-4 h-4 md:hidden transition-transform ${
@@ -140,32 +142,32 @@ export const Footer: React.FC = () => {
             >
               <li>
                 <Link href="/" className="hover:text-[#FFC40E] transition-colors">
-                  হোম
+                  {t("nav.home")}
                 </Link>
               </li>
               <li>
                 <Link href="/shop" className="hover:text-[#FFC40E] transition-colors">
-                  সকল পণ্য (Shop)
+                  {t("nav.allProducts")}
                 </Link>
               </li>
               <li>
                 <Link href="/shop?filter=new" className="hover:text-[#FFC40E] transition-colors">
-                  নতুন পণ্য (New Arrivals)
+                  {t("nav.newArrivals")}
                 </Link>
               </li>
               <li>
                 <Link href="/shop?filter=bestseller" className="hover:text-[#FFC40E] transition-colors">
-                  বেস্ট সেলার (Best Sellers)
+                  {t("nav.bestSellers")}
                 </Link>
               </li>
               <li>
                 <Link href="/shop?filter=offers" className="hover:text-[#FFC40E] transition-colors">
-                  স্পেশাল অফার (Special Offers)
+                  {t("nav.specialOffers")}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="hover:text-[#FFC40E] transition-colors">
-                  আমাদের সম্পর্কে (About Us)
+                  {t("nav.about")}
                 </Link>
               </li>
             </ul>
@@ -178,7 +180,7 @@ export const Footer: React.FC = () => {
               onClick={() => toggleSection("customer-service")}
             >
               <h3 className="text-sm font-bold text-[#FFC40E] uppercase tracking-wider mb-4">
-                কাস্টমার সাপোর্ট & পলিসি
+                {t("footer.customerService")}
               </h3>
               <ChevronDown
                 className={`w-4 h-4 md:hidden transition-transform ${
@@ -193,32 +195,32 @@ export const Footer: React.FC = () => {
             >
               <li>
                 <Link href="/order-tracking" className="hover:text-[#FFC40E] transition-colors">
-                  অর্ডার ট্র্যাকিং (Track Order)
+                  {t("nav.orderTracking")}
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="hover:text-[#FFC40E] transition-colors">
-                  সাধারণ প্রশ্ন ও উত্তর (FAQ)
+                  {t("footer.faq")}
                 </Link>
               </li>
               <li>
                 <Link href="/shipping-policy" className="hover:text-[#FFC40E] transition-colors">
-                  ডেলিভারি পলিসি (Shipping Policy)
+                  {t("footer.shipping")}
                 </Link>
               </li>
               <li>
                 <Link href="/return-refund-policy" className="hover:text-[#FFC40E] transition-colors">
-                  রিটার্ন ও রিফান্ড (Return & Refund)
+                  {t("footer.returnRefund")}
                 </Link>
               </li>
               <li>
                 <Link href="/privacy-policy" className="hover:text-[#FFC40E] transition-colors">
-                  প্রাইভেসি পলিসি (Privacy Policy)
+                  {t("footer.privacy")}
                 </Link>
               </li>
               <li>
                 <Link href="/terms-conditions" className="hover:text-[#FFC40E] transition-colors">
-                  শর্তাবলী (Terms & Conditions)
+                  {t("footer.terms")}
                 </Link>
               </li>
             </ul>
@@ -231,7 +233,7 @@ export const Footer: React.FC = () => {
               onClick={() => toggleSection("contact-info")}
             >
               <h3 className="text-sm font-bold text-[#FFC40E] uppercase tracking-wider mb-4">
-                যোগাযোগের ঠিকানা
+                {t("footer.contactInfo")}
               </h3>
               <ChevronDown
                 className={`w-4 h-4 md:hidden transition-transform ${
@@ -246,23 +248,23 @@ export const Footer: React.FC = () => {
             >
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-[#FFC40E] shrink-0 mt-0.5" />
-                <span>বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা-১২০৫, বাংলাদেশ</span>
+                <span>{t("footer.address")}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-[#FFC40E] shrink-0" />
                 <a href="tel:+8801700000000" className="hover:text-[#FFC40E]">
-                  +880 1700-000000 (সকাল ১০টা - রাত ১০টা)
+                  {t("footer.phone")} ({t("footer.supportTime")})
                 </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#FFC40E] shrink-0" />
                 <a href="mailto:support@ponchomukh.com" className="hover:text-[#FFC40E]">
-                  support@ponchomukh.com
+                  {t("footer.email")}
                 </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 text-[#FFC40E] shrink-0" />
-                <span>সপ্তাহে ৭ দিন সার্বক্ষণিক সেবা</span>
+                <span>{t("footer.supportTime")}</span>
               </div>
             </div>
           </div>
@@ -272,7 +274,7 @@ export const Footer: React.FC = () => {
       {/* Bottom Copyright Strip */}
       <div className="border-t border-white/10 py-5 bg-[#1A0400] text-center text-xs text-[#8C7B72]">
         <div className="container-custom flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} PONCHOMUKH (পঞ্চমুখ)। সর্বস্বত্ব সংরক্ষিত।</p>
+          <p>© {new Date().getFullYear()} {t("common.brandName")}। {t("common.allRightsReserved")}</p>
           <p className="text-[11px] text-[#E8DCD2]/60">
             Secure Shopping with Cash on Delivery & SSL Payment Integration Ready
           </p>
