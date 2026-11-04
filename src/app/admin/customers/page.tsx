@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { Search, RefreshCw, Download, FileSpreadsheet } from "lucide-react";
 
 interface CustomerItem {
   id: string;
@@ -100,6 +101,47 @@ export default function AdminCustomersPage() {
       c.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleExportCSV = () => {
+    const filename = `ponchomukh_customers_${new Date().toISOString().slice(0, 10)}.csv`;
+    const headers = [
+      "Customer ID",
+      "Full Name (নাম)",
+      "Phone (মোবাইল)",
+      "Email (ইমেইল)",
+      "Joined Date (যোগদানের তারিখ)",
+      "Total Orders (অর্ডার সংখ্যা)",
+      "Total Spent (৳ মোট ব্যয়)",
+      "Status (স্ট্যাটাস)",
+    ];
+
+    let csvContent = "\uFEFF";
+    csvContent += headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(",") + "\n";
+
+    filtered.forEach((c) => {
+      const row = [
+        c.id,
+        c.name,
+        c.phone,
+        c.email,
+        c.joinedDate,
+        c.totalOrders,
+        c.totalSpent,
+        c.status,
+      ];
+      csvContent += row.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -112,14 +154,32 @@ export default function AdminCustomersPage() {
           </p>
         </div>
 
-        <button
-          onClick={fetchCustomers}
-          disabled={isLoading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 self-start sm:self-auto"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          <span>রিফ্রেশ</span>
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/admin/reports"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#3B0C04] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#3B0C04]" />
+            <span>বিস্তারিত অ্যানালিটিক্স হাব</span>
+          </Link>
+
+          <button
+            onClick={fetchCustomers}
+            disabled={isLoading}
+            className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50"
+            title="রিফ্রেশ"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
+          >
+            <Download className="w-4 h-4" />
+            <span>গ্রাহক রিপোর্ট ডাউনলোড (CSV)</span>
+          </button>
+        </div>
       </div>
 
       <div className="p-4 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-3 text-xs">

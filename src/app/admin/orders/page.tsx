@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   ClipboardList,
   Search,
@@ -12,7 +13,9 @@ import {
   Truck,
   CreditCard,
   User,
-  MapPin
+  MapPin,
+  Download,
+  FileSpreadsheet
 } from "lucide-react";
 
 export default function AdminOrdersPage() {
@@ -161,6 +164,53 @@ export default function AdminOrdersPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const handleExportCSV = () => {
+    const filename = `ponchomukh_orders_${new Date().toISOString().slice(0, 10)}.csv`;
+    const headers = [
+      "Order ID",
+      "Date",
+      "Customer Name",
+      "Customer Phone",
+      "Customer Email",
+      "Shipping Address",
+      "Items",
+      "Total Amount (৳)",
+      "Payment Method",
+      "Payment Status",
+      "Order Status",
+    ];
+
+    let csvContent = "\uFEFF";
+    csvContent += headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(",") + "\n";
+
+    filteredOrders.forEach((o) => {
+      const row = [
+        o.orderId,
+        o.date,
+        o.customer?.name || "",
+        o.customer?.phone || "",
+        o.customer?.email || "",
+        o.customer?.address || "",
+        (o.items || []).map((i: any) => `${i.name} (x${i.quantity})`).join(" | "),
+        o.total,
+        o.paymentMethod,
+        o.paymentStatus,
+        o.status,
+      ];
+      csvContent += row.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -171,6 +221,24 @@ export default function AdminOrdersPage() {
           <p className="text-xs text-[#6B5A52] mt-0.5">
             কাস্টমার অর্ডার প্রসেসিং, ডেলিভারি ট্র্যাকিং ও বিলিং স্ট্যাটাস আপডেট
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/reports"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#3B0C04] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#3B0C04]" />
+            <span>পণ্যভিত্তিক রিপোর্ট দেখুন</span>
+          </Link>
+
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
+          >
+            <Download className="w-4 h-4" />
+            <span>এক্সপোর্ট রিপোর্ট (CSV)</span>
+          </button>
         </div>
       </div>
 

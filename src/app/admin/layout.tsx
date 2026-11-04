@@ -21,7 +21,8 @@ import {
   Menu,
   X,
   Bell,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from "lucide-react";
 
 const adminNavItems = [
@@ -32,6 +33,7 @@ const adminNavItems = [
   { href: "/admin/brands", label: "Brands (ব্র্যান্ড)", Icon: Tag },
   { href: "/admin/orders", label: "Orders (অর্ডারসমূহ)", Icon: ClipboardList },
   { href: "/admin/customers", label: "Customers (গ্রাহকবৃন্দ)", Icon: Users },
+  { href: "/admin/reports", label: "Reports & Ledger (রিপোর্ট)", Icon: FileSpreadsheet },
   { href: "/admin/reviews", label: "Reviews (রিভিউ নিয়ন্ত্রণ)", Icon: MessageSquare },
   { href: "/admin/coupons", label: "Coupons (কুপন ডিসকাউন্ট)", Icon: Percent },
   { href: "/admin/banners", label: "Banners (ব্যানার)", Icon: ImageIcon },
@@ -42,6 +44,11 @@ const adminNavItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // If on login page, render children without sidebar & admin header
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";

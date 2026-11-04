@@ -36,6 +36,10 @@ export async function getCategories() {
       where: { deletedAt: null },
       orderBy: { name: "asc" },
       include: {
+        children: {
+          where: { deletedAt: null },
+        },
+        parent: true,
         _count: {
           select: { products: true },
         },
