@@ -15,7 +15,7 @@ export default function AboutPage() {
       <Navbar />
 
       <main className="flex-1 pb-16">
-        {/* Hero Section */}
+        {/* Hero Banner Section */}
         <div className="bg-[#FFF7EE] border-b border-[#E8DCD2] py-12 md:py-16 text-center">
           <div className="container-custom max-w-3xl space-y-4">
             <span className="px-3.5 py-1.5 rounded-full bg-[#3B0C04]/10 text-[#3B0C04] text-xs font-bold uppercase tracking-wider">
