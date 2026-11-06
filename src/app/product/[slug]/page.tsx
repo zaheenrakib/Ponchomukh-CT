@@ -26,7 +26,8 @@ import {
   MessageCircle,
   Link as LinkIcon,
   MessageSquarePlus,
-  X
+  X,
+  Sparkles
 } from "lucide-react";
 import { FacebookIcon } from "@/components/ui/social-icons";
 

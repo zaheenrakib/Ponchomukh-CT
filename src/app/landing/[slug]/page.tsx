@@ -162,7 +162,8 @@ export default function ProductLandingPage({ params }: { params: Promise<{ slug:
         const stored = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
         stored.unshift({
           orderId,
-          date: new Date().toLocaleDateString("bn-BD"),
+          date: new Date().toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }),
+          rawDate: new Date().toISOString(),
           source: "LANDING_PAGE",
           customer: {
             name: customerName.trim(),

@@ -103,7 +103,9 @@ export default function CheckoutPage() {
         const existingOrders = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
         const newOrder = {
           orderId: assignedOrderId,
-          date: new Date().toISOString(),
+          date: new Date().toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }),
+          rawDate: new Date().toISOString(),
+          source: "STOREFRONT",
           customer: {
             name: fullName.trim(),
             phone: phoneNumber.trim(),

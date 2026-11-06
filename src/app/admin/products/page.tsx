@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { mockProducts, mockCategories, mockBrands, Product } from "@/lib/mockData";
+import { generateQRDataURL } from "@/lib/qrcode";
 import {
   ShoppingBag,
   Plus,
@@ -13,7 +15,12 @@ import {
   CheckCircle2,
   X,
   Upload,
-  Sparkles
+  Sparkles,
+  QrCode,
+  Printer,
+  Download,
+  ExternalLink,
+  RefreshCw
 } from "lucide-react";
 
 export default function AdminProductsPage() {
@@ -66,6 +73,14 @@ export default function AdminProductsPage() {
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedQRProduct, setSelectedQRProduct] = useState<Product | null>(null);
+
+  const generateSmartSKU = (catSlug: string = "GAD") => {
+    const catCode = (catSlug || "GAD").slice(0, 3).toUpperCase();
+    const year = new Date().getFullYear();
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `PM-${catCode}-${year}-${rand}`;
+  };
 
   // Form State
   const [formData, setFormData] = useState({
@@ -121,7 +136,7 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
     setFormData({
       name: "",
-      sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
+      sku: generateSmartSKU("gadgets"),
       categorySlug: "gadgets",
       brandSlug: "sonifer",
       basePrice: 1500,
@@ -389,7 +404,14 @@ export default function AdminProductsPage() {
                     </span>
                   </td>
                   <td className="p-3.5 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <button
+                        onClick={() => setSelectedQRProduct(p)}
+                        className="p-1.5 rounded-md hover:bg-[#FFF7EE] text-[#3B0C04] hover:scale-110 transition-transform"
+                        title="পণ্য কিউআর (QR) কোড দেখুন ও প্রিন্ট করুন"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleOpenEdit(p)}
                         className="p-1.5 rounded-md hover:bg-[#FFF7EE] text-[#3B0C04]"
@@ -605,6 +627,118 @@ export default function AdminProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DYNAMIC QR CODE & LABEL MODAL */}
+      {selectedQRProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 border border-[#E8DCD2] space-y-5 text-center">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
+              <div className="flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-[#3B0C04]" />
+                <h3 className="text-base font-black text-[#3B0C04]">পণ্য কিউআর (QR) ও বারকোড লেবেল</h3>
+              </div>
+              <button
+                onClick={() => setSelectedQRProduct(null)}
+                className="p-1 rounded-lg text-[#8C7B72] hover:bg-zinc-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Printable Label Area */}
+            <div
+              id="printable-qr-label"
+              className="p-6 rounded-2xl bg-[#FFFDF9] border-2 border-dashed border-[#3B0C04] space-y-4"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-6 h-6 rounded-md bg-[#3B0C04] text-[#FFC40E] font-black text-xs flex items-center justify-center">
+                  প
+                </span>
+                <span className="font-black text-sm tracking-tight text-[#3B0C04]">
+                  PONCHOMUKH VERIFIED
+                </span>
+              </div>
+
+              {/* QR Image */}
+              <div className="w-44 h-44 mx-auto bg-white p-2 rounded-2xl border border-[#E8DCD2] shadow-sm flex items-center justify-center">
+                <img
+                  src={generateQRDataURL(
+                    typeof window !== "undefined"
+                      ? `${window.location.origin}/product/${selectedQRProduct.slug}`
+                      : `https://ponchomukh.com/product/${selectedQRProduct.slug}`,
+                    180
+                  )}
+                  alt={selectedQRProduct.name}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-[#2B160F] line-clamp-1">
+                  {selectedQRProduct.name}
+                </h4>
+                <p className="font-mono text-xs font-black text-[#3B0C04]">
+                  SKU: {selectedQRProduct.sku}
+                </p>
+                <p className="text-xs font-black text-[#16834A]">
+                  মূল্য: ৳{selectedQRProduct.salePrice || selectedQRProduct.basePrice}
+                </p>
+              </div>
+
+              <p className="text-[10px] text-[#8C7B72]">
+                📷 যেকোনো স্মার্টফোন দিয়ে স্ক্যান করলে পণ্যের সকল তথ্য ও যাচাইকরণ দেখা যাবে
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2 text-xs font-bold">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 py-2.5 rounded-xl bg-[#3B0C04] text-[#FFC40E] hover:bg-[#260700] flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>লেবেল প্রিন্ট করুন</span>
+                </button>
+
+                <a
+                  href={generateQRDataURL(
+                    typeof window !== "undefined"
+                      ? `${window.location.origin}/product/${selectedQRProduct.slug}`
+                      : `https://ponchomukh.com/product/${selectedQRProduct.slug}`,
+                    400
+                  )}
+                  download={`QR_${selectedQRProduct.sku}.svg`}
+                  className="px-4 py-2.5 rounded-xl border border-[#E8DCD2] text-[#3B0C04] hover:bg-[#FFF7EE] flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>কিউআর সেভ</span>
+                </a>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <Link
+                  href={`/product/${selectedQRProduct.slug}`}
+                  target="_blank"
+                  className="text-[#3B0C04] hover:underline flex items-center gap-1 text-[11px]"
+                >
+                  <span>পণ্য স্টোর পেজ দেখুন</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+
+                <Link
+                  href={`/landing/${selectedQRProduct.slug}`}
+                  target="_blank"
+                  className="text-[#16834A] hover:underline flex items-center gap-1 text-[11px]"
+                >
+                  <span>স্পেশাল ল্যান্ডিং পেজ ভিউ</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}

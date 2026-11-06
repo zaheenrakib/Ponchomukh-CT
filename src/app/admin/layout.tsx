@@ -22,7 +22,8 @@ import {
   X,
   Bell,
   Sparkles,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Wallet
 } from "lucide-react";
 
 const adminNavItems = [
@@ -33,7 +34,8 @@ const adminNavItems = [
   { href: "/admin/brands", label: "Brands (ব্র্যান্ড)", Icon: Tag },
   { href: "/admin/orders", label: "Orders (অর্ডারসমূহ)", Icon: ClipboardList },
   { href: "/admin/customers", label: "Customers (গ্রাহকবৃন্দ)", Icon: Users },
-  { href: "/admin/reports", label: "Reports & Ledger (রিপোর্ট)", Icon: FileSpreadsheet },
+  { href: "/admin/accounts", label: "Accounts (একাউন্টস ও খরচ)", Icon: Wallet },
+  { href: "/admin/reports", label: "Reports & Analytics (রিপোর্ট)", Icon: FileSpreadsheet },
   { href: "/admin/reviews", label: "Reviews (রিভিউ নিয়ন্ত্রণ)", Icon: MessageSquare },
   { href: "/admin/coupons", label: "Coupons (কুপন ডিসকাউন্ট)", Icon: Percent },
   { href: "/admin/banners", label: "Banners (ব্যানার)", Icon: ImageIcon },

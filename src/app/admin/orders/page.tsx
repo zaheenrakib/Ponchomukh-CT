@@ -170,7 +170,8 @@ export default function AdminOrdersPage() {
       o.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
       o.customer?.phone?.includes(search);
     const matchesStatus = statusFilter === "ALL" || o.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSource = sourceFilter === "ALL" || o.source === sourceFilter;
+    return matchesSearch && matchesStatus && matchesSource;
   });
 
   const handleExportCSV = () => {
@@ -178,6 +179,7 @@ export default function AdminOrdersPage() {
     const headers = [
       "Order ID",
       "Date",
+      "Order Source (অর্ডার চ্যানেল)",
       "Customer Name",
       "Customer Phone",
       "Customer Email",
@@ -196,6 +198,7 @@ export default function AdminOrdersPage() {
       const row = [
         o.orderId,
         o.date,
+        o.source === "LANDING_PAGE" ? "Landing Page" : o.source === "MANUAL_PHONE" ? "Manual / Phone" : "Storefront",
         o.customer?.name || "",
         o.customer?.phone || "",
         o.customer?.email || "",
@@ -251,6 +254,50 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
+      {/* Order Source Segmented Tabs */}
+      <div className="flex items-center gap-2 border-b border-[#E8DCD2] pb-3 overflow-x-auto">
+        <button
+          onClick={() => setSourceFilter("ALL")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            sourceFilter === "ALL"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          সব ধরণের অর্ডার ({orders.length})
+        </button>
+        <button
+          onClick={() => setSourceFilter("LANDING_PAGE")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            sourceFilter === "LANDING_PAGE"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          🌐 ল্যান্ডিং পেজ অর্ডার ({orders.filter((o) => o.source === "LANDING_PAGE").length})
+        </button>
+        <button
+          onClick={() => setSourceFilter("STOREFRONT")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            sourceFilter === "STOREFRONT"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          🛒 ওয়েবসাইট / স্টোরফ্রন্ট ({orders.filter((o) => o.source !== "LANDING_PAGE" && o.source !== "MANUAL_PHONE").length})
+        </button>
+        <button
+          onClick={() => setSourceFilter("MANUAL_PHONE")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            sourceFilter === "MANUAL_PHONE"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
+          }`}
+        >
+          📞 ফোন / ম্যানুয়াল অর্ডার ({orders.filter((o) => o.source === "MANUAL_PHONE").length})
+        </button>
+      </div>
+
       {/* Filter Bar */}
       <div className="p-4 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative w-full sm:w-80">
@@ -288,6 +335,7 @@ export default function AdminOrdersPage() {
             <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold">
               <tr>
                 <th className="p-3.5">অর্ডার আইডি</th>
+                <th className="p-3.5">চ্যানেল / উৎস</th>
                 <th className="p-3.5">গ্রাহকের নাম ও ফোন</th>
                 <th className="p-3.5">তারিখ</th>
                 <th className="p-3.5">বিল মোট</th>
@@ -301,6 +349,23 @@ export default function AdminOrdersPage() {
                 <tr key={order.orderId} className="hover:bg-[#FFFDF9]">
                   <td className="p-3.5 font-mono font-bold text-[#3B0C04]">
                     {order.orderId}
+                  </td>
+                  <td className="p-3.5">
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                        order.source === "LANDING_PAGE"
+                          ? "bg-purple-100 text-purple-800 border border-purple-200"
+                          : order.source === "MANUAL_PHONE"
+                          ? "bg-blue-100 text-blue-800 border border-blue-200"
+                          : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                      }`}
+                    >
+                      {order.source === "LANDING_PAGE"
+                        ? "🌐 LANDING"
+                        : order.source === "MANUAL_PHONE"
+                        ? "📞 PHONE"
+                        : "🛒 STORE"}
+                    </span>
                   </td>
                   <td className="p-3.5">
                     <p className="font-bold text-[#2B160F]">{order.customer?.name || "Customer"}</p>
