@@ -71,6 +71,7 @@ export async function POST(request: Request) {
       items, // array of { productVariantId, quantity, price? }
       couponCode,
       orderNotes,
+      source = "STOREFRONT",
     } = body;
 
     if (!name || !phone || !addressLine || !items || items.length === 0) {
@@ -227,7 +228,7 @@ export async function POST(request: Request) {
           shippingAddressId: shippingAddress.id,
           billingAddressId: shippingAddress.id,
           deliveryType: DeliveryType.CUSTOM,
-          orderNotes,
+          orderNotes: (source ? `[${source}] ` : "") + (orderNotes || ""),
           items: {
             create: dbRelationItems.map((item) => ({
               productVariantId: item.productVariantId!,

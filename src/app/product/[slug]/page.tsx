@@ -417,6 +417,17 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
+                {/* Direct Landing Page Fast Checkout Link */}
+                <div className="pt-1">
+                  <Link
+                    href={`/landing/${product.slug}`}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] text-[#3B0C04] hover:bg-[#3B0C04] hover:text-[#FFC40E] text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-2xs group"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#FFC40E] group-hover:scale-110 transition-transform" />
+                    <span>১-ক্লিকে সরাসরি ল্যান্ডিং পেজ থেকে অর্ডার করুন (No OTP) →</span>
+                  </Link>
+                </div>
+
                 {/* Social Share & Trust */}
                 <div className="pt-4 border-t border-[#E8DCD2]/60 flex items-center justify-between text-xs text-[#6B5A52]">
                   <div className="flex items-center gap-2">

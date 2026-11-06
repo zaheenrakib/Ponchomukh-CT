@@ -22,6 +22,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [sourceFilter, setSourceFilter] = useState("ALL");
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   useEffect(() => {
@@ -36,6 +37,8 @@ export default function AdminOrdersPage() {
               orderId: o.orderNumber,
               id: o.id,
               date: new Date(o.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }),
+              source: o.orderNotes?.includes("[LANDING_PAGE]") ? "LANDING_PAGE" : o.orderNotes?.includes("[MANUAL_PHONE]") ? "MANUAL_PHONE" : (o.source || "STOREFRONT"),
+              orderNotes: o.orderNotes || "",
               customer: {
                 name: o.shippingAddress?.name || o.user?.name || "Customer",
                 phone: o.shippingAddress?.phone || o.user?.phoneNumber || "",
@@ -68,7 +71,10 @@ export default function AdminOrdersPage() {
         const existingIds = new Set(combinedOrders.map(o => o.orderId));
         for (const s of stored) {
           if (!existingIds.has(s.orderId)) {
-            combinedOrders.push(s);
+            combinedOrders.push({
+              ...s,
+              source: s.source || (s.orderNotes?.includes("[LANDING_PAGE]") ? "LANDING_PAGE" : "STOREFRONT"),
+            });
           }
         }
       } catch (e) {
@@ -82,6 +88,7 @@ export default function AdminOrdersPage() {
           {
             orderId: "PN10025",
             date: "০৪ সেপ্টেম্বর, ২০২৬",
+            source: "LANDING_PAGE",
             customer: { name: "তানভীর আহমেদ", phone: "01712-345678", email: "tanvir@gmail.com", address: "বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা-১২০৫" },
             items: [
               { name: "Sonifer SF-350 Portable Rechargeable Juicer & Blender", quantity: 1, price: 1299, image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=200&auto=format&fit=crop&q=80" }
@@ -97,6 +104,7 @@ export default function AdminOrdersPage() {
           {
             orderId: "PN10024",
             date: "০৪ সেপ্টেম্বর, ২০২৬",
+            source: "STOREFRONT",
             customer: { name: "সুমাইয়া আক্তার", phone: "01823-456789", email: "sumaiya@gmail.com", address: "সেক্টর ৩, উত্তরা, ঢাকা" },
             items: [
               { name: "Joyroom JR-T03S Pro ANC True Wireless Earbuds", quantity: 1, price: 1899, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&auto=format&fit=crop&q=80" }
@@ -105,13 +113,14 @@ export default function AdminOrdersPage() {
             discount: 0,
             shippingFee: 60,
             total: 1959,
-            paymentMethod: "Cash on Delivery",
-            paymentStatus: "PENDING",
-            status: "CONFIRMED"
+            paymentMethod: "bKash",
+            paymentStatus: "PAID",
+            status: "DELIVERED"
           },
           {
             orderId: "PN10023",
             date: "০৩ সেপ্টেম্বর, ২০২৬",
+            source: "MANUAL_PHONE",
             customer: { name: "মাহির ফয়সাল", phone: "01934-567890", email: "mahir@gmail.com", address: "জিইসি মোড়, চট্টগ্রাম" },
             items: [
               { name: "Baseus Blade 100W Power Bank 20000mAh", quantity: 1, price: 4299, image: "https://images.unsplash.com/photo-1609592424368-8a0b0d36c535?w=200&auto=format&fit=crop&q=80" }
