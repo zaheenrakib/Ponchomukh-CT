@@ -25,10 +25,10 @@ export default function AdminSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-      showToast("✓ সেটিংস সফলভাবে ডাটাবেসে সংরক্ষিত হয়েছে!");
+      showToast("✓ System settings saved successfully to database!");
     } catch (err) {
       console.warn("Could not save settings to API:", err);
-      showToast("✓ সেটিংস সংরক্ষিত হয়েছে!");
+      showToast("✓ Settings saved locally!");
     }
   };
 
@@ -36,11 +36,14 @@ export default function AdminSettingsPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#3B0C04]">
-            ওয়েবসাইট সেটিংস (Website Settings)
+          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
+            <span>System Settings & Store Configuration</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
+              Configuration
+            </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            ব্র্যান্ড ইনফো, ডেলিভারি চার্জ, পেমেন্ট গেটওয়ে এবং সোশ্যাল লিংক পরিচালনা করুন
+            Configure store profile, logistics fulfillment fees, payment channels, social links, and SEO
           </p>
         </div>
       </div>
@@ -53,7 +56,7 @@ export default function AdminSettingsPage() {
             activeTab === "general" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
           }`}
         >
-          সাধারণ সেটিংস (General)
+          General Store Info
         </button>
         <button
           onClick={() => setActiveTab("delivery")}
@@ -61,7 +64,7 @@ export default function AdminSettingsPage() {
             activeTab === "delivery" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
           }`}
         >
-          ডেলিভারি চার্জ (Delivery)
+          Delivery & Shipping Charges
         </button>
         <button
           onClick={() => setActiveTab("payment")}
@@ -69,7 +72,7 @@ export default function AdminSettingsPage() {
             activeTab === "payment" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
           }`}
         >
-          পেমেন্ট মেথড (Payment)
+          Payment Gateways
         </button>
         <button
           onClick={() => setActiveTab("social")}
@@ -77,7 +80,7 @@ export default function AdminSettingsPage() {
             activeTab === "social" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
           }`}
         >
-          সোশ্যাল মিডিয়া (Social Links)
+          Social Media & Support Links
         </button>
         <button
           onClick={() => setActiveTab("seo")}
@@ -85,7 +88,7 @@ export default function AdminSettingsPage() {
             activeTab === "seo" ? "bg-[#3B0C04] text-[#FFC40E]" : "text-[#2B160F] hover:bg-[#FFF7EE]"
           }`}
         >
-          এসইও (SEO)
+          Global SEO
         </button>
       </div>
 
@@ -94,70 +97,70 @@ export default function AdminSettingsPage() {
         {activeTab === "general" && (
           <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
             <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
-              ব্র্যান্ড ও যোগাযোগের তথ্য
+              Brand Profile & Corporate Contact Information
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-bold mb-1">ব্র্যান্ড নাম (ইংরেজি):</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">Brand Name (English):</label>
                 <input
                   type="text"
                   value={settings.brandName}
                   onChange={(e) => setSettings({ ...settings, brandName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold mb-1">ব্র্যান্ড নাম (বাংলা):</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">Brand Name (Localized / Alternate):</label>
                 <input
                   type="text"
                   value={settings.brandNameBn}
                   onChange={(e) => setSettings({ ...settings, brandNameBn: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-bold mb-1">ট্যাগলাইন (Tagline):</label>
+              <label className="block font-bold mb-1 text-[#2B160F]">Corporate Tagline:</label>
               <input
                 type="text"
                 value={settings.tagline}
                 onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-                className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-bold mb-1">হটলাইন ফোন নম্বর:</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">Customer Hotline Phone:</label>
                 <input
                   type="text"
                   value={settings.phone}
                   onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold mb-1">সাপোর্ট ইমেইল:</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">Official Support Email:</label>
                 <input
                   type="email"
                   value={settings.email}
                   onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-bold mb-1">অফিস ও ওয়্যারহাউজ ঠিকানা:</label>
+              <label className="block font-bold mb-1 text-[#2B160F]">Head Office & Warehouse Address:</label>
               <textarea
                 rows={2}
                 value={settings.address}
                 onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                className="w-full p-3 rounded-lg border border-[#E8DCD2]"
+                className="w-full p-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
               />
             </div>
           </div>
@@ -167,36 +170,36 @@ export default function AdminSettingsPage() {
         {activeTab === "delivery" && (
           <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
             <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
-              ডেলিভারি চার্জ ও সময়সীমা
+              Logistics & Courier Delivery Tariffs
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-2">
-                <h3 className="font-bold text-[#3B0C04]">ঢাকা সিটির ভেতর</h3>
+              <div className="p-4 rounded-2xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-2">
+                <h3 className="font-bold text-[#3B0C04]">Inside Dhaka Metro</h3>
                 <div>
-                  <label className="block font-bold mb-1">ডেলিভারি চার্জ (৳):</label>
+                  <label className="block font-bold mb-1 text-[#2B160F]">Delivery Fee (৳):</label>
                   <input
                     type="number"
                     value={settings.insideDhakaFee}
                     onChange={(e) => setSettings({ ...settings, insideDhakaFee: Number(e.target.value) })}
-                    className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] bg-white font-bold text-sm text-[#3B0C04]"
+                    className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-white font-bold text-sm text-[#3B0C04] focus:outline-none focus:border-[#3B0C04]"
                   />
                 </div>
-                <p className="text-[11px] text-[#8C7B72]">প্রত্যাশিত সময়: ২৪-৪৮ ঘণ্টা</p>
+                <p className="text-[11px] text-[#8C7B72]">Estimated SLA: 24 - 48 Hours</p>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-2">
-                <h3 className="font-bold text-[#3B0C04]">ঢাকার বাইরে (সারাদেশ)</h3>
+              <div className="p-4 rounded-2xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-2">
+                <h3 className="font-bold text-[#3B0C04]">Outside Dhaka Metro (Nationwide)</h3>
                 <div>
-                  <label className="block font-bold mb-1">ডেলিভারি চার্জ (৳):</label>
+                  <label className="block font-bold mb-1 text-[#2B160F]">Delivery Fee (৳):</label>
                   <input
                     type="number"
                     value={settings.outsideDhakaFee}
                     onChange={(e) => setSettings({ ...settings, outsideDhakaFee: Number(e.target.value) })}
-                    className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] bg-white font-bold text-sm text-[#3B0C04]"
+                    className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-white font-bold text-sm text-[#3B0C04] focus:outline-none focus:border-[#3B0C04]"
                   />
                 </div>
-                <p className="text-[11px] text-[#8C7B72]">প্রত্যাশিত সময়: ২-৩ কার্যদিবস</p>
+                <p className="text-[11px] text-[#8C7B72]">Estimated SLA: 2 - 4 Business Days</p>
               </div>
             </div>
           </div>
@@ -206,25 +209,25 @@ export default function AdminSettingsPage() {
         {activeTab === "payment" && (
           <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
             <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
-              পেমেন্ট মাধ্যম কনফিগারেশন
+              Payment Gateway Configurations
             </h2>
 
-            <div className="p-4 rounded-xl border border-[#E8DCD2] flex items-center justify-between">
+            <div className="p-4 rounded-2xl border border-[#E8DCD2] flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-[#2B160F]">ক্যাশ অন ডেলিভারি (Cash on Delivery)</h3>
-                <p className="text-[#8C7B72]">চেকআউট পেজে গ্রাহকদের জন্য ডিফল্ট চালু রয়েছে</p>
+                <h3 className="font-bold text-[#2B160F]">Cash on Delivery (COD)</h3>
+                <p className="text-[#8C7B72]">Enabled by default on checkout and POS registers</p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-[#E8F6F1] text-[#16834A] font-bold">
+              <span className="px-3 py-1 rounded-full bg-[#E8F6F1] text-[#16834A] font-bold text-xs">
                 ACTIVE
               </span>
             </div>
 
-            <div className="p-4 rounded-xl border border-[#E8DCD2] flex items-center justify-between opacity-80">
+            <div className="p-4 rounded-2xl border border-[#E8DCD2] flex items-center justify-between opacity-80">
               <div>
                 <h3 className="font-bold text-[#2B160F]">bKash Merchant Payment Gateway</h3>
-                <p className="text-[#8C7B72]">API ক্রেডেনশিয়াল ও ওয়েবহুক রেডি</p>
+                <p className="text-[#8C7B72]">Direct API credentials and webhook integration ready</p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold">
+              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold text-xs">
                 GATEWAY READY
               </span>
             </div>
@@ -235,12 +238,12 @@ export default function AdminSettingsPage() {
         {activeTab === "social" && (
           <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
             <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
-              সোশ্যাল মিডিয়া প্রোফাইল লিংক
+              Social Media Channels & Customer Support
             </h2>
 
             <div className="space-y-3">
               <div>
-                <label className="block font-bold mb-1">Facebook URL:</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">Facebook Page URL:</label>
                 <input
                   type="url"
                   value={settings.socialLinks.facebook}
@@ -250,12 +253,12 @@ export default function AdminSettingsPage() {
                       socialLinks: { ...settings.socialLinks, facebook: e.target.value }
                     })
                   }
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold mb-1">Instagram URL:</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">Instagram Profile URL:</label>
                 <input
                   type="url"
                   value={settings.socialLinks.instagram}
@@ -265,12 +268,12 @@ export default function AdminSettingsPage() {
                       socialLinks: { ...settings.socialLinks, instagram: e.target.value }
                     })
                   }
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold mb-1">WhatsApp Hotline URL:</label>
+                <label className="block font-bold mb-1 text-[#2B160F]">WhatsApp Hotline URL:</label>
                 <input
                   type="url"
                   value={settings.socialLinks.whatsapp}
@@ -280,7 +283,7 @@ export default function AdminSettingsPage() {
                       socialLinks: { ...settings.socialLinks, whatsapp: e.target.value }
                     })
                   }
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                  className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
             </div>
@@ -291,24 +294,24 @@ export default function AdminSettingsPage() {
         {activeTab === "seo" && (
           <div className="p-6 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-4 text-xs">
             <h2 className="text-base font-bold text-[#3B0C04] border-b border-[#E8DCD2] pb-3">
-              গ্লোবাল এসইও মেটাডাটা
+              Global SEO Metadata & Search Discovery
             </h2>
 
             <div>
-              <label className="block font-bold mb-1">সাইট টাইটেল (SEO Title):</label>
+              <label className="block font-bold mb-1 text-[#2B160F]">Site Meta Title:</label>
               <input
                 type="text"
-                defaultValue="পঞ্চমুখ (Ponchomukh) | পছন্দে, প্রয়োজনে, প্রাপ্তিতে — পঞ্চমুখ"
-                className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
+                defaultValue="Ponchomukh | Curated Essentials, Premium Gadgets & Lifestyle Store"
+                className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
               />
             </div>
 
             <div>
-              <label className="block font-bold mb-1">মেটা ডেসক্রিপশন (Meta Description):</label>
+              <label className="block font-bold mb-1 text-[#2B160F]">Meta Description:</label>
               <textarea
                 rows={3}
-                defaultValue="পঞ্চমুখ একটি modern Bangladesh-focused e-commerce platform। Gadgets, Electronics, Home & Kitchen, Travel Accessories এবং Lifestyle পণ্য সবচেয়ে সহজে ও দ্রুত ডেলিভারিতে পান।"
-                className="w-full p-3 rounded-lg border border-[#E8DCD2]"
+                defaultValue="Ponchomukh is a modern enterprise e-commerce platform delivering curated smart gadgets, home & kitchen accessories, travel gear, and lifestyle products nationwide across Bangladesh."
+                className="w-full p-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
               />
             </div>
           </div>
@@ -317,10 +320,10 @@ export default function AdminSettingsPage() {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs shadow-md transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs shadow-md transition-all active:scale-95"
           >
             <Save className="w-4 h-4" />
-            <span>সেটিংস পরিবর্তন সংরক্ষণ করুন</span>
+            <span>Save Configuration Changes</span>
           </button>
         </div>
       </form>

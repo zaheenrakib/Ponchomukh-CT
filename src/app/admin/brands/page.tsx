@@ -27,7 +27,7 @@ export default function AdminBrandsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("আপনি কি নিশ্চিতভাবে এই ব্র্যান্ডটি মুছে ফেলতে চান?")) {
+    if (confirm("Are you sure you want to delete this brand?")) {
       setBrands(brands.filter((b) => b.id !== id));
     }
   };
@@ -37,19 +37,19 @@ export default function AdminBrandsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#3B0C04]">
-            ব্র্যান্ড ব্যবস্থাপনা (Brands)
+            Master Data: Brand Directory
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            পণ্যসমূহের ব্র্যান্ড পরিচালনা করুন
+            Manage manufacturer and brand partner taxonomies for product categorization
           </p>
         </div>
 
         <button
           onClick={() => setIsAddOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-colors"
         >
           <Plus className="w-4 h-4" />
-          <span>নতুন ব্র্যান্ড যোগ করুন</span>
+          <span>Add New Brand</span>
         </button>
       </div>
 
@@ -66,6 +66,7 @@ export default function AdminBrandsPage() {
             <button
               onClick={() => handleDelete(b.id)}
               className="p-1 rounded text-[#8C7B72] hover:text-[#D64545]"
+              title="Delete Brand"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -77,7 +78,7 @@ export default function AdminBrandsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 border border-[#E8DCD2] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
-              <h3 className="text-sm font-bold text-[#3B0C04]">নতুন ব্র্যান্ড</h3>
+              <h3 className="text-sm font-bold text-[#3B0C04]">New Brand Entry</h3>
               <button onClick={() => setIsAddOpen(false)} className="text-[#8C7B72]">
                 <X className="w-5 h-5" />
               </button>
@@ -85,11 +86,11 @@ export default function AdminBrandsPage() {
 
             <form onSubmit={handleAddBrand} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold mb-1">ব্র্যান্ড নাম: *</label>
+                <label className="block font-bold mb-1">Brand Name: *</label>
                 <input
                   type="text"
                   required
-                  placeholder="যেমন: Anker"
+                  placeholder="e.g., Anker, Joyroom, Sonifer"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
@@ -97,29 +98,29 @@ export default function AdminBrandsPage() {
               </div>
 
               <div>
-                <label className="block font-bold mb-1">স্লাগ:</label>
+                <label className="block font-bold mb-1">URL Slug:</label>
                 <input
                   type="text"
-                  placeholder="anker"
+                  placeholder="e.g., anker"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] font-mono"
+                  className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2]"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#E8DCD2]">
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#E8DCD2]">
                 <button
                   type="button"
                   onClick={() => setIsAddOpen(false)}
-                  className="px-4 py-2 rounded-lg border font-bold"
+                  className="px-4 py-2 rounded-lg border border-[#E8DCD2]"
                 >
-                  বাতিল
+                  Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#3B0C04] text-[#FFC40E] font-bold"
+                  className="px-4 py-2 rounded-lg bg-[#3B0C04] text-[#FFC40E] font-bold"
                 >
-                  সংরক্ষণ করুন
+                  Save Brand
                 </button>
               </div>
             </form>

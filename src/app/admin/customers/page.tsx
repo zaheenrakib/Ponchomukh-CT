@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, RefreshCw, Download, FileSpreadsheet } from "lucide-react";
+import { Search, RefreshCw, Download, FileSpreadsheet, Users } from "lucide-react";
 
 interface CustomerItem {
   id: string;
@@ -18,30 +18,30 @@ interface CustomerItem {
 const fallbackCustomers: CustomerItem[] = [
   {
     id: "cust-1",
-    name: "তানভীর আহমেদ",
+    name: "Tanveer Ahmed",
     phone: "01712-345678",
     email: "tanvir.ahmed@example.com",
-    joinedDate: "০১ আগস্ট, ২০২৬",
+    joinedDate: "Aug 01, 2026",
     totalOrders: 4,
     totalSpent: 6450,
     status: "ACTIVE"
   },
   {
     id: "cust-2",
-    name: "সুমাইয়া আক্তার",
+    name: "Sumaiya Akter",
     phone: "01823-456789",
     email: "sumaiya.akter@example.com",
-    joinedDate: "১৫ আগস্ট, ২০২৬",
+    joinedDate: "Aug 15, 2026",
     totalOrders: 2,
     totalSpent: 3850,
     status: "ACTIVE"
   },
   {
     id: "cust-3",
-    name: "রফিকুল ইসলাম",
+    name: "Rafiqul Islam",
     phone: "01934-567890",
     email: "rafiqul.islam@example.com",
-    joinedDate: "২০ আগস্ট, ২০২৬",
+    joinedDate: "Aug 20, 2026",
     totalOrders: 1,
     totalSpent: 1299,
     status: "ACTIVE"
@@ -105,13 +105,13 @@ export default function AdminCustomersPage() {
     const filename = `ponchomukh_customers_${new Date().toISOString().slice(0, 10)}.csv`;
     const headers = [
       "Customer ID",
-      "Full Name (নাম)",
-      "Phone (মোবাইল)",
-      "Email (ইমেইল)",
-      "Joined Date (যোগদানের তারিখ)",
-      "Total Orders (অর্ডার সংখ্যা)",
-      "Total Spent (৳ মোট ব্যয়)",
-      "Status (স্ট্যাটাস)",
+      "Full Name",
+      "Phone Number",
+      "Email Address",
+      "Joined Date",
+      "Total Orders",
+      "Lifetime Spend (BDT)",
+      "Account Status",
     ];
 
     let csvContent = "\uFEFF";
@@ -146,11 +146,14 @@ export default function AdminCustomersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#3B0C04]">
-            কাস্টমার তালিকা (Customers)
+          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
+            <span>CRM: Customer Directory & Profiles</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
+              CRM & Accounts
+            </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            নিবন্ধিত কাস্টমারদের অর্ডার ও লেনদেন পর্যবেক্ষণ করুন
+            Monitor registered buyers, order frequencies, lifetime spending, and account statuses
           </p>
         </div>
 
@@ -160,14 +163,14 @@ export default function AdminCustomersPage() {
             className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#3B0C04] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
           >
             <FileSpreadsheet className="w-4 h-4 text-[#3B0C04]" />
-            <span>বিস্তারিত অ্যানালিটিক্স হাব</span>
+            <span>Reports & Analytics Hub</span>
           </Link>
 
           <button
             onClick={fetchCustomers}
             disabled={isLoading}
-            className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50"
-            title="রিফ্রেশ"
+            className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 transition-colors"
+            title="Refresh Directory"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -177,7 +180,7 @@ export default function AdminCustomersPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
           >
             <Download className="w-4 h-4" />
-            <span>গ্রাহক রিপোর্ট ডাউনলোড (CSV)</span>
+            <span>Export Customer Directory (CSV)</span>
           </button>
         </div>
       </div>
@@ -186,43 +189,48 @@ export default function AdminCustomersPage() {
         <div className="relative w-full sm:w-80">
           <input
             type="text"
-            placeholder="নাম, ফোন বা ইমেইল দিয়ে খুঁজুন..."
+            placeholder="Search by customer name, phone, or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none"
+            className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-medium focus:outline-none focus:border-[#3B0C04]"
           />
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B72]" />
         </div>
+        <span className="text-xs text-[#8C7B72] font-semibold">
+          Showing {filtered.length} customers
+        </span>
       </div>
 
       <div className="bg-white rounded-2xl border border-[#E8DCD2] shadow-xs overflow-hidden">
         <table className="w-full text-xs text-left">
           <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold">
             <tr>
-              <th className="p-3.5">কাস্টমার নাম</th>
-              <th className="p-3.5">মোবাইল & ইমেইল</th>
-              <th className="p-3.5">নিবন্ধন তারিখ</th>
-              <th className="p-3.5">মোট অর্ডার</th>
-              <th className="p-3.5">মোট ব্যয় (Spent)</th>
-              <th className="p-3.5">স্ট্যাটাস</th>
-              <th className="p-3.5 text-center">অ্যাকশন</th>
+              <th className="p-3.5">Customer Name</th>
+              <th className="p-3.5">Contact Details</th>
+              <th className="p-3.5">Registration Date</th>
+              <th className="p-3.5 text-center">Total Orders</th>
+              <th className="p-3.5 text-right">Lifetime Spend (৳)</th>
+              <th className="p-3.5 text-center">Account Status</th>
+              <th className="p-3.5 text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E8DCD2]">
             {filtered.map((c) => (
-              <tr key={c.id} className="hover:bg-[#FFFDF9]">
+              <tr key={c.id} className="hover:bg-[#FFFDF9] transition-colors">
                 <td className="p-3.5 font-bold text-[#2B160F]">{c.name}</td>
                 <td className="p-3.5">
                   <p className="font-semibold text-[#3B0C04]">{c.phone}</p>
                   <p className="text-[11px] text-[#8C7B72]">{c.email}</p>
                 </td>
                 <td className="p-3.5 text-[#6B5A52]">{c.joinedDate}</td>
-                <td className="p-3.5 font-bold">{c.totalOrders} টি</td>
-                <td className="p-3.5 font-black text-[#3B0C04]">৳{c.totalSpent}</td>
-                <td className="p-3.5">
+                <td className="p-3.5 font-bold text-center">{c.totalOrders} orders</td>
+                <td className="p-3.5 font-black text-right text-[#3B0C04]">৳{c.totalSpent.toLocaleString()}</td>
+                <td className="p-3.5 text-center">
                   <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      c.status === "ACTIVE" ? "bg-[#E8F6F1] text-[#16834A]" : "bg-[#D64545]/10 text-[#D64545]"
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      c.status === "ACTIVE"
+                        ? "bg-[#E8F6F1] text-[#16834A] border border-[#16834A]/20"
+                        : "bg-[#D64545]/10 text-[#D64545] border border-[#D64545]/20"
                     }`}
                   >
                     {c.status}
@@ -234,10 +242,10 @@ export default function AdminCustomersPage() {
                     className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-colors ${
                       c.status === "ACTIVE"
                         ? "bg-[#D64545]/10 text-[#D64545] hover:bg-[#D64545] hover:text-white"
-                        : "bg-[#E8F6F1] text-[#16834A]"
+                        : "bg-[#E8F6F1] text-[#16834A] hover:bg-[#16834A] hover:text-white"
                     }`}
                   >
-                    {c.status === "ACTIVE" ? "Block" : "Unblock"}
+                    {c.status === "ACTIVE" ? "Block Access" : "Activate"}
                   </button>
                 </td>
               </tr>

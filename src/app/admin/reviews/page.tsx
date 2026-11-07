@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Star, CheckCircle2, XCircle, Trash2, RefreshCw } from "lucide-react";
+import { Star, CheckCircle2, XCircle, Trash2, RefreshCw, MessageSquare } from "lucide-react";
 
 interface ReviewItem {
   id: string;
@@ -16,30 +16,30 @@ interface ReviewItem {
 const fallbackReviews: ReviewItem[] = [
   {
     id: "rev-1",
-    customer: "তানভীর আহমেদ",
+    customer: "Tanveer Ahmed",
     product: "Sonifer SF-350 Portable Rechargeable Juicer & Blender",
     rating: 5,
-    comment: "প্রোডাক্ট কোয়ালিটি অসাধারণ! অর্ডার করার পরদিন ঢাকায় হোম ডেলিভারি পেয়েছি। খুব সন্তুষ্ট।",
+    comment: "Outstanding product quality! Delivered to my doorstep in Dhaka the next day after ordering. Very satisfied.",
     status: "APPROVED",
-    date: "০৪ সেপ্টেম্বর, ২০২৬"
+    date: "Sep 04, 2026"
   },
   {
     id: "rev-2",
-    customer: "সুমাইয়া আক্তার",
+    customer: "Sumaiya Akter",
     product: "Joyroom JR-T03S Pro ANC True Wireless Earbuds",
     rating: 5,
-    comment: "দাম অনুযায়ী খুবই ভালো পণ্য। একদম ছবির মতোই পেয়েছি। ক্যাশ অন ডেলিভারিতে চেক করে নিতে পেরেছি।",
+    comment: "Exceptional sound and active noise cancellation for this price bracket. Matched the photos and specifications exactly.",
     status: "APPROVED",
-    date: "০৩ সেপ্টেম্বর, ২০২৬"
+    date: "Sep 03, 2026"
   },
   {
     id: "rev-3",
-    customer: "সাকিব মাহমুদ",
+    customer: "Sakib Mahmud",
     product: "Kensen 5-in-1 Electric Grooming Trimmer Kit",
     rating: 4,
-    comment: "ব্লেড খুব শার্প এবং চার্জিং ব্যাকআপও বেশ ভালো। প্যাকেজিং আরও সুন্দর হতে পারত।",
+    comment: "Blades are super sharp and battery backup easily lasts multiple shaves. Packaging could be slightly more rugged.",
     status: "PENDING",
-    date: "০৪ সেপ্টেম্বর, ২০২৬"
+    date: "Sep 04, 2026"
   }
 ];
 
@@ -100,7 +100,7 @@ export default function AdminReviewsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("আপনি কি নিশ্চিতভাবে এই রিভিউটি মুছে ফেলতে চান?")) return;
+    if (!confirm("Are you sure you want to permanently delete this customer review?")) return;
     setReviews((prev) => prev.filter((r) => r.id !== id));
     try {
       await fetch(`/api/admin/reviews?id=${encodeURIComponent(id)}`, {
@@ -117,21 +117,24 @@ export default function AdminReviewsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#3B0C04]">
-            গ্রাহক রিভিউ নিয়ন্ত্রণ (Customer Reviews)
+          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
+            <span>Customer Feedback & Reviews</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
+              CRM & Moderation
+            </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            পণ্যসমূহের রিভিউ পর্যবেক্ষণ, অনুমোদন ও ফিল্টার করুন
+            Monitor, moderate, approve, or reject customer ratings and published storefront feedback
           </p>
         </div>
 
         <button
           onClick={fetchReviews}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 self-start sm:self-auto transition-colors"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          <span>রিফ্রেশ</span>
+          <span>Refresh List</span>
         </button>
       </div>
 
@@ -145,7 +148,7 @@ export default function AdminReviewsPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          সব রিভিউ ({reviews.length})
+          All Reviews ({reviews.length})
         </button>
         <button
           onClick={() => setActiveTab("PENDING")}
@@ -155,7 +158,7 @@ export default function AdminReviewsPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          অপেক্ষমাণ ({reviews.filter((r) => r.status === "PENDING").length})
+          Pending Approval ({reviews.filter((r) => r.status === "PENDING").length})
         </button>
         <button
           onClick={() => setActiveTab("APPROVED")}
@@ -165,7 +168,7 @@ export default function AdminReviewsPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          অনুমোদিত ({reviews.filter((r) => r.status === "APPROVED").length})
+          Approved ({reviews.filter((r) => r.status === "APPROVED").length})
         </button>
         <button
           onClick={() => setActiveTab("REJECTED")}
@@ -175,7 +178,7 @@ export default function AdminReviewsPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          বাতিলকৃত ({reviews.filter((r) => r.status === "REJECTED").length})
+          Rejected ({reviews.filter((r) => r.status === "REJECTED").length})
         </button>
       </div>
 
@@ -227,7 +230,7 @@ export default function AdminReviewsPage() {
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#E8F6F1] hover:bg-[#16834A] hover:text-white text-[#16834A] text-xs font-bold transition-colors"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>অনুমোদন</span>
+                  <span>Approve</span>
                 </button>
               )}
               {rev.status !== "REJECTED" && (
@@ -236,12 +239,13 @@ export default function AdminReviewsPage() {
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#D64545]/10 hover:bg-[#D64545] hover:text-white text-[#D64545] text-xs font-bold transition-colors"
                 >
                   <XCircle className="w-3.5 h-3.5" />
-                  <span>বাতিল</span>
+                  <span>Reject</span>
                 </button>
               )}
               <button
                 onClick={() => handleDelete(rev.id)}
-                className="p-1.5 rounded-lg text-[#8C7B72] hover:text-[#D64545] hover:bg-[#D64545]/10"
+                className="p-1.5 rounded-lg text-[#8C7B72] hover:text-[#D64545] hover:bg-[#D64545]/10 transition-colors"
+                title="Delete Review"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -251,7 +255,7 @@ export default function AdminReviewsPage() {
 
         {filtered.length === 0 && (
           <div className="p-12 text-center rounded-2xl bg-white border border-[#E8DCD2] text-xs text-[#8C7B72]">
-            কোনো রিভিউ পাওয়া যায়নি।
+            No customer reviews found matching current filter.
           </div>
         )}
       </div>

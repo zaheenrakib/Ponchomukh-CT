@@ -80,10 +80,10 @@ export default function AddProductPage() {
         </Link>
         <div>
           <h1 className="font-sans font-black text-2xl text-[#3B0C04]">
-            নতুন পণ্য যুক্ত করুন (Add Product & Auto-QR)
+            Add New Catalog Product Item
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            পণ্য ইনপুট করার সাথে সাথে স্বয়ংক্রিয়ভাবে SKU এবং QR কোড তৈরি হবে
+            Automatic SKU code generation, cost price tracking, and dynamic live QR label generation
           </p>
         </div>
       </div>
@@ -98,12 +98,12 @@ export default function AddProductPage() {
         {/* Main Form */}
         <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-3xl border border-[#E8DCD2] shadow-xs space-y-5">
           <div>
-            <label className="block text-xs font-bold text-[#2B160F] mb-1">পণ্যের নাম (Product Name) *</label>
+            <label className="block text-xs font-bold text-[#2B160F] mb-1">Product Title: *</label>
             <input
               type="text"
               name="name"
               required
-              placeholder="যেমন: Sonifer SF-350 Portable Rechargeable Juicer & Blender"
+              placeholder="e.g., Sonifer SF-350 Portable Rechargeable Juicer & Blender"
               value={formData.name}
               onChange={handleChange}
               className="w-full h-11 px-3.5 rounded-xl border border-[#E8DCD2] text-xs font-semibold outline-none focus:border-[#3B0C04]"
@@ -113,14 +113,14 @@ export default function AddProductPage() {
           {/* SKU with Auto-Generate Button */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold text-[#2B160F]">স্বয়ংক্রিয় SKU কোড (Auto SKU) *</label>
+              <label className="text-xs font-bold text-[#2B160F]">Unique SKU Barcode: *</label>
               <button
                 type="button"
                 onClick={handleRegenerateSKU}
                 className="text-[11px] font-bold text-[#3B0C04] hover:underline flex items-center gap-1"
               >
                 <RefreshCw className="w-3 h-3" />
-                <span>নতুন SKU কোড জেনারেট</span>
+                <span>Generate New SKU</span>
               </button>
             </div>
             <input
@@ -136,7 +136,7 @@ export default function AddProductPage() {
           {/* Pricing Row: Base, Sale, Cost */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#2B160F] mb-1">নিয়মিত মূল্য (Base Price) *</label>
+              <label className="block text-xs font-bold text-[#2B160F] mb-1">Base Price (৳) *</label>
               <input
                 type="number"
                 name="basePrice"
@@ -148,7 +148,7 @@ export default function AddProductPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#2B160F] mb-1">অফার মূল্য (Sale Price)</label>
+              <label className="block text-xs font-bold text-[#2B160F] mb-1">Sale Price (৳)</label>
               <input
                 type="number"
                 name="salePrice"
@@ -159,7 +159,7 @@ export default function AddProductPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#2B160F] mb-1">কেনা দাম (Cost Price) *</label>
+              <label className="block text-xs font-bold text-[#2B160F] mb-1">Procurement Cost Price (৳) *</label>
               <input
                 type="number"
                 name="costPrice"
@@ -168,12 +168,12 @@ export default function AddProductPage() {
                 onChange={handleChange}
                 className="w-full h-11 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFF7EE] text-xs font-bold text-[#3B0C04] outline-none focus:border-[#3B0C04]"
               />
-              <span className="text-[10px] text-[#8C7B72]">মুনাফা হিসেবের জন্য ব্যবহৃত হবে</span>
+              <span className="text-[10px] text-[#8C7B72]">Used for net profit & COGS reports</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#2B160F] mb-1">মজুত পরিমাণ (Initial Stock) *</label>
+            <label className="block text-xs font-bold text-[#2B160F] mb-1">Initial Inventory Stock *</label>
             <input
               type="number"
               name="stock"
@@ -185,7 +185,7 @@ export default function AddProductPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#2B160F] mb-1">পণ্যের ছবি URL (Image URL) *</label>
+            <label className="block text-xs font-bold text-[#2B160F] mb-1">Product Image URL *</label>
             <input
               type="url"
               name="imageUrl"
@@ -197,12 +197,12 @@ export default function AddProductPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#2B160F] mb-1">বিস্তারিত বিবরণ (Description) *</label>
+            <label className="block text-xs font-bold text-[#2B160F] mb-1">Product Description *</label>
             <textarea
               name="description"
               rows={3}
               required
-              placeholder="পণ্যের গুণাগুণ ও বিস্তারিত বর্ণনা..."
+              placeholder="Specifications, features, and warranty details..."
               value={formData.description}
               onChange={handleChange}
               className="w-full p-3 rounded-xl border border-[#E8DCD2] text-xs outline-none focus:border-[#3B0C04]"
@@ -214,7 +214,7 @@ export default function AddProductPage() {
               href="/admin/products"
               className="px-5 py-2.5 rounded-xl border border-[#E8DCD2] text-xs font-bold text-[#6B5A52] hover:bg-[#FFF7EE]"
             >
-              বাতিল
+              Cancel
             </Link>
             <button
               type="submit"
@@ -222,7 +222,7 @@ export default function AddProductPage() {
               className="px-6 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold flex items-center gap-2 shadow-md disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              <span>{loading ? "সংরক্ষণ হচ্ছে..." : "পণ্য সংরক্ষণ করুন"}</span>
+              <span>{loading ? "Saving Item..." : "Save Product Item"}</span>
             </button>
           </div>
         </form>
@@ -231,7 +231,7 @@ export default function AddProductPage() {
         <div className="bg-white p-6 rounded-3xl border border-[#E8DCD2] shadow-xs space-y-4 text-center h-fit">
           <div className="flex items-center justify-center gap-2 text-xs font-bold text-[#3B0C04]">
             <QrCode className="w-4 h-4" />
-            <span>লাইভ কিউআর (QR) জেনারেটর</span>
+            <span>Dynamic QR Code Preview</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#FFFDF9] border-2 border-dashed border-[#3B0C04] space-y-3">
@@ -247,13 +247,13 @@ export default function AddProductPage() {
                 {formData.sku}
               </p>
               <p className="text-[11px] text-[#6B5A52] line-clamp-1">
-                {formData.name || "নতুন পণ্য"}
+                {formData.name || "New Catalog Item"}
               </p>
             </div>
           </div>
 
           <p className="text-[11px] text-[#8C7B72] leading-relaxed">
-            💡 পণ্যটি সেভ করার সাথে সাথে এই কিউআর দিয়ে ক্রেতারা যেকোনো মোবাইল থেকে স্ক্যান করে পণ্যের বিবরণ দেখতে পারবেন।
+            💡 Scanning this label instantly redirects customers to the verified online product specifications and checkout funnel.
           </p>
         </div>
       </div>

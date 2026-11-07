@@ -29,7 +29,6 @@ export default function AdminProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Fetch real products from database API on load
   useEffect(() => {
     async function loadDbProducts() {
       try {
@@ -56,7 +55,6 @@ export default function AdminProductsPage() {
               variants: p.variants?.length > 0 ? p.variants : [{ id: `var-${p.id}`, productId: p.id, sku: p.sku, price: p.salePrice || p.basePrice, stock: p.stock, selectedOptions: [] }],
             }));
 
-            // Merge with mock products ensuring no duplicates
             const dbIds = new Set(mapped.map((m) => m.id));
             const remainingMocks = mockProducts.filter((m) => !dbIds.has(m.id));
             setProducts([...mapped, ...remainingMocks]);
@@ -109,7 +107,7 @@ export default function AdminProductsPage() {
   });
 
   const handleDelete = async (id: string) => {
-    if (confirm("আপনি কি নিশ্চিতভাবে এই পণ্যটি মুছে ফেলতে চান?")) {
+    if (confirm("Are you sure you want to permanently delete this product?")) {
       setProducts(products.filter((p) => p.id !== id));
       try {
         await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
@@ -145,7 +143,7 @@ export default function AdminProductsPage() {
       stock: 25,
       lowStockThreshold: 5,
       imageUrl: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&auto=format&fit=crop&q=80",
-      description: "প্রিমিয়াম কোয়ালিটি পণ্য।",
+      description: "Premium commercial grade product.",
       isFeatured: true,
       isBestSeller: false,
       isNewArrival: true,
@@ -163,143 +161,90 @@ export default function AdminProductsPage() {
       brandSlug: p.brand?.slug || "sonifer",
       basePrice: p.basePrice,
       salePrice: p.salePrice || p.basePrice,
-      costPrice: p.costPrice || Math.round(p.basePrice * 0.7),
+      costPrice: 950,
       stock: p.stock,
       lowStockThreshold: p.lowStockThreshold || 5,
       imageUrl: p.images[0]?.imageUrl || "",
-      description: p.description,
-      isFeatured: p.isFeatured,
-      isBestSeller: !!p.isBestSeller,
-      isNewArrival: !!p.isNewArrival,
-      isFlashSale: !!p.isFlashSale
+      description: p.description || "",
+      isFeatured: p.isFeatured || false,
+      isBestSeller: p.isBestSeller || false,
+      isNewArrival: p.isNewArrival || false,
+      isFlashSale: p.isFlashSale || false
     });
     setIsAddModalOpen(true);
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.sku) return;
+
     const cat = mockCategories.find((c) => c.slug === formData.categorySlug) || mockCategories[0];
-    const brnd = mockBrands.find((b) => b.slug === formData.brandSlug);
+    const br = mockBrands.find((b) => b.slug === formData.brandSlug);
+
+    const productPayload: Product = {
+      id: editingProduct ? editingProduct.id : `prod-${Date.now()}`,
+      name: formData.name,
+      slug: editingProduct ? editingProduct.slug : formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      sku: formData.sku,
+      basePrice: Number(formData.basePrice),
+      salePrice: Number(formData.salePrice),
+      stock: Number(formData.stock),
+      lowStockThreshold: Number(formData.lowStockThreshold),
+      status: "ACTIVE",
+      averageRating: editingProduct ? editingProduct.averageRating : 5.0,
+      reviewsCount: editingProduct ? editingProduct.reviewsCount : 0,
+      isFeatured: formData.isFeatured,
+      isBestSeller: formData.isBestSeller,
+      isNewArrival: formData.isNewArrival,
+      isFlashSale: formData.isFlashSale,
+      categoryId: cat.id,
+      brandId: br?.id,
+      category: cat,
+      brand: br,
+      description: formData.description,
+      images: [{ id: `img-${Date.now()}`, productId: "", imageUrl: formData.imageUrl, isPrimary: true }],
+      variants: [{
+        id: `var-${Date.now()}`,
+        productId: "",
+        sku: formData.sku,
+        price: Number(formData.salePrice),
+        stock: Number(formData.stock),
+        selectedOptions: []
+      }]
+    };
 
     if (editingProduct) {
-      // Update
-      const updated = products.map((p) =>
-        p.id === editingProduct.id
-          ? {
-              ...p,
-              name: formData.name,
-              sku: formData.sku,
-              basePrice: Number(formData.basePrice),
-              salePrice: Number(formData.salePrice),
-              costPrice: Number(formData.costPrice),
-              stock: Number(formData.stock),
-              lowStockThreshold: Number(formData.lowStockThreshold),
-              description: formData.description,
-              isFeatured: formData.isFeatured,
-              isBestSeller: formData.isBestSeller,
-              isNewArrival: formData.isNewArrival,
-              isFlashSale: formData.isFlashSale,
-              category: cat,
-              brand: brnd,
-              images: [{ id: `img-${Date.now()}`, productId: p.id, imageUrl: formData.imageUrl, isPrimary: true }]
-            }
-          : p
-      );
-      setProducts(updated);
-
-      try {
-        await fetch("/api/admin/products", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: editingProduct.id,
-            name: formData.name,
-            basePrice: formData.basePrice,
-            salePrice: formData.salePrice,
-            stock: formData.stock,
-            description: formData.description,
-          }),
-        });
-      } catch (err) {
-        console.warn("Could not sync product update to API:", err);
-      }
+      setProducts(products.map((p) => (p.id === editingProduct.id ? productPayload : p)));
     } else {
-      // Create new
-      let createdId = `prod-${Date.now()}`;
-      try {
-        const res = await fetch("/api/admin/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.name,
-            sku: formData.sku,
-            basePrice: formData.basePrice,
-            salePrice: formData.salePrice,
-            stock: formData.stock,
-            description: formData.description,
-            imageUrl: formData.imageUrl,
-            categoryId: cat.id,
-            brandId: brnd?.id,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.product?.id) {
-            createdId = data.product.id;
-          }
-        }
-      } catch (err) {
-        console.warn("Could not save new product to API:", err);
-      }
-
-      const newProd: Product = {
-        id: createdId,
-        name: formData.name,
-        slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `prod-${Date.now()}`,
-        sku: formData.sku,
-        basePrice: Number(formData.basePrice),
-        salePrice: Number(formData.salePrice),
-        costPrice: Number(formData.costPrice),
-        stock: Number(formData.stock),
-        lowStockThreshold: Number(formData.lowStockThreshold),
-        status: "ACTIVE",
-        averageRating: 5.0,
-        reviewsCount: 1,
-        isFeatured: formData.isFeatured,
-        isBestSeller: formData.isBestSeller,
-        isNewArrival: formData.isNewArrival,
-        isFlashSale: formData.isFlashSale,
-        categoryId: cat.id,
-        category: cat,
-        brand: brnd,
-        description: formData.description,
-        images: [{ id: `img-${Date.now()}`, productId: createdId, imageUrl: formData.imageUrl, isPrimary: true }],
-        variants: [
-          {
-            id: `var-${Date.now()}`,
-            productId: createdId,
-            sku: formData.sku,
-            price: Number(formData.salePrice || formData.basePrice),
-            stock: Number(formData.stock),
-            selectedOptions: []
-          }
-        ]
-      };
-      setProducts([newProd, ...products]);
+      setProducts([productPayload, ...products]);
     }
+
+    try {
+      await fetch("/api/admin/products", {
+        method: editingProduct ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productPayload),
+      });
+    } catch (err) {
+      console.warn("Could not sync product to server API:", err);
+    }
+
     setIsAddModalOpen(false);
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#3B0C04]">
-            পণ্য ব্যবস্থাপনা (Product Management)
+          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
+            <span>Master Data: Product Catalog</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
+              {filteredProducts.length} Items
+            </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            সকল প্রোডাক্টের প্রাইসিং, স্টক এবং পাবলিশিং স্ট্যাটাস নিয়ন্ত্রণ করুন
+            Manage product pricing, SKU barcodes, inventory levels, and omnichannel status
           </p>
         </div>
 
@@ -308,7 +253,7 @@ export default function AdminProductsPage() {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-colors"
         >
           <Plus className="w-4 h-4" />
-          <span>নতুন পণ্য যুক্ত করুন (Add Product)</span>
+          <span>Add New Product Item</span>
         </button>
       </div>
 
@@ -317,7 +262,7 @@ export default function AdminProductsPage() {
         <div className="relative w-full sm:w-80">
           <input
             type="text"
-            placeholder="নাম বা SKU দিয়ে খুঁজুন..."
+            placeholder="Search by title or SKU code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
@@ -331,7 +276,7 @@ export default function AdminProductsPage() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="h-10 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] font-semibold text-[#2B160F]"
           >
-            <option value="ALL">সকল ক্যাটাগরি</option>
+            <option value="ALL">All Categories</option>
             {mockCategories.map((c) => (
               <option key={c.id} value={c.slug}>{c.name}</option>
             ))}
@@ -342,7 +287,7 @@ export default function AdminProductsPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="h-10 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] font-semibold text-[#2B160F]"
           >
-            <option value="ALL">সকল স্ট্যাটাস</option>
+            <option value="ALL">All Statuses</option>
             <option value="ACTIVE">ACTIVE</option>
             <option value="DRAFT">DRAFT</option>
           </select>
@@ -353,16 +298,16 @@ export default function AdminProductsPage() {
       <div className="bg-white rounded-2xl border border-[#E8DCD2] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold">
+            <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold uppercase tracking-wider">
               <tr>
-                <th className="p-3.5">ছবি</th>
-                <th className="p-3.5">পণ্যের নাম & ক্যাটাগরি</th>
-                <th className="p-3.5">SKU</th>
-                <th className="p-3.5">বিক্রয় মূল্য</th>
-                <th className="p-3.5">মজুত স্টক</th>
-                <th className="p-3.5">ফ্ল্যাগস</th>
-                <th className="p-3.5">স্ট্যাটাস</th>
-                <th className="p-3.5 text-center">অ্যাকশন</th>
+                <th className="p-3.5">Image</th>
+                <th className="p-3.5">Product Title & Category</th>
+                <th className="p-3.5">SKU Code</th>
+                <th className="p-3.5">Selling Price</th>
+                <th className="p-3.5">Stock</th>
+                <th className="p-3.5">Flags</th>
+                <th className="p-3.5">Status</th>
+                <th className="p-3.5 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8DCD2]">
@@ -390,7 +335,7 @@ export default function AdminProductsPage() {
                         p.stock <= 5 ? "bg-[#D64545]/10 text-[#D64545]" : "bg-[#E8F6F1] text-[#16834A]"
                       }`}
                     >
-                      {p.stock} পিস
+                      {p.stock} Pcs
                     </span>
                   </td>
                   <td className="p-3.5 space-x-1">
@@ -408,28 +353,28 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => setSelectedQRProduct(p)}
                         className="p-1.5 rounded-md hover:bg-[#FFF7EE] text-[#3B0C04] hover:scale-110 transition-transform"
-                        title="পণ্য কিউআর (QR) কোড দেখুন ও প্রিন্ট করুন"
+                        title="View & Print Dynamic QR Code Label"
                       >
                         <QrCode className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(p)}
                         className="p-1.5 rounded-md hover:bg-[#FFF7EE] text-[#3B0C04]"
-                        title="সম্পাদনা করুন"
+                        title="Edit Item"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDuplicate(p)}
                         className="p-1.5 rounded-md hover:bg-[#FFF7EE] text-[#6B5A52]"
-                        title="ডুপ্লিকেট করুন"
+                        title="Duplicate"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(p.id)}
                         className="p-1.5 rounded-md hover:bg-[#D64545]/10 text-[#D64545]"
-                        title="মুছে ফেলুন"
+                        title="Delete Item"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -448,7 +393,7 @@ export default function AdminProductsPage() {
           <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-[#E8DCD2] max-h-[90vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
               <h2 className="text-base font-bold text-[#3B0C04]">
-                {editingProduct ? "পণ্য সম্পাদনা (Edit Product)" : "নতুন পণ্য যুক্ত করুন (Add New Product)"}
+                {editingProduct ? "Edit Product Item" : "Add New Catalog Item"}
               </h2>
               <button
                 onClick={() => setIsAddModalOpen(false)}
@@ -461,19 +406,19 @@ export default function AdminProductsPage() {
             <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">পণ্যের নাম: *</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">Product Title: *</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="যেমন: Sonifer SF-350 Portable Blender"
+                    placeholder="e.g., Sonifer SF-350 Portable Rechargeable Juicer"
                     className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">SKU কোড: *</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">SKU Barcode Code: *</label>
                   <input
                     type="text"
                     required
@@ -486,7 +431,7 @@ export default function AdminProductsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">ক্যাটাগরি:</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">Category:</label>
                   <select
                     value={formData.categorySlug}
                     onChange={(e) => setFormData({ ...formData, categorySlug: e.target.value })}
@@ -499,7 +444,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">ব্র্যান্ড:</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">Brand:</label>
                   <select
                     value={formData.brandSlug}
                     onChange={(e) => setFormData({ ...formData, brandSlug: e.target.value })}
@@ -514,7 +459,7 @@ export default function AdminProductsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">আসল মূল্য (Regular Price):</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">Regular Price (৳):</label>
                   <input
                     type="number"
                     required
@@ -525,7 +470,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#3B0C04] mb-1">অফার মূল্য (Sale Price):</label>
+                  <label className="block font-bold text-[#3B0C04] mb-1">Sale Price (৳):</label>
                   <input
                     type="number"
                     required
@@ -536,7 +481,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2B160F] mb-1">মজুত স্টক সংখ্যা:</label>
+                  <label className="block font-bold text-[#2B160F] mb-1">Inventory Stock:</label>
                   <input
                     type="number"
                     required
@@ -548,19 +493,19 @@ export default function AdminProductsPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-[#2B160F] mb-1">ছবির URL (Primary Image):</label>
+                <label className="block font-bold text-[#2B160F] mb-1">Primary Image URL:</label>
                 <input
                   type="url"
                   required
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://..."
+                  placeholder="https://images.unsplash.com/..."
                   className="w-full h-10 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9]"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[#2B160F] mb-1">পণ্য বিবরণ (Description):</label>
+                <label className="block font-bold text-[#2B160F] mb-1">Product Description:</label>
                 <textarea
                   rows={3}
                   value={formData.description}
@@ -617,13 +562,13 @@ export default function AdminProductsPage() {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-5 py-2.5 rounded-lg border border-[#E8DCD2] font-bold"
                 >
-                  বাতিল
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] font-bold"
                 >
-                  সংরক্ষণ করুন (Save)
+                  Save Product
                 </button>
               </div>
             </form>
@@ -631,14 +576,14 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* DYNAMIC QR CODE & LABEL MODAL */}
+      {/* DYNAMIC QR CODE & BARCODE MODAL */}
       {selectedQRProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 border border-[#E8DCD2] space-y-5 text-center">
             <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
               <div className="flex items-center gap-2">
                 <QrCode className="w-5 h-5 text-[#3B0C04]" />
-                <h3 className="text-base font-black text-[#3B0C04]">পণ্য কিউআর (QR) ও বারকোড লেবেল</h3>
+                <h3 className="text-base font-black text-[#3B0C04]">Dynamic QR & Barcode Label</h3>
               </div>
               <button
                 onClick={() => setSelectedQRProduct(null)}
@@ -655,7 +600,7 @@ export default function AdminProductsPage() {
             >
               <div className="flex items-center justify-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-[#3B0C04] text-[#FFC40E] font-black text-xs flex items-center justify-center">
-                  প
+                  P
                 </span>
                 <span className="font-black text-sm tracking-tight text-[#3B0C04]">
                   PONCHOMUKH VERIFIED
@@ -684,12 +629,12 @@ export default function AdminProductsPage() {
                   SKU: {selectedQRProduct.sku}
                 </p>
                 <p className="text-xs font-black text-[#16834A]">
-                  মূল্য: ৳{selectedQRProduct.salePrice || selectedQRProduct.basePrice}
+                  Price: ৳{selectedQRProduct.salePrice || selectedQRProduct.basePrice}
                 </p>
               </div>
 
               <p className="text-[10px] text-[#8C7B72]">
-                📷 যেকোনো স্মার্টফোন দিয়ে স্ক্যান করলে পণ্যের সকল তথ্য ও যাচাইকরণ দেখা যাবে
+                📷 Scan with smartphone camera to view full specifications & online checkout
               </p>
             </div>
 
@@ -701,7 +646,7 @@ export default function AdminProductsPage() {
                   className="flex-1 py-2.5 rounded-xl bg-[#3B0C04] text-[#FFC40E] hover:bg-[#260700] flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>লেবেল প্রিন্ট করুন</span>
+                  <span>Print Label</span>
                 </button>
 
                 <a
@@ -715,7 +660,7 @@ export default function AdminProductsPage() {
                   className="px-4 py-2.5 rounded-xl border border-[#E8DCD2] text-[#3B0C04] hover:bg-[#FFF7EE] flex items-center justify-center gap-1.5"
                 >
                   <Download className="w-4 h-4" />
-                  <span>কিউআর সেভ</span>
+                  <span>Download SVG</span>
                 </a>
               </div>
 
@@ -725,7 +670,7 @@ export default function AdminProductsPage() {
                   target="_blank"
                   className="text-[#3B0C04] hover:underline flex items-center gap-1 text-[11px]"
                 >
-                  <span>পণ্য স্টোর পেজ দেখুন</span>
+                  <span>View Product Page</span>
                   <ExternalLink className="w-3 h-3" />
                 </Link>
 
@@ -734,7 +679,7 @@ export default function AdminProductsPage() {
                   target="_blank"
                   className="text-[#16834A] hover:underline flex items-center gap-1 text-[11px]"
                 >
-                  <span>স্পেশাল ল্যান্ডিং পেজ ভিউ</span>
+                  <span>Special Funnel Page</span>
                   <ExternalLink className="w-3 h-3" />
                 </Link>
               </div>

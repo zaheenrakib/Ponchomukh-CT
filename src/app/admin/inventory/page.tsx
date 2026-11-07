@@ -82,10 +82,10 @@ export default function AdminInventoryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#3B0C04]">
-            ইনভেন্টরি ও স্টক নিয়ন্ত্রণ (Inventory Management)
+            Warehouse & Inventory Stock Management
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            পণ্যভিত্তিক লাইভ স্টক সংখ্যা পর্যবেক্ষণ এবং রিস্টক সমন্বয় করুন
+            Monitor real-time inventory levels, depletion thresholds, and execute quick replenishment
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export default function AdminInventoryPage() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs disabled:opacity-50 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          <span>রিফ্রেশ</span>
+          <span>Refresh Stock</span>
         </button>
       </div>
 
@@ -104,7 +104,7 @@ export default function AdminInventoryPage() {
         <div className="relative w-full sm:w-80">
           <input
             type="text"
-            placeholder="পণ্য বা SKU দিয়ে খুঁজুন..."
+            placeholder="Search by title or SKU barcode..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none"
@@ -119,7 +119,7 @@ export default function AdminInventoryPage() {
             onChange={(e) => setFilterLowStockOnly(e.target.checked)}
             className="w-4 h-4 rounded text-[#3B0C04]"
           />
-          <span>শুধুমাত্র লো-স্টক সতর্কতাযুক্ত পণ্য দেখান</span>
+          <span>Show Low-Stock Depletion Items Only</span>
         </label>
       </div>
 
@@ -127,14 +127,14 @@ export default function AdminInventoryPage() {
       <div className="bg-white rounded-2xl border border-[#E8DCD2] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold">
+            <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold uppercase tracking-wider">
               <tr>
-                <th className="p-3.5">ছবি</th>
-                <th className="p-3.5">পণ্যের নাম</th>
-                <th className="p-3.5">SKU</th>
-                <th className="p-3.5">বর্তমান মজুত</th>
-                <th className="p-3.5">স্টক স্ট্যাটাস</th>
-                <th className="p-3.5 text-center">দ্রুত স্টক এডজাস্টমেন্ট (+ / -)</th>
+                <th className="p-3.5">Image</th>
+                <th className="p-3.5">Product Title</th>
+                <th className="p-3.5">SKU Code</th>
+                <th className="p-3.5">Current Stock</th>
+                <th className="p-3.5">Inventory Status</th>
+                <th className="p-3.5 text-center">Quick Stock Adjustment (+ / -)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8DCD2]">
@@ -151,15 +151,15 @@ export default function AdminInventoryPage() {
                     </td>
                     <td className="p-3.5 font-bold text-[#2B160F]">{p.name}</td>
                     <td className="p-3.5 font-mono text-[#6B5A52] font-semibold">{p.sku}</td>
-                    <td className="p-3.5 font-black text-sm text-[#3B0C04]">{p.stock} পিস</td>
+                    <td className="p-3.5 font-black text-sm text-[#3B0C04]">{p.stock} Pcs</td>
                     <td className="p-3.5">
                       {isLow ? (
                         <span className="px-2.5 py-1 rounded-full bg-[#D64545]/10 text-[#D64545] font-bold inline-flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" /> লো স্টক
+                          <AlertTriangle className="w-3 h-3" /> Low Stock
                         </span>
                       ) : (
                         <span className="px-2.5 py-1 rounded-full bg-[#E8F6F1] text-[#16834A] font-bold inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> ইন স্টক
+                          <CheckCircle2 className="w-3 h-3" /> In Stock
                         </span>
                       )}
                     </td>
@@ -168,26 +168,30 @@ export default function AdminInventoryPage() {
                         <button
                           onClick={() => handleAdjustStock(p.id, -5)}
                           className="px-2 py-1 rounded bg-[#FFF7EE] hover:bg-[#3B0C04] hover:text-[#FFC40E] border border-[#E8DCD2] font-bold text-[11px]"
+                          title="Reduce 5 units"
                         >
-                          -৫
+                          -5
                         </button>
                         <button
                           onClick={() => handleAdjustStock(p.id, -1)}
                           className="w-7 h-7 flex items-center justify-center rounded bg-[#FFF7EE] hover:bg-[#3B0C04] hover:text-[#FFC40E] border border-[#E8DCD2] font-bold"
+                          title="Reduce 1 unit"
                         >
                           -
                         </button>
                         <button
                           onClick={() => handleAdjustStock(p.id, 1)}
                           className="w-7 h-7 flex items-center justify-center rounded bg-[#FFF7EE] hover:bg-[#3B0C04] hover:text-[#FFC40E] border border-[#E8DCD2] font-bold"
+                          title="Add 1 unit"
                         >
                           +
                         </button>
                         <button
                           onClick={() => handleAdjustStock(p.id, 10)}
-                          className="px-2 py-1 rounded bg-[#3B0C04] text-[#FFC40E] font-bold text-[11px] shadow-2xs"
+                          className="px-2.5 py-1 rounded bg-[#3B0C04] text-[#FFC40E] font-bold text-[11px] shadow-2xs hover:bg-[#260700]"
+                          title="Restock 10 units"
                         >
-                          +১০ রিস্টক
+                          +10 Restock
                         </button>
                       </div>
                     </td>

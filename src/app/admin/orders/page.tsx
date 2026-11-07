@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   ClipboardList,
@@ -15,14 +15,22 @@ import {
   User,
   MapPin,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Store,
+  Globe,
+  PhoneCall,
+  ShoppingBag,
+  Filter,
+  DollarSign,
+  TrendingUp,
+  Package
 } from "lucide-react";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [sourceFilter, setSourceFilter] = useState("ALL");
+  const [channelFilter, setChannelFilter] = useState("ALL");
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   useEffect(() => {
@@ -36,14 +44,20 @@ export default function AdminOrdersPage() {
             combinedOrders = data.orders.map((o: any) => ({
               orderId: o.orderNumber,
               id: o.id,
-              date: new Date(o.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" }),
-              source: o.orderNotes?.includes("[LANDING_PAGE]") ? "LANDING_PAGE" : o.orderNotes?.includes("[MANUAL_PHONE]") ? "MANUAL_PHONE" : (o.source || "STOREFRONT"),
+              date: new Date(o.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+              source: o.orderNotes?.includes("[POS]")
+                ? "POS"
+                : o.orderNotes?.includes("[LANDING_PAGE]")
+                ? "LANDING_PAGE"
+                : o.orderNotes?.includes("[MANUAL_PHONE]")
+                ? "MANUAL_PHONE"
+                : (o.source || "STOREFRONT"),
               orderNotes: o.orderNotes || "",
               customer: {
                 name: o.shippingAddress?.name || o.user?.name || "Customer",
                 phone: o.shippingAddress?.phone || o.user?.phoneNumber || "",
                 email: o.user?.email || "",
-                address: `${o.shippingAddress?.addressLine1 || ""}, ${o.shippingAddress?.district || ""}`
+                address: `${o.shippingAddress?.addressLine1 || ""}, ${o.shippingAddress?.district || ""}`.trim() || "Dhaka, Bangladesh"
               },
               items: o.items?.map((item: any) => ({
                 name: item.variant?.product?.name || "Product Item",
@@ -73,7 +87,7 @@ export default function AdminOrdersPage() {
           if (!existingIds.has(s.orderId)) {
             combinedOrders.push({
               ...s,
-              source: s.source || (s.orderNotes?.includes("[LANDING_PAGE]") ? "LANDING_PAGE" : "STOREFRONT"),
+              source: s.source || (s.orderNotes?.includes("[POS]") ? "POS" : s.orderNotes?.includes("[LANDING_PAGE]") ? "LANDING_PAGE" : "STOREFRONT"),
             });
           }
         }
@@ -86,26 +100,26 @@ export default function AdminOrdersPage() {
       } else {
         setOrders([
           {
-            orderId: "PN10025",
-            date: "০৪ সেপ্টেম্বর, ২০২৬",
-            source: "LANDING_PAGE",
-            customer: { name: "তানভীর আহমেদ", phone: "01712-345678", email: "tanvir@gmail.com", address: "বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা-১২০৫" },
+            orderId: "POS-10025",
+            date: "Sep 04, 2026",
+            source: "POS",
+            customer: { name: "Retail Walk-in Customer", phone: "01700-000000", email: "pos@ponchomukh.com", address: "In-Store Counter #01, Dhaka" },
             items: [
               { name: "Sonifer SF-350 Portable Rechargeable Juicer & Blender", quantity: 1, price: 1299, image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=200&auto=format&fit=crop&q=80" }
             ],
             subtotal: 1299,
             discount: 0,
-            shippingFee: 60,
-            total: 1359,
-            paymentMethod: "Cash on Delivery",
-            paymentStatus: "PENDING",
-            status: "PROCESSING"
+            shippingFee: 0,
+            total: 1299,
+            paymentMethod: "Cash",
+            paymentStatus: "PAID",
+            status: "DELIVERED"
           },
           {
             orderId: "PN10024",
-            date: "০৪ সেপ্টেম্বর, ২০২৬",
+            date: "Sep 04, 2026",
             source: "STOREFRONT",
-            customer: { name: "সুমাইয়া আক্তার", phone: "01823-456789", email: "sumaiya@gmail.com", address: "সেক্টর ৩, উত্তরা, ঢাকা" },
+            customer: { name: "Sumaiya Akter", phone: "01823-456789", email: "sumaiya@gmail.com", address: "Sector 3, Uttara, Dhaka" },
             items: [
               { name: "Joyroom JR-T03S Pro ANC True Wireless Earbuds", quantity: 1, price: 1899, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200&auto=format&fit=crop&q=80" }
             ],
@@ -113,15 +127,31 @@ export default function AdminOrdersPage() {
             discount: 0,
             shippingFee: 60,
             total: 1959,
-            paymentMethod: "bKash",
+            paymentMethod: "bKash Online",
             paymentStatus: "PAID",
             status: "DELIVERED"
           },
           {
             orderId: "PN10023",
-            date: "০৩ সেপ্টেম্বর, ২০২৬",
+            date: "Sep 03, 2026",
+            source: "LANDING_PAGE",
+            customer: { name: "Tanvir Ahmed", phone: "01712-345678", email: "tanvir@gmail.com", address: "House 12, Road 4, Dhanmondi, Dhaka" },
+            items: [
+              { name: "Sonifer SF-350 Portable Rechargeable Juicer & Blender", quantity: 2, price: 1299, image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=200&auto=format&fit=crop&q=80" }
+            ],
+            subtotal: 2598,
+            discount: 100,
+            shippingFee: 60,
+            total: 2558,
+            paymentMethod: "Cash on Delivery",
+            paymentStatus: "PENDING",
+            status: "PROCESSING"
+          },
+          {
+            orderId: "PN10022",
+            date: "Sep 02, 2026",
             source: "MANUAL_PHONE",
-            customer: { name: "মাহির ফয়সাল", phone: "01934-567890", email: "mahir@gmail.com", address: "জিইসি মোড়, চট্টগ্রাম" },
+            customer: { name: "Mahir Faisal", phone: "01934-567890", email: "mahir@gmail.com", address: "GEC Circle, Chattogram" },
             items: [
               { name: "Baseus Blade 100W Power Bank 20000mAh", quantity: 1, price: 4299, image: "https://images.unsplash.com/photo-1609592424368-8a0b0d36c535?w=200&auto=format&fit=crop&q=80" }
             ],
@@ -152,7 +182,6 @@ export default function AdminOrdersPage() {
       console.error(e);
     }
 
-    // Persist status change to database API
     try {
       await fetch("/api/admin/orders", {
         method: "PATCH",
@@ -164,28 +193,79 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter((o) => {
-    const matchesSearch =
-      o.orderId.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer?.phone?.includes(search);
-    const matchesStatus = statusFilter === "ALL" || o.status === statusFilter;
-    const matchesSource = sourceFilter === "ALL" || o.source === sourceFilter;
-    return matchesSearch && matchesStatus && matchesSource;
-  });
+  // Filter Logic: Search + Status + Channel
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const q = search.toLowerCase();
+      const matchesSearch =
+        !q ||
+        o.orderId.toLowerCase().includes(q) ||
+        o.customer?.name?.toLowerCase().includes(q) ||
+        o.customer?.phone?.includes(q);
 
+      const matchesStatus = statusFilter === "ALL" || o.status === statusFilter;
+
+      let matchesChannel = true;
+      if (channelFilter === "ALL") {
+        matchesChannel = true;
+      } else if (channelFilter === "ECOMMERCE") {
+        matchesChannel = o.source === "STOREFRONT" || o.source === "LANDING_PAGE" || !o.source;
+      } else if (channelFilter === "POS") {
+        matchesChannel = o.source === "POS";
+      } else if (channelFilter === "LANDING_PAGE") {
+        matchesChannel = o.source === "LANDING_PAGE";
+      } else if (channelFilter === "MANUAL_PHONE") {
+        matchesChannel = o.source === "MANUAL_PHONE";
+      }
+
+      return matchesSearch && matchesStatus && matchesChannel;
+    });
+  }, [orders, search, statusFilter, channelFilter]);
+
+  // Channel Metrics Breakdown
+  const channelMetrics = useMemo(() => {
+    let ecomRevenue = 0;
+    let posRevenue = 0;
+    let ecomCount = 0;
+    let posCount = 0;
+
+    orders.forEach((o) => {
+      const val = Number(o.total) || 0;
+      if (o.source === "POS") {
+        posRevenue += val;
+        posCount += 1;
+      } else {
+        ecomRevenue += val;
+        ecomCount += 1;
+      }
+    });
+
+    return {
+      ecomRevenue,
+      posRevenue,
+      ecomCount,
+      posCount,
+      totalOrders: orders.length,
+      totalRevenue: ecomRevenue + posRevenue,
+    };
+  }, [orders]);
+
+  // CSV Export
   const handleExportCSV = () => {
-    const filename = `ponchomukh_orders_${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `ponchomukh_orders_${channelFilter.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`;
     const headers = [
       "Order ID",
       "Date",
-      "Order Source (অর্ডার চ্যানেল)",
+      "Sales Channel",
       "Customer Name",
       "Customer Phone",
       "Customer Email",
       "Shipping Address",
-      "Items",
-      "Total Amount (৳)",
+      "Items Purchased",
+      "Subtotal",
+      "Discount",
+      "Shipping",
+      "Total Amount",
       "Payment Method",
       "Payment Status",
       "Order Status",
@@ -195,21 +275,33 @@ export default function AdminOrdersPage() {
     csvContent += headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(",") + "\n";
 
     filteredOrders.forEach((o) => {
+      const channelLabel =
+        o.source === "POS"
+          ? "POS In-Store"
+          : o.source === "LANDING_PAGE"
+          ? "Landing Page Funnel"
+          : o.source === "MANUAL_PHONE"
+          ? "Phone Order"
+          : "E-Commerce Online";
+
       const row = [
         o.orderId,
         o.date,
-        o.source === "LANDING_PAGE" ? "Landing Page" : o.source === "MANUAL_PHONE" ? "Manual / Phone" : "Storefront",
+        channelLabel,
         o.customer?.name || "",
         o.customer?.phone || "",
         o.customer?.email || "",
         o.customer?.address || "",
         (o.items || []).map((i: any) => `${i.name} (x${i.quantity})`).join(" | "),
-        o.total,
-        o.paymentMethod,
-        o.paymentStatus,
-        o.status,
+        o.subtotal || 0,
+        o.discount || 0,
+        o.shippingFee || 0,
+        o.total || 0,
+        o.paymentMethod || "",
+        o.paymentStatus || "",
+        o.status || "",
       ];
-      csvContent += row.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",") + "\n";
+      csvContent += row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",") + "\n";
     });
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -225,297 +317,415 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#3B0C04]">
-            অর্ডার ব্যবস্থাপনা (Order Management)
+          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
+            <span>Sales Orders & Dispatch Hub</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
+              {filteredOrders.length} Orders
+            </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            কাস্টমার অর্ডার প্রসেসিং, ডেলিভারি ট্র্যাকিং ও বিলিং স্ট্যাটাস আপডেট
+            Unified management for E-Commerce Online Store, POS In-Store Counters, and Landing Page Funnels
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <Link
-            href="/admin/reports"
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#3B0C04] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
+            href="/admin/pos"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] text-[#FFC40E] hover:bg-[#260700] text-xs font-bold shadow-xs transition-transform active:scale-95"
           >
-            <FileSpreadsheet className="w-4 h-4 text-[#3B0C04]" />
-            <span>পণ্যভিত্তিক রিপোর্ট দেখুন</span>
+            <Store className="w-4 h-4 text-[#FFC40E]" />
+            <span>Open POS Terminal</span>
           </Link>
 
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
           >
-            <Download className="w-4 h-4" />
-            <span>এক্সপোর্ট রিপোর্ট (CSV)</span>
+            <Download className="w-4 h-4 text-[#16834A]" />
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
 
-      {/* Order Source Segmented Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E8DCD2] pb-3 overflow-x-auto">
-        <button
-          onClick={() => setSourceFilter("ALL")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            sourceFilter === "ALL"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
-              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
-          }`}
-        >
-          সব ধরণের অর্ডার ({orders.length})
-        </button>
-        <button
-          onClick={() => setSourceFilter("LANDING_PAGE")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            sourceFilter === "LANDING_PAGE"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
-              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
-          }`}
-        >
-          🌐 ল্যান্ডিং পেজ অর্ডার ({orders.filter((o) => o.source === "LANDING_PAGE").length})
-        </button>
-        <button
-          onClick={() => setSourceFilter("STOREFRONT")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            sourceFilter === "STOREFRONT"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
-              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
-          }`}
-        >
-          🛒 ওয়েবসাইট / স্টোরফ্রন্ট ({orders.filter((o) => o.source !== "LANDING_PAGE" && o.source !== "MANUAL_PHONE").length})
-        </button>
-        <button
-          onClick={() => setSourceFilter("MANUAL_PHONE")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            sourceFilter === "MANUAL_PHONE"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
-              : "text-[#6B5A52] hover:bg-[#FFF7EE]"
-          }`}
-        >
-          📞 ফোন / ম্যানুয়াল অর্ডার ({orders.filter((o) => o.source === "MANUAL_PHONE").length})
-        </button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="p-4 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div className="relative w-full sm:w-80">
-          <input
-            type="text"
-            placeholder="অর্ডার আইডি, কাস্টমার নাম বা ফোন..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] focus:outline-none focus:border-[#3B0C04]"
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B72]" />
+      {/* CHANNEL REVENUE COMPARISON CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Metric 1: Total Revenue */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Sales Volume</span>
+            <DollarSign className="w-4 h-4 text-[#3B0C04]" />
+          </div>
+          <h3 className="text-2xl font-black text-[#3B0C04]">
+            ৳{channelMetrics.totalRevenue.toLocaleString()}
+          </h3>
+          <p className="text-[11px] text-[#6B5A52]">Across all sales channels combined</p>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] font-semibold text-[#2B160F]"
+        {/* Metric 2: E-Commerce Sales */}
+        <div className="p-5 rounded-2xl bg-white border-2 border-[#1E3A8A]/20 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#1E3A8A]">
+            <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5" />
+              <span>E-Commerce Online</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold">
+              {channelMetrics.ecomCount} Orders
+            </span>
+          </div>
+          <h3 className="text-2xl font-black text-[#1E3A8A]">
+            ৳{channelMetrics.ecomRevenue.toLocaleString()}
+          </h3>
+          <p className="text-[11px] text-[#6B5A52]">Storefront website & landing pages</p>
+        </div>
+
+        {/* Metric 3: POS In-Store Sales */}
+        <div className="p-5 rounded-2xl bg-white border-2 border-[#16834A]/20 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#16834A]">
+            <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <Store className="w-3.5 h-3.5" />
+              <span>POS In-Store Sales</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold">
+              {channelMetrics.posCount} Orders
+            </span>
+          </div>
+          <h3 className="text-2xl font-black text-[#16834A]">
+            ৳{channelMetrics.posRevenue.toLocaleString()}
+          </h3>
+          <p className="text-[11px] text-[#6B5A52]">Retail counter cash & card registers</p>
+        </div>
+
+        {/* Metric 4: Total Orders */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-[#8C7B72]">
+            <span className="text-xs font-bold uppercase tracking-wider">Fulfillment Status</span>
+            <Package className="w-4 h-4 text-[#D99E00]" />
+          </div>
+          <h3 className="text-2xl font-black text-[#3B0C04]">{orders.length} Total</h3>
+          <p className="text-[11px] text-[#D99E00] font-bold">
+            {orders.filter((o) => o.status === "PROCESSING" || o.status === "PENDING").length} Awaiting Dispatch
+          </p>
+        </div>
+      </div>
+
+      {/* FILTER CONTROLS & CHANNEL TABS */}
+      <div className="bg-white p-4 rounded-3xl border border-[#E8DCD2] shadow-xs space-y-4">
+        {/* Sales Channel Tabs */}
+        <div className="flex items-center gap-2 border-b border-[#E8DCD2] pb-3 overflow-x-auto scrollbar-none">
+          <button
+            onClick={() => setChannelFilter("ALL")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+              channelFilter === "ALL"
+                ? "bg-[#3B0C04] text-[#FFC40E] shadow-2xs"
+                : "text-[#6B5A52] hover:bg-[#FFF7EE]"
+            }`}
           >
-            <option value="ALL">সকল স্ট্যাটাস ({orders.length})</option>
-            <option value="PENDING">PENDING</option>
-            <option value="CONFIRMED">CONFIRMED</option>
-            <option value="PROCESSING">PROCESSING</option>
-            <option value="SHIPPED">SHIPPED</option>
-            <option value="DELIVERED">DELIVERED</option>
-            <option value="CANCELLED">CANCELLED</option>
-          </select>
-        </div>
-      </div>
+            All Sales Channels ({orders.length})
+          </button>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-2xl border border-[#E8DCD2] shadow-xs overflow-hidden">
+          <button
+            onClick={() => setChannelFilter("ECOMMERCE")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              channelFilter === "ECOMMERCE"
+                ? "bg-[#1E3A8A] text-white shadow-2xs"
+                : "text-[#6B5A52] hover:bg-blue-50"
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>E-Commerce Sales ({channelMetrics.ecomCount})</span>
+          </button>
+
+          <button
+            onClick={() => setChannelFilter("POS")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              channelFilter === "POS"
+                ? "bg-[#16834A] text-white shadow-2xs"
+                : "text-[#6B5A52] hover:bg-emerald-50"
+            }`}
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>POS In-Store Sales ({channelMetrics.posCount})</span>
+          </button>
+
+          <button
+            onClick={() => setChannelFilter("LANDING_PAGE")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              channelFilter === "LANDING_PAGE"
+                ? "bg-[#D99E00] text-black shadow-2xs"
+                : "text-[#6B5A52] hover:bg-amber-50"
+            }`}
+          >
+            <span>Landing Page Funnels</span>
+          </button>
+
+          <button
+            onClick={() => setChannelFilter("MANUAL_PHONE")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              channelFilter === "MANUAL_PHONE"
+                ? "bg-[#4B5563] text-white shadow-2xs"
+                : "text-[#6B5A52] hover:bg-zinc-100"
+            }`}
+          >
+            <PhoneCall className="w-3.5 h-3.5" />
+            <span>Phone Orders</span>
+          </button>
+        </div>
+
+        {/* Search & Status Filters */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-[#8C7B72] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by Order ID, Customer Name, or Phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs font-bold text-[#6B5A52] shrink-0">Fulfillment Status:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-bold text-[#2B160F] outline-none"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="PENDING">Pending Approval</option>
+              <option value="PROCESSING">Processing / Packing</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="SHIPPED">Out for Delivery</option>
+              <option value="DELIVERED">Delivered & Complete</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Orders Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-[#FFF7EE] border-b border-[#E8DCD2] text-[#3B0C04] font-bold">
-              <tr>
-                <th className="p-3.5">অর্ডার আইডি</th>
-                <th className="p-3.5">চ্যানেল / উৎস</th>
-                <th className="p-3.5">গ্রাহকের নাম ও ফোন</th>
-                <th className="p-3.5">তারিখ</th>
-                <th className="p-3.5">বিল মোট</th>
-                <th className="p-3.5">পেমেন্ট</th>
-                <th className="p-3.5">স্ট্যাটাস</th>
-                <th className="p-3.5 text-center">অ্যাকশন</th>
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold uppercase tracking-wider">
+                <th className="py-3 px-4">Order ID & Date</th>
+                <th className="py-3 px-4">Sales Channel</th>
+                <th className="py-3 px-4">Customer Details</th>
+                <th className="py-3 px-4">Purchased Items</th>
+                <th className="py-3 px-4 text-right">Total (৳)</th>
+                <th className="py-3 px-4">Payment</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E8DCD2]">
-              {filteredOrders.map((order) => (
-                <tr key={order.orderId} className="hover:bg-[#FFFDF9]">
-                  <td className="p-3.5 font-mono font-bold text-[#3B0C04]">
-                    {order.orderId}
-                  </td>
-                  <td className="p-3.5">
-                    <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                        order.source === "LANDING_PAGE"
-                          ? "bg-purple-100 text-purple-800 border border-purple-200"
-                          : order.source === "MANUAL_PHONE"
-                          ? "bg-blue-100 text-blue-800 border border-blue-200"
-                          : "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                      }`}
-                    >
-                      {order.source === "LANDING_PAGE"
-                        ? "🌐 LANDING"
-                        : order.source === "MANUAL_PHONE"
-                        ? "📞 PHONE"
-                        : "🛒 STORE"}
-                    </span>
-                  </td>
-                  <td className="p-3.5">
-                    <p className="font-bold text-[#2B160F]">{order.customer?.name || "Customer"}</p>
-                    <p className="text-[11px] text-[#8C7B72]">{order.customer?.phone || "N/A"}</p>
-                  </td>
-                  <td className="p-3.5 text-[#6B5A52]">{order.date}</td>
-                  <td className="p-3.5 font-black text-[#3B0C04]">৳{order.total}</td>
-                  <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded bg-white border border-[#E8DCD2] text-[11px] font-semibold">
-                      {order.paymentMethod}
-                    </span>
-                  </td>
-                  <td className="p-3.5">
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                        order.status === "DELIVERED"
-                          ? "bg-[#E8F6F1] text-[#16834A]"
-                          : order.status === "PROCESSING" || order.status === "SHIPPED"
-                          ? "bg-[#FFF7EE] text-[#3B0C04]"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="p-3.5 text-center">
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="px-3 py-1.5 rounded-lg bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs inline-flex items-center gap-1.5 shadow-2xs"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>বিস্তারিত</span>
-                    </button>
+            <tbody className="divide-y divide-[#E8DCD2]/60">
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-[#8C7B72] font-bold">
+                    No orders found matching the selected filters.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredOrders.map((order) => {
+                  const isPOS = order.source === "POS";
+                  const isLanding = order.source === "LANDING_PAGE";
+                  const isPhone = order.source === "MANUAL_PHONE";
+
+                  return (
+                    <tr key={order.orderId} className="hover:bg-[#FFF7EE]/30 transition-colors">
+                      {/* Order ID & Date */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono font-black text-[#3B0C04] text-xs block">
+                          #{order.orderId}
+                        </span>
+                        <span className="text-[10px] text-[#8C7B72]">{order.date}</span>
+                      </td>
+
+                      {/* Sales Channel Badge */}
+                      <td className="py-3.5 px-4">
+                        {isPOS ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <Store className="w-3 h-3" />
+                            <span>POS IN-STORE</span>
+                          </span>
+                        ) : isLanding ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-900 border border-amber-200">
+                            <Globe className="w-3 h-3" />
+                            <span>LANDING PAGE</span>
+                          </span>
+                        ) : isPhone ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-zinc-100 text-zinc-800 border border-zinc-200">
+                            <PhoneCall className="w-3 h-3" />
+                            <span>PHONE ORDER</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-800 border border-blue-200">
+                            <Globe className="w-3 h-3" />
+                            <span>E-COMMERCE</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Customer Info */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-[#2B160F]">{order.customer?.name}</div>
+                        <div className="text-[11px] text-[#8C7B72]">{order.customer?.phone}</div>
+                        <div className="text-[10px] text-[#6B5A52] max-w-xs truncate" title={order.customer?.address}>
+                          {order.customer?.address}
+                        </div>
+                      </td>
+
+                      {/* Purchased Items */}
+                      <td className="py-3.5 px-4 max-w-xs text-[#6B5A52]">
+                        {(order.items || []).map((it: any, idx: number) => (
+                          <div key={idx} className="line-clamp-1 text-[11px]">
+                            • {it.name} <span className="font-bold text-[#3B0C04]">(x{it.quantity})</span>
+                          </div>
+                        ))}
+                      </td>
+
+                      {/* Total */}
+                      <td className="py-3.5 px-4 text-right font-black text-sm text-[#16834A]">
+                        ৳{Number(order.total || 0).toLocaleString()}
+                      </td>
+
+                      {/* Payment */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-[#2B160F]">{order.paymentMethod}</div>
+                        <span
+                          className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                            order.paymentStatus === "PAID"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
+                        >
+                          {order.paymentStatus || "PENDING"}
+                        </span>
+                      </td>
+
+                      {/* Status Dropdown */}
+                      <td className="py-3.5 px-4 text-center">
+                        <select
+                          value={order.status}
+                          onChange={(e) => handleUpdateStatus(order.orderId, e.target.value)}
+                          className={`h-7 px-2 rounded-lg text-[10px] font-black border outline-none cursor-pointer ${
+                            order.status === "DELIVERED"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                              : order.status === "SHIPPED"
+                              ? "bg-blue-50 text-blue-700 border-blue-300"
+                              : order.status === "PROCESSING"
+                              ? "bg-amber-50 text-amber-700 border-amber-300"
+                              : order.status === "CONFIRMED"
+                              ? "bg-purple-50 text-purple-700 border-purple-300"
+                              : "bg-zinc-50 text-zinc-700 border-zinc-300"
+                          }`}
+                        >
+                          <option value="PENDING">PENDING</option>
+                          <option value="CONFIRMED">CONFIRMED</option>
+                          <option value="PROCESSING">PROCESSING</option>
+                          <option value="SHIPPED">SHIPPED</option>
+                          <option value="DELIVERED">DELIVERED</option>
+                          <option value="CANCELLED">CANCELLED</option>
+                        </select>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="p-1.5 rounded-lg bg-[#FFF7EE] hover:bg-[#3B0C04] hover:text-[#FFC40E] text-[#3B0C04] transition-colors"
+                          title="View Order Details & Print Invoice"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* ORDER DETAILS POPUP MODAL */}
+      {/* DETAILED ORDER SLIP MODAL */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-[#E8DCD2] max-h-[90vh] overflow-y-auto space-y-5">
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 border border-[#E8DCD2] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
               <div>
-                <h2 className="text-base font-black text-[#3B0C04]">
-                  অর্ডার বিস্তারিত: #{selectedOrder.orderId}
-                </h2>
-                <p className="text-[11px] text-[#8C7B72]">তারিখ: {selectedOrder.date}</p>
+                <h3 className="text-base font-black text-[#3B0C04]">
+                  Order Details #{selectedOrder.orderId}
+                </h3>
+                <span className="text-[11px] text-[#8C7B72]">
+                  Channel: {selectedOrder.source || "E-Commerce Store"} | Date: {selectedOrder.date}
+                </span>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="text-[#8C7B72] hover:text-[#2B160F]"
+                className="p-1 rounded-lg text-[#8C7B72] hover:bg-zinc-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Customer & Shipping Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[#FFFDF9] border border-[#E8DCD2] text-xs">
-              <div className="space-y-1">
-                <p className="font-bold text-[#3B0C04] flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5" /> গ্রাহকের তথ্য
-                </p>
-                <p><strong>নাম:</strong> {selectedOrder.customer?.name}</p>
-                <p><strong>মোবাইল:</strong> {selectedOrder.customer?.phone}</p>
-                {selectedOrder.customer?.email && <p><strong>ইমেইল:</strong> {selectedOrder.customer?.email}</p>}
+            <div className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#E8DCD2] space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-[#E8DCD2]">
+                <div>
+                  <span className="font-bold text-[#8C7B72] block">Customer Name:</span>
+                  <span className="font-bold text-[#2B160F]">{selectedOrder.customer.name}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-[#8C7B72] block">Contact Phone:</span>
+                  <span className="font-bold text-[#3B0C04]">{selectedOrder.customer.phone}</span>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <p className="font-bold text-[#3B0C04] flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5" /> ডেলিভারি ঠিকানা
-                </p>
-                <p className="text-[#6B5A52] leading-relaxed">{selectedOrder.customer?.address || "ঢাকা, বাংলাদেশ"}</p>
+              <div>
+                <span className="font-bold text-[#8C7B72] block">Delivery Destination:</span>
+                <span className="text-[#2B160F]">{selectedOrder.customer.address}</span>
+              </div>
+
+              {/* Items */}
+              <div className="pt-2 border-t border-[#E8DCD2] space-y-1.5">
+                <span className="font-bold text-[#3B0C04] block">Itemized Products:</span>
+                {(selectedOrder.items || []).map((item: any, idx: number) => (
+                  <div key={idx} className="flex justify-between items-center bg-white p-2 rounded-lg border border-[#E8DCD2]">
+                    <div>
+                      <span className="font-bold text-[#2B160F] block">{item.name}</span>
+                      <span className="text-[10px] text-[#8C7B72]">
+                        Quantity: {item.quantity} × ৳{item.price}
+                      </span>
+                    </div>
+                    <span className="font-black text-[#16834A]">
+                      ৳{(item.price * item.quantity).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Total */}
+              <div className="pt-2 border-t border-[#E8DCD2] flex justify-between items-center text-sm font-black">
+                <span className="text-[#3B0C04]">Grand Total:</span>
+                <span className="text-[#16834A]">৳{Number(selectedOrder.total || 0).toLocaleString()}</span>
               </div>
             </div>
 
-            {/* Product Items Table */}
-            <div>
-              <h3 className="text-xs font-bold text-[#3B0C04] mb-2 uppercase tracking-wider">
-                অর্ডারের পণ্যসমূহ:
-              </h3>
-              <div className="rounded-xl border border-[#E8DCD2] overflow-hidden text-xs">
-                <table className="w-full text-left">
-                  <thead className="bg-[#FFF7EE] text-[#3B0C04] font-bold border-b border-[#E8DCD2]">
-                    <tr>
-                      <th className="p-2.5">পণ্য</th>
-                      <th className="p-2.5">পরিমাণ</th>
-                      <th className="p-2.5">একক মূল্য</th>
-                      <th className="p-2.5 text-right">মোট</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E8DCD2]">
-                    {selectedOrder.items?.map((item: any, idx: number) => (
-                      <tr key={idx}>
-                        <td className="p-2.5 font-semibold text-[#2B160F]">{item.name}</td>
-                        <td className="p-2.5 font-bold">{item.quantity}</td>
-                        <td className="p-2.5">৳{item.price}</td>
-                        <td className="p-2.5 text-right font-black text-[#3B0C04]">৳{item.price * item.quantity}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Price Calculations */}
-            <div className="p-4 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] space-y-1.5 text-xs">
-              <div className="flex justify-between">
-                <span>সাবটোটাল:</span>
-                <span className="font-bold">৳{selectedOrder.subtotal || selectedOrder.total - 60}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>ডেলিভারি চার্জ:</span>
-                <span className="font-bold">৳{selectedOrder.shippingFee || 60}</span>
-              </div>
-              <div className="flex justify-between text-sm font-black text-[#3B0C04] pt-2 border-t border-[#E8DCD2]">
-                <span>সর্বমোট প্রদেয়:</span>
-                <span className="text-base">৳{selectedOrder.total}</span>
-              </div>
-            </div>
-
-            {/* Status Workflow Controller */}
-            <div className="pt-2 border-t border-[#E8DCD2] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[#2B160F]">স্ট্যাটাস পরিবর্তন করুন:</span>
-                <select
-                  value={selectedOrder.status}
-                  onChange={(e) => handleUpdateStatus(selectedOrder.orderId, e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-[#3B0C04] bg-[#FFFDF9] font-bold text-[#3B0C04] focus:outline-none"
-                >
-                  <option value="PENDING">PENDING</option>
-                  <option value="CONFIRMED">CONFIRMED</option>
-                  <option value="PROCESSING">PROCESSING</option>
-                  <option value="SHIPPED">SHIPPED</option>
-                  <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
-                  <option value="DELIVERED">DELIVERED</option>
-                  <option value="CANCELLED">CANCELLED</option>
-                  <option value="RETURNED">RETURNED</option>
-                </select>
-              </div>
-
+            <div className="flex items-center gap-2 pt-2">
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[#E8DCD2] text-xs font-bold text-[#2B160F] hover:bg-[#FFF7EE]"
+                className="flex-1 py-2.5 rounded-xl bg-[#3B0C04] text-[#FFC40E] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#260700]"
               >
                 <Printer className="w-4 h-4" />
-                <span>ইনভয়েস প্রিন্ট</span>
+                <span>Print Packing Slip</span>
+              </button>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="px-4 py-2.5 rounded-xl border border-[#E8DCD2] font-bold text-xs text-[#6B5A52]"
+              >
+                Close
               </button>
             </div>
           </div>

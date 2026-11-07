@@ -56,7 +56,7 @@ export default function AdminBannersPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [buttonText, setButtonText] = useState("এখনই কিনুন");
+  const [buttonText, setButtonText] = useState("Shop Now");
   const [buttonUrl, setButtonUrl] = useState("/shop");
   const [position, setPosition] = useState<"HERO" | "PROMOTIONAL">("HERO");
   const [sortOrder, setSortOrder] = useState(1);
@@ -95,7 +95,7 @@ export default function AdminBannersPage() {
     setTitle("");
     setSubtitle("");
     setImageUrl(presetImages[0].url);
-    setButtonText(defaultPos === "HERO" ? "এখনই কিনুন" : "অফার দেখুন");
+    setButtonText(defaultPos === "HERO" ? "Shop Now" : "View Offers");
     setButtonUrl("/shop");
     setPosition(defaultPos);
     setSortOrder(banners.filter((b) => b.position === defaultPos).length + 1);
@@ -108,7 +108,7 @@ export default function AdminBannersPage() {
     setTitle(banner.title);
     setSubtitle(banner.subtitle || "");
     setImageUrl(banner.imageUrl);
-    setButtonText(banner.buttonText || "এখনই কিনুন");
+    setButtonText(banner.buttonText || "Shop Now");
     setButtonUrl(banner.buttonUrl || "/shop");
     setPosition(banner.position as "HERO" | "PROMOTIONAL");
     setSortOrder(banner.sortOrder || 1);
@@ -126,7 +126,7 @@ export default function AdminBannersPage() {
       title: title.trim(),
       subtitle: subtitle.trim() || null,
       imageUrl: imageUrl.trim(),
-      buttonText: buttonText.trim() || "এখনই কিনুন",
+      buttonText: buttonText.trim() || "Shop Now",
       buttonUrl: buttonUrl.trim() || "/shop",
       position,
       sortOrder: Number(sortOrder) || 1,
@@ -198,7 +198,7 @@ export default function AdminBannersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("আপনি কি নিশ্চিতভাবে এই ব্যানারটি মুছে ফেলতে চান?")) return;
+    if (!confirm("Are you sure you want to permanently delete this banner?")) return;
 
     setBanners((prev) => prev.filter((b) => b.id !== id));
     try {
@@ -223,13 +223,13 @@ export default function AdminBannersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
-            <span>ব্যানার ও হিরো স্লাইডার ব্যবস্থাপনা</span>
+            <span>Marketing: Hero & Promotional Banners</span>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
               Hero Carousel
             </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            স্টোরফ্রন্টের মূল হিরো স্লাইডার এবং প্রমোশনাল ব্যানার তৈরি, এডিট এবং রি-অর্ডার করুন
+            Configure, design, and schedule storefront hero carousel slides and promotional display banners
           </p>
         </div>
 
@@ -238,7 +238,7 @@ export default function AdminBannersPage() {
             onClick={fetchBanners}
             disabled={isLoading}
             className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
-            title="রিফ্রেশ করুন"
+            title="Refresh Banners"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -247,7 +247,7 @@ export default function AdminBannersPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>নতুন স্লাইডার/ব্যানার যোগ করুন</span>
+            <span>Add New Banner</span>
           </button>
         </div>
       </div>
@@ -259,24 +259,24 @@ export default function AdminBannersPage() {
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4 text-[#3B0C04]" />
               <h2 className="text-sm font-black text-[#3B0C04]">
-                লাইভ হিরো ক্যারোজেল প্রিভিউ (Live Preview)
+                Storefront Live Carousel Preview
               </h2>
               <span className="text-[11px] px-2 py-0.5 rounded-md bg-[#FFF7EE] text-[#3B0C04] font-bold border border-[#E8DCD2]">
-                স্লাইড {previewSlide + 1} / {heroBanners.length}
+                Slide {previewSlide + 1} of {heroBanners.length}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPreviewSlide((prev) => (prev - 1 + heroBanners.length) % heroBanners.length)}
                 className="p-1.5 rounded-lg border border-[#E8DCD2] hover:bg-[#FFF7EE] text-[#3B0C04]"
-                title="পূর্ববর্তী স্লাইড"
+                title="Previous Slide"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPreviewSlide((prev) => (prev + 1) % heroBanners.length)}
                 className="p-1.5 rounded-lg border border-[#E8DCD2] hover:bg-[#FFF7EE] text-[#3B0C04]"
-                title="পরবর্তী স্লাইড"
+                title="Next Slide"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -286,21 +286,21 @@ export default function AdminBannersPage() {
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FFF7EE] via-[#FFFDF9] to-[#F3F7F5] border border-[#E8DCD2] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="w-full md:w-3/5 space-y-3 text-center md:text-left">
               <span className="inline-block px-3 py-1 rounded-full bg-[#3B0C04]/10 text-[11px] font-bold text-[#3B0C04]">
-                ক্রম নং: #{currentPreview.sortOrder} • HERO SLIDE
+                Priority Slot #{currentPreview.sortOrder} • HERO SLIDE
               </span>
               <h3 className="text-xl md:text-3xl font-black text-[#3B0C04] leading-tight">
                 {currentPreview.title}
               </h3>
               <p className="text-xs md:text-sm text-[#6B5A52]">
-                {currentPreview.subtitle || "আপনার স্টোরের গ্রাহকদের জন্য আকর্ষণীয় স্লাইডার ব্যানার"}
+                {currentPreview.subtitle || "Premium selection of curated lifestyle and essential products."}
               </p>
               <div className="pt-2 flex items-center justify-center md:justify-start gap-3">
                 <span className="px-5 py-2 rounded-xl bg-[#3B0C04] text-[#FFC40E] text-xs font-bold inline-flex items-center gap-1.5">
-                  <span>{currentPreview.buttonText || "এখনই কিনুন"}</span>
+                  <span>{currentPreview.buttonText || "Shop Now"}</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </span>
                 <span className="text-xs text-[#8C7B72] font-mono">
-                  লিংক: {currentPreview.buttonUrl || "/shop"}
+                  Link: {currentPreview.buttonUrl || "/shop"}
                 </span>
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function AdminBannersPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          🎠 হিরো স্লাইডার ({banners.filter((b) => b.position === "HERO").length})
+          🎠 Hero Sliders ({banners.filter((b) => b.position === "HERO").length})
         </button>
         <button
           onClick={() => setActiveTab("PROMOTIONAL")}
@@ -338,7 +338,7 @@ export default function AdminBannersPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          🏷️ প্রমোশনাল ব্যানার ({banners.filter((b) => b.position === "PROMOTIONAL").length})
+          🏷️ Promotional Banners ({banners.filter((b) => b.position === "PROMOTIONAL").length})
         </button>
         <button
           onClick={() => setActiveTab("ALL")}
@@ -348,7 +348,7 @@ export default function AdminBannersPage() {
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
-          সব ব্যানার ({banners.length})
+          All Banners ({banners.length})
         </button>
       </div>
 
@@ -373,7 +373,7 @@ export default function AdminBannersPage() {
                     {b.position === "HERO" ? "🎠 HERO CAROUSEL" : "🏷️ PROMOTIONAL"}
                   </span>
                   <span className="px-2 py-1 rounded-lg bg-black/70 text-white text-[10px] font-bold">
-                    স্লট #{b.sortOrder}
+                    Slot #{b.sortOrder}
                   </span>
                 </div>
                 <div className="absolute top-2 right-2">
@@ -384,7 +384,7 @@ export default function AdminBannersPage() {
                         : "bg-zinc-600 text-white"
                     }`}
                   >
-                    {b.isActive ? "সক্রিয় (Active)" : "নিষ্ক্রিয় (Inactive)"}
+                    {b.isActive ? "Active" : "Disabled"}
                   </span>
                 </div>
               </div>
@@ -402,11 +402,11 @@ export default function AdminBannersPage() {
 
               <div className="p-2.5 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] text-xs space-y-1">
                 <div className="flex items-center justify-between text-[#3B0C04] font-bold">
-                  <span>বাটন টেক্সট:</span>
-                  <span>{b.buttonText || "এখনই কিনুন"}</span>
+                  <span>Action Button:</span>
+                  <span>{b.buttonText || "Shop Now"}</span>
                 </div>
                 <div className="flex items-center justify-between text-[#8C7B72] text-[11px]">
-                  <span>লিংক:</span>
+                  <span>Redirect Link:</span>
                   <span className="font-mono truncate max-w-[150px]">{b.buttonUrl || "/shop"}</span>
                 </div>
               </div>
@@ -423,7 +423,7 @@ export default function AdminBannersPage() {
                       : "border-[#16834A] text-[#16834A] hover:bg-[#16834A]/10"
                   }`}
                 >
-                  {b.isActive ? "বন্ধ করুন" : "চালু করুন"}
+                  {b.isActive ? "Deactivate" : "Activate"}
                 </button>
               </div>
 
@@ -431,14 +431,14 @@ export default function AdminBannersPage() {
                 <button
                   onClick={() => openEditModal(b)}
                   className="p-2 rounded-xl text-[#3B0C04] hover:bg-[#FFF7EE] border border-transparent hover:border-[#E8DCD2] transition-colors"
-                  title="এডিট করুন"
+                  title="Edit Banner"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(b.id)}
                   className="p-2 rounded-xl text-[#D64545] hover:bg-[#D64545]/10 transition-colors"
-                  title="মুছে ফেলুন"
+                  title="Delete Banner"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -459,10 +459,10 @@ export default function AdminBannersPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-black text-[#3B0C04]">
-                    {editingBanner ? "ব্যানার এডিট করুন" : "নতুন ব্যানার যোগ করুন"}
+                    {editingBanner ? "Edit Banner" : "Create New Banner"}
                   </h3>
                   <p className="text-[11px] text-[#6B5A52]">
-                    হিরো ক্যারোজেল অথবা হোম পেজ প্রমোশন ব্যানার কনফিগার করুন
+                    Configure storefront carousel slider or promotional display banner
                   </p>
                 </div>
               </div>
@@ -478,7 +478,7 @@ export default function AdminBannersPage() {
               {/* Position Selector */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1.5">
-                  ব্যানারের ধরন ও অবস্থান (Position): *
+                  Banner Position & Placement: *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -490,9 +490,9 @@ export default function AdminBannersPage() {
                         : "border-[#E8DCD2] hover:bg-zinc-50"
                     }`}
                   >
-                    <span className="font-bold text-[#3B0C04]">🎠 Hero Carousel স্লাইডার</span>
+                    <span className="font-bold text-[#3B0C04]">🎠 Hero Carousel Slider</span>
                     <span className="text-[11px] text-[#6B5A52]">
-                      হোম পেজের প্রধান হিরো সেকশনে ক্যারোজেল হিসেবে ঘুরবে
+                      Main rotatable carousel banner at top of homepage
                     </span>
                   </button>
                   <button
@@ -504,9 +504,9 @@ export default function AdminBannersPage() {
                         : "border-[#E8DCD2] hover:bg-zinc-50"
                     }`}
                   >
-                    <span className="font-bold text-[#3B0C04]">🏷️ Promotional ব্যানার</span>
+                    <span className="font-bold text-[#3B0C04]">🏷️ Promotional Banner</span>
                     <span className="text-[11px] text-[#6B5A52]">
-                      হোম পেজের মাঝামাঝি প্রমোশনাল সেকশনে প্রদর্শন হবে
+                      Mid-page call-to-action campaign banner
                     </span>
                   </button>
                 </div>
@@ -515,12 +515,12 @@ export default function AdminBannersPage() {
               {/* Title */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1">
-                  ব্যানার শিরোনাম (Title): *
+                  Banner Headline (Title): *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="যেমন: আপনার পছন্দের সেরা গ্যাজেট, এখন এক ঠিকানায়।"
+                  placeholder="e.g., Premium Lifestyle & Smart Essentials"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full h-11 px-3.5 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-semibold focus:outline-none focus:border-[#3B0C04]"
@@ -530,11 +530,11 @@ export default function AdminBannersPage() {
               {/* Subtitle */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1">
-                  উপ-শিরোনাম বা বিবরণ (Subtitle):
+                  Sub-headline or Description (Subtitle):
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="ব্যানারের আকর্ষণীয় বিবরণ লিখুন..."
+                  placeholder="Enter compelling description or promotion text..."
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
                   className="w-full p-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
@@ -545,9 +545,9 @@ export default function AdminBannersPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block font-bold text-[#2B160F]">
-                    ছবির লিংক (Image URL): *
+                    Image URL: *
                   </label>
-                  <span className="text-[10px] text-[#8C7B72]">হাই-রেজ্যুলুশন ইমেজ ব্যবহার করুন</span>
+                  <span className="text-[10px] text-[#8C7B72]">High-resolution web or CDN image URL</span>
                 </div>
                 <input
                   type="url"
@@ -561,7 +561,7 @@ export default function AdminBannersPage() {
                 {/* Quick Presets */}
                 <div className="mt-2 space-y-1.5">
                   <span className="text-[10px] font-bold text-[#6B5A52]">
-                    দ্রুত ব্যবহারের জন্য কিছু স্যাম্পল ছবি:
+                    Quick sample image presets:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {presetImages.map((p, idx) => (
@@ -592,7 +592,7 @@ export default function AdminBannersPage() {
                         (e.target as any).src = "https://placehold.co/600x400?text=Invalid+Image";
                       }}
                     />
-                    <span className="text-[11px] text-[#6B5A52]">ইমেজ প্রিভিউ সফলভাবে লোড হয়েছে</span>
+                    <span className="text-[11px] text-[#6B5A52]">Image preview loaded successfully</span>
                   </div>
                 )}
               </div>
@@ -601,11 +601,11 @@ export default function AdminBannersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-[#2B160F] mb-1">
-                    বাটন টেক্সট (Button Text):
+                    Call-to-Action Text (Button):
                   </label>
                   <input
                     type="text"
-                    placeholder="যেমন: এখনই কিনুন"
+                    placeholder="e.g., Shop Now, View Catalog, Order Today"
                     value={buttonText}
                     onChange={(e) => setButtonText(e.target.value)}
                     className="w-full h-11 px-3.5 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-semibold focus:outline-none focus:border-[#3B0C04]"
@@ -613,11 +613,11 @@ export default function AdminBannersPage() {
                 </div>
                 <div>
                   <label className="block font-bold text-[#2B160F] mb-1">
-                    বাটন লিংক (Button Link):
+                    Redirect URL (Button Link):
                   </label>
                   <input
                     type="text"
-                    placeholder="যেমন: /shop অথবা /category/gadgets"
+                    placeholder="e.g., /shop, /category/gadgets, /products/featured"
                     value={buttonUrl}
                     onChange={(e) => setButtonUrl(e.target.value)}
                     className="w-full h-11 px-3.5 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-mono focus:outline-none focus:border-[#3B0C04]"
@@ -629,7 +629,7 @@ export default function AdminBannersPage() {
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="block font-bold text-[#2B160F] mb-1">
-                    স্লাইড ক্রম (Sort Order):
+                    Display Priority / Sort Order:
                   </label>
                   <input
                     type="number"
@@ -642,7 +642,7 @@ export default function AdminBannersPage() {
                 </div>
                 <div>
                   <label className="block font-bold text-[#2B160F] mb-1">
-                    স্ট্যাটাস (Status):
+                    Visibility Status:
                   </label>
                   <div className="flex items-center h-11 px-3.5 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9]">
                     <label className="inline-flex items-center gap-2 cursor-pointer font-bold text-xs text-[#2B160F]">
@@ -652,7 +652,7 @@ export default function AdminBannersPage() {
                         onChange={(e) => setIsActive(e.target.checked)}
                         className="w-4 h-4 rounded text-[#3B0C04] accent-[#3B0C04]"
                       />
-                      <span>ব্যানারটি সক্রিয় রাখুন</span>
+                      <span>Active on Storefront</span>
                     </label>
                   </div>
                 </div>
@@ -665,14 +665,14 @@ export default function AdminBannersPage() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-5 py-2.5 rounded-xl border border-[#E8DCD2] text-[#6B5A52] font-bold text-xs hover:bg-[#FFF7EE]"
                 >
-                  বাতিল
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="px-6 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {isSubmitting ? "সংরক্ষণ হচ্ছে..." : editingBanner ? "আপডেট করুন" : "যোগ করুন"}
+                  {isSubmitting ? "Saving..." : editingBanner ? "Save Changes" : "Create Banner"}
                 </button>
               </div>
             </form>

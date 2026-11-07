@@ -68,7 +68,6 @@ export default function AdminCategoriesPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
-          // Normalize categories into top-level categories with their children
           const allCats: CategoryItem[] = data.categories;
           const topLevelMap = new Map<string, CategoryItem>();
           const standaloneSubs: CategoryItem[] = [];
@@ -84,7 +83,6 @@ export default function AdminCategoriesPage() {
             }
           });
 
-          // Attach standalone subcategories if any weren't in children
           standaloneSubs.forEach((sub) => {
             if (sub.parentId && topLevelMap.has(sub.parentId)) {
               const parent = topLevelMap.get(sub.parentId)!;
@@ -129,7 +127,6 @@ export default function AdminCategoriesPage() {
     fetchCategories();
   }, []);
 
-  // Open modal to add a Main Category or Subcategory
   const openAddModal = (asSubcategory: boolean = false, parentId: string = "") => {
     setEditingItem(null);
     setErrorMessage("");
@@ -142,7 +139,6 @@ export default function AdminCategoriesPage() {
     setIsModalOpen(true);
   };
 
-  // Open modal to edit existing
   const openEditModal = (item: { id: string; name: string; slug: string; description?: string | null; imageUrl?: string | null; parentId?: string | null }) => {
     const isSub = Boolean(item.parentId);
     setEditingItem({ id: item.id, isSub });
@@ -161,7 +157,7 @@ export default function AdminCategoriesPage() {
     if (!catName.trim() || isSubmitting) return;
 
     if (isSubcategory && !selectedParentId) {
-      setErrorMessage("দয়া করে একটি প্রধান প্যারেন্ট ক্যাটাগরি নির্বাচন করুন।");
+      setErrorMessage("Please select a valid parent category.");
       return;
     }
 
@@ -179,7 +175,6 @@ export default function AdminCategoriesPage() {
 
     try {
       if (editingItem) {
-        // Update category
         const res = await fetch("/api/admin/categories", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -189,12 +184,11 @@ export default function AdminCategoriesPage() {
         if (data.success) {
           fetchCategories();
         } else {
-          setErrorMessage(data.error || "আপডেট ব্যর্থ হয়েছে");
+          setErrorMessage(data.error || "Update operation failed.");
           setIsSubmitting(false);
           return;
         }
       } else {
-        // Create category
         const res = await fetch("/api/admin/categories", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -204,7 +198,7 @@ export default function AdminCategoriesPage() {
         if (data.success) {
           fetchCategories();
         } else {
-          setErrorMessage(data.error || "ক্যাটাগরি তৈরি ব্যর্থ হয়েছে");
+          setErrorMessage(data.error || "Failed to create category.");
           setIsSubmitting(false);
           return;
         }
@@ -212,7 +206,6 @@ export default function AdminCategoriesPage() {
       setIsModalOpen(false);
     } catch (err: any) {
       console.warn("API error, applying changes locally:", err);
-      // Local fallback
       if (!isSubcategory) {
         const newCat: CategoryItem = {
           id: `cat-${Date.now()}`,
@@ -250,7 +243,7 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDeleteCategory = async (id: string, name: string) => {
-    if (!confirm(`আপনি কি নিশ্চিতভাবে "${name}" ক্যাটাগরি মুছে ফেলতে চান?`)) return;
+    if (!confirm(`Are you sure you want to permanently delete category "${name}"?`)) return;
 
     setCategories((prev) => prev.filter((c) => c.id !== id));
     try {
@@ -263,7 +256,7 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDeleteSubcategory = async (parentId: string, subId: string, subName: string) => {
-    if (!confirm(`আপনি কি নিশ্চিতভাবে "${subName}" সাবক্যাটাগরিটি মুছে ফেলতে চান?`)) return;
+    if (!confirm(`Are you sure you want to delete subcategory "${subName}"?`)) return;
 
     setCategories((prev) =>
       prev.map((c) =>
@@ -282,14 +275,12 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  // Calculations for stats
   const totalMainCategories = categories.length;
   const totalSubcategories = categories.reduce(
     (sum, c) => sum + (c.children?.length || 0),
     0
   );
 
-  // Filtered categories
   const filteredCategories = categories.filter((c) => {
     const q = search.toLowerCase();
     const matchesMain =
@@ -304,18 +295,18 @@ export default function AdminCategoriesPage() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2.5">
-            <span>ক্যাটাগরি ও সাব-ক্যাটাগরি ব্যবস্থাপনা</span>
+            <span>Master Data: Category Hierarchy</span>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
-              Hierarchical Categories
+              Parent & Subcategories
             </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            স্টোরফ্রন্ট পণ্য সাজানোর জন্য প্রধান ক্যাটাগরি এবং সাবক্যাটাগরি তৈরি ও নিয়ন্ত্রণ করুন
+            Manage multi-level category taxonomy trees for storefront catalog and POS register navigation
           </p>
         </div>
 
@@ -324,27 +315,25 @@ export default function AdminCategoriesPage() {
             onClick={fetchCategories}
             disabled={isLoading}
             className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
-            title="রিফ্রেশ করুন"
+            title="Refresh Categories"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
 
-          {/* Add Subcategory Quick Action */}
           <button
             onClick={() => openAddModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#3B0C04] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-transform active:scale-95"
           >
             <FolderPlus className="w-4 h-4 text-[#3B0C04]" />
-            <span>+ নতুন সাব-ক্যাটাগরি</span>
+            <span>+ Add Subcategory</span>
           </button>
 
-          {/* Add Main Category */}
           <button
             onClick={() => openAddModal(false)}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ নতুন প্রধান ক্যাটাগরি</span>
+            <span>+ New Main Category</span>
           </button>
         </div>
       </div>
@@ -356,8 +345,8 @@ export default function AdminCategoriesPage() {
             <FolderTree className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-[#8C7B72] font-semibold">প্রধান ক্যাটাগরি (Main)</p>
-            <h3 className="text-2xl font-black text-[#3B0C04]">{totalMainCategories} টি</h3>
+            <p className="text-xs text-[#8C7B72] font-bold uppercase tracking-wider">Main Categories</p>
+            <h3 className="text-2xl font-black text-[#3B0C04]">{totalMainCategories} Active</h3>
           </div>
         </div>
 
@@ -366,8 +355,8 @@ export default function AdminCategoriesPage() {
             <Layers className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-[#8C7B72] font-semibold">সাব-ক্যাটাগরি (Subcategories)</p>
-            <h3 className="text-2xl font-black text-[#3B0C04]">{totalSubcategories} টি</h3>
+            <p className="text-xs text-[#8C7B72] font-bold uppercase tracking-wider">Subcategories</p>
+            <h3 className="text-2xl font-black text-[#3B0C04]">{totalSubcategories} Active</h3>
           </div>
         </div>
 
@@ -376,9 +365,9 @@ export default function AdminCategoriesPage() {
             <Tag className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-[#8C7B72] font-semibold">মোট বিভাগসমূহ</p>
+            <p className="text-xs text-[#8C7B72] font-bold uppercase tracking-wider">Total Taxonomies</p>
             <h3 className="text-2xl font-black text-[#16834A]">
-              {totalMainCategories + totalSubcategories} টি
+              {totalMainCategories + totalSubcategories} Nodes
             </h3>
           </div>
         </div>
@@ -390,7 +379,7 @@ export default function AdminCategoriesPage() {
           <Search className="w-4 h-4 text-[#8C7B72] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="ক্যাটাগরি বা সাবক্যাটাগরি খুঁজুন..."
+            placeholder="Search category or subcategory name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
@@ -400,35 +389,34 @@ export default function AdminCategoriesPage() {
         <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           <button
             onClick={() => setViewFilter("ALL")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
               viewFilter === "ALL"
                 ? "bg-[#3B0C04] text-[#FFC40E]"
                 : "text-[#6B5A52] hover:bg-[#FFF7EE]"
             }`}
           >
-            সব দেখুন ({totalMainCategories})
+            View All ({totalMainCategories})
           </button>
           <button
             onClick={() => setViewFilter("SUBCAT")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors ${
               viewFilter === "SUBCAT"
                 ? "bg-[#3B0C04] text-[#FFC40E]"
                 : "text-[#6B5A52] hover:bg-[#FFF7EE]"
             }`}
           >
-            সাবক্যাটাগরি সহ
+            With Subcategories
           </button>
         </div>
       </div>
 
-      {/* Categories & Subcategories Tree List */}
+      {/* Categories & Subcategories Tree Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredCategories.map((cat) => (
           <div
             key={cat.id}
-            className="p-6 rounded-3xl bg-white border border-[#E8DCD2] shadow-xs flex flex-col justify-between space-y-5 hover:border-[#3B0C04]/30 transition-all"
+            className="p-6 rounded-3xl bg-white border border-[#E8DCD2] shadow-xs flex flex-col justify-between space-y-5 hover:border-[#3B0C04]/40 transition-all"
           >
-            {/* Main Category Header */}
             <div>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -451,7 +439,7 @@ export default function AdminCategoriesPage() {
                       </span>
                     </div>
                     <p className="text-xs text-[#6B5A52] line-clamp-1 mt-0.5">
-                      {cat.description || "প্রধান ক্যাটাগরি"}
+                      {cat.description || "Primary Root Category"}
                     </p>
                   </div>
                 </div>
@@ -460,14 +448,14 @@ export default function AdminCategoriesPage() {
                   <button
                     onClick={() => openEditModal(cat)}
                     className="p-2 rounded-xl text-[#3B0C04] hover:bg-[#FFF7EE] border border-transparent hover:border-[#E8DCD2]"
-                    title="এডিট করুন"
+                    title="Edit Category"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteCategory(cat.id, cat.name)}
                     className="p-2 rounded-xl text-[#D64545] hover:bg-[#D64545]/10"
-                    title="মুছে ফেলুন"
+                    title="Delete Category"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -479,14 +467,14 @@ export default function AdminCategoriesPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#3B0C04]">
                     <Layers className="w-3.5 h-3.5" />
-                    <span>সাব-ক্যাটাগরি তালিকা ({cat.children?.length || 0})</span>
+                    <span>Subcategories ({cat.children?.length || 0})</span>
                   </div>
                   <button
                     onClick={() => openAddModal(true, cat.id)}
                     className="text-[11px] font-bold text-[#3B0C04] hover:text-[#260700] hover:underline inline-flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>+ সাবক্যাটাগরি যোগ করুন</span>
+                    <span>+ Add Subcategory</span>
                   </button>
                 </div>
 
@@ -505,14 +493,14 @@ export default function AdminCategoriesPage() {
                           <button
                             onClick={() => openEditModal({ ...sub, parentId: cat.id })}
                             className="p-1 text-[#8C7B72] hover:text-[#3B0C04]"
-                            title="এডিট"
+                            title="Edit Subcategory"
                           >
                             <Edit2 className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => handleDeleteSubcategory(cat.id, sub.id, sub.name)}
                             className="p-1 text-[#8C7B72] hover:text-[#D64545]"
-                            title="মুছে ফেলুন"
+                            title="Delete Subcategory"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -523,30 +511,29 @@ export default function AdminCategoriesPage() {
                 ) : (
                   <div className="py-4 text-center">
                     <p className="text-xs text-[#8C7B72]">
-                      এই ক্যাটাগরিতে এখনও কোনো সাব-ক্যাটাগরি যুক্ত করা হয়নি।
+                      No subcategories configured for this category yet.
                     </p>
                     <button
                       onClick={() => openAddModal(true, cat.id)}
                       className="mt-2 px-3 py-1.5 rounded-lg bg-[#3B0C04] text-[#FFC40E] text-[11px] font-bold inline-flex items-center gap-1"
                     >
                       <Plus className="w-3 h-3" />
-                      <span>প্রথম সাব-ক্যাটাগরি যোগ করুন</span>
+                      <span>Add First Subcategory</span>
                     </button>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Card Footer */}
             <div className="pt-3 border-t border-[#E8DCD2]/60 flex items-center justify-between text-xs text-[#8C7B72]">
-              <span>আইডি: <code className="font-mono text-[10px]">{cat.id.slice(0, 12)}...</code></span>
+              <span>ID: <code className="font-mono text-[10px]">{cat.id.slice(0, 12)}...</code></span>
               <a
                 href={`/category/${cat.slug}`}
                 target="_blank"
                 rel="noreferrer"
                 className="font-bold text-[#3B0C04] hover:underline inline-flex items-center gap-1"
               >
-                <span>স্টোর পেজ দেখুন</span>
+                <span>Preview Store Category</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
@@ -567,14 +554,14 @@ export default function AdminCategoriesPage() {
                   <h3 className="text-base font-black text-[#3B0C04]">
                     {editingItem
                       ? isSubcategory
-                        ? "সাব-ক্যাটাগরি এডিট করুন"
-                        : "প্রধান ক্যাটাগরি এডিট করুন"
+                        ? "Edit Subcategory"
+                        : "Edit Main Category"
                       : isSubcategory
-                      ? "নতুন সাব-ক্যাটাগরি তৈরি করুন"
-                      : "নতুন প্রধান ক্যাটাগরি তৈরি করুন"}
+                      ? "Create New Subcategory"
+                      : "Create New Main Category"}
                   </h3>
                   <p className="text-[11px] text-[#6B5A52]">
-                    পণ্য বিভাজনের সঠিক তথ্য পূরণ করুন
+                    Configure taxonomy attributes and catalog relationships
                   </p>
                 </div>
               </div>
@@ -593,11 +580,10 @@ export default function AdminCategoriesPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              {/* Type Switcher (Only when adding new) */}
               {!editingItem && (
                 <div>
                   <label className="block font-bold text-[#2B160F] mb-1.5">
-                    ক্যাটাগরির স্তর নির্বাচন করুন: *
+                    Category Hierarchy Level: *
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -609,9 +595,9 @@ export default function AdminCategoriesPage() {
                           : "border-[#E8DCD2] hover:bg-zinc-50"
                       }`}
                     >
-                      <span className="font-bold text-[#3B0C04] block">📁 প্রধান ক্যাটাগরি (Main)</span>
+                      <span className="font-bold text-[#3B0C04] block">📁 Root / Main Category</span>
                       <span className="text-[11px] text-[#6B5A52] block mt-0.5">
-                        যেমন: Gadgets, Home & Kitchen
+                        e.g., Gadgets, Home & Kitchen
                       </span>
                     </button>
 
@@ -629,20 +615,19 @@ export default function AdminCategoriesPage() {
                           : "border-[#E8DCD2] hover:bg-zinc-50"
                       }`}
                     >
-                      <span className="font-bold text-[#3B0C04] block">📂 সাব-ক্যাটাগরি (Subcategory)</span>
+                      <span className="font-bold text-[#3B0C04] block">📂 Subcategory</span>
                       <span className="text-[11px] text-[#6B5A52] block mt-0.5">
-                        যেমন: Smartwatches, Blenders
+                        e.g., Smartwatches, Blenders
                       </span>
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Parent Category Selection Dropdown (When Subcategory is selected) */}
               {isSubcategory && (
                 <div>
                   <label className="block font-bold text-[#2B160F] mb-1">
-                    প্যারেন্ট / প্রধান ক্যাটাগরি নির্বাচন করুন: *
+                    Select Parent Category: *
                   </label>
                   <select
                     required
@@ -650,7 +635,7 @@ export default function AdminCategoriesPage() {
                     onChange={(e) => setSelectedParentId(e.target.value)}
                     className="w-full h-11 px-3.5 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-bold text-[#3B0C04] focus:outline-none focus:border-[#3B0C04]"
                   >
-                    <option value="">-- প্রধান ক্যাটাগরি সিলেক্ট করুন --</option>
+                    <option value="">-- Choose Parent Category --</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
                         📁 {c.name} (/{c.slug})
@@ -660,18 +645,17 @@ export default function AdminCategoriesPage() {
                 </div>
               )}
 
-              {/* Name */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1">
-                  {isSubcategory ? "সাব-ক্যাটাগরির নাম: *" : "প্রধান ক্যাটাগরির নাম: *"}
+                  {isSubcategory ? "Subcategory Title: *" : "Main Category Title: *"}
                 </label>
                 <input
                   type="text"
                   required
                   placeholder={
                     isSubcategory
-                      ? "যেমন: Smartwatches অথবা Wireless Earbuds"
-                      : "যেমন: Smart Gadgets অথবা Kitchen & Appliances"
+                      ? "e.g., Wireless ANC Earbuds"
+                      : "e.g., Smart Electronics & Gadgets"
                   }
                   value={catName}
                   onChange={(e) => setCatName(e.target.value)}
@@ -679,24 +663,22 @@ export default function AdminCategoriesPage() {
                 />
               </div>
 
-              {/* Slug */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1">
-                  স্লাগ বা URL পাথ (URL Slug):
+                  URL Slug:
                 </label>
                 <input
                   type="text"
-                  placeholder="যেমন: smartwatches (ফাঁকা রাখলে স্বয়ংক্রিয় তৈরি হবে)"
+                  placeholder="e.g., smartwatches (leave empty for auto-generated slug)"
                   value={catSlug}
                   onChange={(e) => setCatSlug(e.target.value)}
                   className="w-full h-11 px-3.5 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-mono focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
-              {/* Image URL */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1">
-                  ক্যাটাগরি ছবি URL (Image URL):
+                  Category Image URL:
                 </label>
                 <input
                   type="url"
@@ -707,28 +689,26 @@ export default function AdminCategoriesPage() {
                 />
               </div>
 
-              {/* Description */}
               <div>
                 <label className="block font-bold text-[#2B160F] mb-1">
-                  সংক্ষিপ্ত বিবরণ (Description):
+                  Description:
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="ক্যাটাগরির আকর্ষণীয় সংক্ষিপ্ত বিবরণ..."
+                  placeholder="Enter a brief summary for storefront browsing..."
                   value={catDesc}
                   onChange={(e) => setCatDesc(e.target.value)}
                   className="w-full p-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
-              {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-3 border-t border-[#E8DCD2]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="px-5 py-2.5 rounded-xl border border-[#E8DCD2] text-[#6B5A52] font-bold text-xs hover:bg-[#FFF7EE]"
                 >
-                  বাতিল
+                  Cancel
                 </button>
                 <button
                   type="submit"
@@ -736,12 +716,12 @@ export default function AdminCategoriesPage() {
                   className="px-6 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50"
                 >
                   {isSubmitting
-                    ? "সংরক্ষণ হচ্ছে..."
+                    ? "Saving..."
                     : editingItem
-                    ? "আপডেট করুন"
+                    ? "Update Category"
                     : isSubcategory
-                    ? "সাব-ক্যাটাগরি তৈরি করুন"
-                    : "প্রধান ক্যাটাগরি তৈরি করুন"}
+                    ? "Create Subcategory"
+                    : "Create Main Category"}
                 </button>
               </div>
             </form>

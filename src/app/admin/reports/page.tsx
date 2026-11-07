@@ -28,7 +28,8 @@ import {
   Receipt,
   CalendarRange,
   X,
-  PieChart
+  Store,
+  Globe
 } from "lucide-react";
 
 interface OrderItemProduct {
@@ -43,6 +44,7 @@ interface OrderRecord {
   id?: string;
   date: string;
   rawDate?: string;
+  source?: string;
   customer: {
     name: string;
     phone: string;
@@ -82,17 +84,17 @@ interface LedgerRecord {
   staffRole?: string;
 }
 
-// Fallback orders if API is empty
 const fallbackOrders: OrderRecord[] = [
   {
-    orderId: "PN10025",
-    date: "০৪ সেপ্টেম্বর, ২০২৬",
+    orderId: "POS-10025",
+    date: "Sep 04, 2026",
     rawDate: "2026-09-04",
+    source: "POS",
     customer: {
-      name: "তানভীর আহমেদ",
-      phone: "01712-345678",
-      email: "tanvir.ahmed@example.com",
-      address: "বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা",
+      name: "Retail Walk-in Customer",
+      phone: "01700-000000",
+      email: "pos@ponchomukh.com",
+      address: "In-Store Counter #01, Dhaka",
     },
     items: [
       {
@@ -108,21 +110,22 @@ const fallbackOrders: OrderRecord[] = [
     ],
     subtotal: 4497,
     discount: 100,
-    shippingFee: 60,
-    total: 4457,
-    paymentMethod: "Cash on Delivery",
-    paymentStatus: "PENDING",
-    status: "PROCESSING",
+    shippingFee: 0,
+    total: 4397,
+    paymentMethod: "Cash",
+    paymentStatus: "PAID",
+    status: "DELIVERED",
   },
   {
     orderId: "PN10024",
-    date: "০৪ সেপ্টেম্বর, ২০২৬",
+    date: "Sep 04, 2026",
     rawDate: "2026-09-04",
+    source: "STOREFRONT",
     customer: {
-      name: "সুমাইয়া আক্তার",
+      name: "Sumaiya Akter",
       phone: "01823-456789",
       email: "sumaiya.akter@example.com",
-      address: "সেক্টর ৩, উত্তরা, ঢাকা",
+      address: "Sector 3, Uttara, Dhaka",
     },
     items: [
       {
@@ -141,13 +144,14 @@ const fallbackOrders: OrderRecord[] = [
   },
   {
     orderId: "PN10023",
-    date: "০৩ সেপ্টেম্বর, ২০২৬",
+    date: "Sep 03, 2026",
     rawDate: "2026-09-03",
+    source: "LANDING_PAGE",
     customer: {
-      name: "রফিকুল ইসলাম",
+      name: "Rafiqul Islam",
       phone: "01934-567890",
       email: "rafiqul.islam@example.com",
-      address: "জিইসি মোড়, চট্টগ্রাম",
+      address: "GEC Circle, Chattogram",
     },
     items: [
       {
@@ -166,13 +170,14 @@ const fallbackOrders: OrderRecord[] = [
   },
   {
     orderId: "PN10022",
-    date: "০২ সেপ্টেম্বর, ২০২৬",
+    date: "Sep 02, 2026",
     rawDate: "2026-09-02",
+    source: "STOREFRONT",
     customer: {
-      name: "নাজমুল হোসেন",
+      name: "Nazmul Hossain",
       phone: "01645-678901",
       email: "nazmul.hossain@example.com",
-      address: "চৌহাট্টা, সিলেট",
+      address: "Chouhatta, Sylhet",
     },
     items: [
       {
@@ -196,13 +201,14 @@ const fallbackOrders: OrderRecord[] = [
   },
   {
     orderId: "PN10021",
-    date: "০১ সেপ্টেম্বর, ২০২৬",
+    date: "Sep 01, 2026",
     rawDate: "2026-09-01",
+    source: "STOREFRONT",
     customer: {
-      name: "তানভীর আহমেদ",
+      name: "Tanvir Ahmed",
       phone: "01712-345678",
       email: "tanvir.ahmed@example.com",
-      address: "বাড়ি ১২, রোড ৪, ধানমন্ডি, ঢাকা",
+      address: "House 12, Road 4, Dhanmondi, Dhaka",
     },
     items: [
       {
@@ -224,10 +230,10 @@ const fallbackOrders: OrderRecord[] = [
 const fallbackCustomers: CustomerRecord[] = [
   {
     id: "cust-1",
-    name: "তানভীর আহমেদ",
+    name: "Tanvir Ahmed",
     phone: "01712-345678",
     email: "tanvir.ahmed@example.com",
-    joinedDate: "০১ আগস্ট, ২০২৬",
+    joinedDate: "Aug 01, 2026",
     rawJoinedDate: "2026-08-01",
     totalOrders: 4,
     totalSpent: 6450,
@@ -235,10 +241,10 @@ const fallbackCustomers: CustomerRecord[] = [
   },
   {
     id: "cust-2",
-    name: "সুমাইয়া আক্তার",
+    name: "Sumaiya Akter",
     phone: "01823-456789",
     email: "sumaiya.akter@example.com",
-    joinedDate: "১৫ আগস্ট, ২০২৬",
+    joinedDate: "Aug 15, 2026",
     rawJoinedDate: "2026-08-15",
     totalOrders: 2,
     totalSpent: 3850,
@@ -246,10 +252,10 @@ const fallbackCustomers: CustomerRecord[] = [
   },
   {
     id: "cust-3",
-    name: "রফিকুল ইসলাম",
+    name: "Rafiqul Islam",
     phone: "01934-567890",
     email: "rafiqul.islam@example.com",
-    joinedDate: "২০ আগস্ট, ২০২৬",
+    joinedDate: "Aug 20, 2026",
     rawJoinedDate: "2026-08-20",
     totalOrders: 1,
     totalSpent: 1419,
@@ -257,10 +263,10 @@ const fallbackCustomers: CustomerRecord[] = [
   },
   {
     id: "cust-4",
-    name: "নাজমুল হোসেন",
+    name: "Nazmul Hossain",
     phone: "01645-678901",
     email: "nazmul.hossain@example.com",
-    joinedDate: "২৫ আগস্ট, ২০২৬",
+    joinedDate: "Aug 25, 2026",
     rawJoinedDate: "2026-08-25",
     totalOrders: 2,
     totalSpent: 3218,
@@ -272,7 +278,7 @@ const fallbackLedger: LedgerRecord[] = [
   {
     id: "acc-1",
     type: "EXPENSE",
-    title: "ফেসবুক মেটা বিজ্ঞাপন খরচ (Ad Spend)",
+    title: "Facebook Meta Ad Spend Campaign",
     category: "MARKETING_ADS",
     amount: 3500,
     date: "2026-09-04",
@@ -282,17 +288,17 @@ const fallbackLedger: LedgerRecord[] = [
   {
     id: "acc-2",
     type: "EXPENSE",
-    title: "স্টিকার ও প্যাকেজিং বক্স প্রিন্ট",
+    title: "Sticker & Packaging Boxes Print",
     category: "PACKAGING",
     amount: 1800,
     date: "2026-09-03",
-    staffName: "আরিফুল ইসলাম (Staff)",
+    staffName: "Ariful Islam (Staff)",
     staffRole: "STAFF",
   },
   {
     id: "acc-3",
     type: "PURCHASE",
-    title: "৫০ পিস সনিফার ব্লেন্ডার স্টক ক্রয় (কেনা দাম)",
+    title: "50 Pcs Sonifer Blender Stock Purchase (COGS)",
     category: "PRODUCT_PURCHASE",
     amount: 47500,
     date: "2026-09-02",
@@ -302,21 +308,21 @@ const fallbackLedger: LedgerRecord[] = [
   {
     id: "acc-4",
     type: "EXPENSE",
-    title: "স্টেডফাস্ট ও পাঠাও কুরিয়ার পরিবহন চার্জ",
+    title: "Steadfast & Pathao Courier Transport Charge",
     category: "DELIVERY",
     amount: 1200,
     date: "2026-09-01",
-    staffName: "সাদিয়া জাহান (Admin)",
+    staffName: "Sadia Jahan (Admin)",
     staffRole: "ADMIN",
   },
   {
     id: "acc-5",
     type: "COLLECTION",
-    title: "কুরিয়ার ক্যাশ অন ডেলিভারি পেমেন্ট কালেকশন",
+    title: "Courier Cash On Delivery Collection",
     category: "COD_COLLECTION",
     amount: 22400,
     date: "2026-09-04",
-    staffName: "আরিফুল ইসলাম (Staff)",
+    staffName: "Ariful Islam (Staff)",
     staffRole: "STAFF",
   },
 ];
@@ -329,11 +335,12 @@ export default function AdminReportsPage() {
   const [customers, setCustomers] = useState<CustomerRecord[]>(fallbackCustomers);
   const [ledgerEntries, setLedgerEntries] = useState<LedgerRecord[]>(fallbackLedger);
 
-  // ==========================================
-  // DATE-TO-DATE (তাং – তাং) FILTER CONTROLS
-  // ==========================================
+  // Date Range Filters
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
+
+  // Sales Channel Filter
+  const [channelFilter, setChannelFilter] = useState<"ALL" | "ECOMMERCE" | "POS">("ALL");
 
   // Filters for Order Report
   const [selectedProduct, setSelectedProduct] = useState<string>("ALL");
@@ -346,11 +353,9 @@ export default function AdminReportsPage() {
   // Filters for Customer Report
   const [customerSearch, setCustomerSearch] = useState<string>("");
 
-  // Load live data from APIs
   const fetchAllData = async () => {
     setIsLoading(true);
 
-    // 1. Fetch Orders
     try {
       const res = await fetch("/api/admin/orders");
       if (res.ok) {
@@ -359,12 +364,17 @@ export default function AdminReportsPage() {
           const mappedOrders: OrderRecord[] = data.orders.map((o: any) => ({
             orderId: o.orderNumber || o.id?.slice(0, 8),
             id: o.id,
-            date: new Date(o.createdAt).toLocaleDateString("bn-BD", {
+            date: new Date(o.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
-              month: "long",
+              month: "short",
               day: "numeric",
             }),
             rawDate: o.createdAt ? o.createdAt.slice(0, 10) : undefined,
+            source: o.orderNotes?.includes("[POS]")
+              ? "POS"
+              : o.orderNotes?.includes("[LANDING_PAGE]")
+              ? "LANDING_PAGE"
+              : (o.source || "STOREFRONT"),
             customer: {
               name: o.shippingAddress?.name || o.user?.name || "Customer",
               phone: o.shippingAddress?.phone || o.user?.phoneNumber || "N/A",
@@ -386,7 +396,7 @@ export default function AdminReportsPage() {
             status: o.status,
           }));
 
-          // Merge with localStorage orders if any
+          // Merge local orders
           try {
             const localStored = JSON.parse(localStorage.getItem("ponchomukh_all_orders") || "[]");
             const existingIds = new Set(mappedOrders.map((o) => o.orderId));
@@ -394,7 +404,8 @@ export default function AdminReportsPage() {
               if (!existingIds.has(s.orderId)) {
                 mappedOrders.push({
                   ...s,
-                  rawDate: s.rawDate ? s.rawDate.slice(0, 10) : new Date().toISOString().slice(0, 10)
+                  rawDate: s.rawDate ? s.rawDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
+                  source: s.source || (s.orderNotes?.includes("[POS]") ? "POS" : "STOREFRONT"),
                 });
               }
             });
@@ -406,10 +417,9 @@ export default function AdminReportsPage() {
         }
       }
     } catch (err) {
-      console.warn("Could not fetch orders from DB API, using fallback:", err);
+      console.warn("Could not fetch orders from API:", err);
     }
 
-    // 2. Fetch Customers
     try {
       const res = await fetch("/api/admin/customers");
       if (res.ok) {
@@ -419,10 +429,9 @@ export default function AdminReportsPage() {
         }
       }
     } catch (err) {
-      console.warn("Could not fetch customers from DB API, using fallback:", err);
+      console.warn("Could not fetch customers from API:", err);
     }
 
-    // 3. Fetch Accounts Ledger
     try {
       const res = await fetch("/api/admin/accounts");
       if (res.ok) {
@@ -432,7 +441,7 @@ export default function AdminReportsPage() {
         }
       }
     } catch (err) {
-      console.warn("Could not fetch accounts ledger, using fallback:", err);
+      console.warn("Could not fetch accounts ledger:", err);
     } finally {
       setIsLoading(false);
     }
@@ -442,7 +451,6 @@ export default function AdminReportsPage() {
     fetchAllData();
   }, []);
 
-  // Quick Date Presets Helper
   const setQuickRange = (preset: "ALL" | "TODAY" | "LAST_7" | "THIS_MONTH" | "LAST_MONTH") => {
     const today = new Date().toISOString().slice(0, 10);
     if (preset === "ALL") {
@@ -469,7 +477,6 @@ export default function AdminReportsPage() {
     }
   };
 
-  // Date In-Range Checker
   const isDateInRange = (dateStr?: string) => {
     if (!startDate && !endDate) return true;
     if (!dateStr) return true;
@@ -493,38 +500,39 @@ export default function AdminReportsPage() {
     return true;
   };
 
-  // Filtered Orders strictly within date range
+  // Filtered Orders strictly within Date Range AND Sales Channel
   const dateFilteredOrders = useMemo(() => {
-    return orders.filter((o) => isDateInRange(o.rawDate || o.date));
-  }, [orders, startDate, endDate]);
+    return orders.filter((o) => {
+      const matchesDate = isDateInRange(o.rawDate || o.date);
+      let matchesChannel = true;
+      if (channelFilter === "ECOMMERCE") {
+        matchesChannel = o.source === "STOREFRONT" || o.source === "LANDING_PAGE" || !o.source;
+      } else if (channelFilter === "POS") {
+        matchesChannel = o.source === "POS";
+      }
+      return matchesDate && matchesChannel;
+    });
+  }, [orders, startDate, endDate, channelFilter]);
 
   // Filtered Ledger strictly within date range
   const dateFilteredLedger = useMemo(() => {
     return ledgerEntries.filter((l) => isDateInRange(l.date));
   }, [ledgerEntries, startDate, endDate]);
 
-  // ==========================================
-  // EXECUTIVE FINANCIAL LEDGER (তাং – তাং সারাংশ)
-  // ==========================================
+  // Financial Metrics Summary
   const financialSummary = useMemo(() => {
-    // 1. Total Sales (মোট বিক্রয়)
     const sales = dateFilteredOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-
-    // 2. Purchases & COGS (কেনা দাম / পণ্য ক্রয়)
     const purchasesFromLedger = dateFilteredLedger
       .filter((l) => l.type === "PURCHASE")
       .reduce((sum, l) => sum + l.amount, 0);
 
-    // Estimate COGS from orders (~65% if no purchase bills entered in period)
     const estimatedCOGS = Math.round(sales * 0.65);
     const totalPurchasesCOGS = purchasesFromLedger > 0 ? purchasesFromLedger : estimatedCOGS;
 
-    // 3. Operating Expenses (পরিচালন খরচ)
     const totalExpenses = dateFilteredLedger
       .filter((l) => l.type === "EXPENSE")
       .reduce((sum, l) => sum + l.amount, 0);
 
-    // 4. Net Profit (নিট মুনাফা = বিক্রয় - কেনা দাম - খরচ)
     const netProfit = sales - totalPurchasesCOGS - totalExpenses;
 
     return {
@@ -537,7 +545,7 @@ export default function AdminReportsPage() {
     };
   }, [dateFilteredOrders, dateFilteredLedger]);
 
-  // Extract all unique product names across all orders for the product selector
+  // Unique product list
   const productList = useMemo(() => {
     const pSet = new Set<string>();
     orders.forEach((o) => {
@@ -548,12 +556,9 @@ export default function AdminReportsPage() {
     return Array.from(pSet).sort();
   }, [orders]);
 
-  // ==========================================
-  // PRODUCT-WISE ORDER REPORT COMPUTATIONS
-  // ==========================================
+  // Product-wise filtered computations
   const productFilteredData = useMemo(() => {
     if (selectedProduct === "ALL") {
-      // General order view within date range
       const list = dateFilteredOrders.filter((o) => {
         const matchesStatus =
           orderStatusFilter === "ALL" || o.status === orderStatusFilter;
@@ -567,7 +572,7 @@ export default function AdminReportsPage() {
 
       return {
         isProductSpecific: false,
-        productName: "সকল পণ্য (All Products)",
+        productName: "All Products",
         uniqueBuyersCount: 0,
         totalUnitsSold: 0,
         totalProductRevenue: 0,
@@ -576,14 +581,12 @@ export default function AdminReportsPage() {
       };
     }
 
-    // A specific product is selected in this date range!
     const relevantOrders = dateFilteredOrders.filter((o) =>
       (o.items || []).some(
         (item) => item.name.toLowerCase() === selectedProduct.toLowerCase()
       )
     );
 
-    // Collect buyer details
     const buyers: {
       customerName: string;
       phone: string;
@@ -591,6 +594,7 @@ export default function AdminReportsPage() {
       address: string;
       orderId: string;
       orderDate: string;
+      source: string;
       quantityBought: number;
       unitPrice: number;
       lineTotal: number;
@@ -622,6 +626,7 @@ export default function AdminReportsPage() {
           address: o.customer.address,
           orderId: o.orderId,
           orderDate: o.date,
+          source: o.source === "POS" ? "POS In-Store" : "E-Commerce",
           quantityBought: mItem.quantity,
           unitPrice: mItem.price,
           lineTotal: lineTotal,
@@ -642,9 +647,7 @@ export default function AdminReportsPage() {
     };
   }, [dateFilteredOrders, selectedProduct, orderStatusFilter, orderSearchQuery]);
 
-  // ==========================================
-  // CSV EXPORT GENERATOR (WITH UTF-8 BOM FOR EXCEL)
-  // ==========================================
+  // CSV Generator
   const downloadCSV = (filename: string, headers: string[], rows: (string | number)[][]) => {
     let csvContent = "\uFEFF";
     csvContent += headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(",") + "\n";
@@ -659,15 +662,14 @@ export default function AdminReportsPage() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
+    link.href = url;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  // Export Product-Wise Buyer Report
   const handleExportProductBuyerReport = () => {
     if (!productFilteredData.isProductSpecific) {
       handleExportAllOrders();
@@ -676,20 +678,21 @@ export default function AdminReportsPage() {
 
     const safeSlug = selectedProduct.toLowerCase().replace(/[^a-z0-9]+/g, "_");
     const dateSuffix = startDate || endDate ? `_${startDate || "start"}_to_${endDate || "end"}` : `_${new Date().toISOString().slice(0, 10)}`;
-    const filename = `ponchomukh_product_buyers_${safeSlug}${dateSuffix}.csv`;
+    const filename = `product_buyers_${safeSlug}${dateSuffix}.csv`;
 
     const headers = [
-      "Customer Name (গ্রাহকের নাম)",
-      "Mobile Phone (মোবাইল নম্বর)",
-      "Email Address (ইমেইল)",
-      "Delivery Address (ডেলিভারি ঠিকানা)",
-      "Order ID (অর্ডার নম্বর)",
-      "Order Date (অর্ডারের তারিখ)",
-      "Quantity (পরিমাণ)",
-      "Unit Price (৳ এককের দাম)",
-      "Line Total (৳ মোট মূল্য)",
-      "Order Status (অর্ডার স্ট্যাটাস)",
-      "Payment Method (পেমেন্ট পদ্ধতি)",
+      "Customer Name",
+      "Mobile Phone",
+      "Email Address",
+      "Delivery / Store Address",
+      "Order ID",
+      "Order Date",
+      "Sales Channel",
+      "Quantity Bought",
+      "Unit Price (৳)",
+      "Line Total (৳)",
+      "Order Status",
+      "Payment Mode",
     ];
 
     const rows = productFilteredData.buyersList.map((b) => [
@@ -699,6 +702,7 @@ export default function AdminReportsPage() {
       b.address,
       b.orderId,
       b.orderDate,
+      b.source,
       b.quantityBought,
       b.unitPrice,
       b.lineTotal,
@@ -709,22 +713,22 @@ export default function AdminReportsPage() {
     downloadCSV(filename, headers, rows);
   };
 
-  // Export Orders Report
   const handleExportAllOrders = () => {
     const dateSuffix = startDate || endDate ? `_${startDate || "start"}_to_${endDate || "end"}` : `_${new Date().toISOString().slice(0, 10)}`;
-    const filename = `ponchomukh_order_report${dateSuffix}.csv`;
+    const filename = `order_sales_report${dateSuffix}.csv`;
     const headers = [
       "Order ID",
       "Date",
+      "Sales Channel",
       "Customer Name",
       "Customer Phone",
       "Customer Email",
       "Address",
-      "Purchased Products",
-      "Subtotal (৳)",
-      "Discount (৳)",
-      "Shipping Fee (৳)",
-      "Total Amount (৳)",
+      "Products",
+      "Subtotal",
+      "Discount",
+      "Shipping",
+      "Total Amount",
       "Payment Method",
       "Payment Status",
       "Order Status",
@@ -733,6 +737,7 @@ export default function AdminReportsPage() {
     const rows = productFilteredData.ordersList.map((o) => [
       o.orderId,
       o.date,
+      o.source === "POS" ? "POS In-Store" : "E-Commerce",
       o.customer.name,
       o.customer.phone,
       o.customer.email,
@@ -750,23 +755,22 @@ export default function AdminReportsPage() {
     downloadCSV(filename, headers, rows);
   };
 
-  // Export Accounts Ledger Report
   const handleExportAccountsLedger = () => {
     const dateSuffix = startDate || endDate ? `_${startDate || "start"}_to_${endDate || "end"}` : `_${new Date().toISOString().slice(0, 10)}`;
-    const filename = `ponchomukh_accounts_ledger${dateSuffix}.csv`;
+    const filename = `financial_ledger${dateSuffix}.csv`;
     const headers = [
-      "Date (তারিখ)",
-      "Transaction Title (বিবরণ)",
-      "Type (ধরণ)",
-      "Category (ক্যাটাগরি)",
-      "Amount (৳ পরিমাণ)",
-      "Staff / Admin (অ্যাডমিন)",
+      "Date",
+      "Transaction Description",
+      "Type",
+      "Category",
+      "Amount (৳)",
+      "Staff Admin",
     ];
 
     const rows = dateFilteredLedger.map((l) => [
       l.date,
       l.title,
-      l.type === "EXPENSE" ? "খরচ (Expense)" : l.type === "PURCHASE" ? "ক্রয় (Purchase)" : "আদায় (Collection)",
+      l.type === "EXPENSE" ? "Operational Expense" : l.type === "PURCHASE" ? "Stock Purchase (COGS)" : "Cash Collection",
       l.category,
       l.amount,
       l.staffName || "Admin",
@@ -775,18 +779,17 @@ export default function AdminReportsPage() {
     downloadCSV(filename, headers, rows);
   };
 
-  // Export Customer Report
   const handleExportCustomers = () => {
-    const filename = `ponchomukh_customers_report_${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `customers_directory_${new Date().toISOString().slice(0, 10)}.csv`;
     const headers = [
       "Customer ID",
-      "Full Name (নাম)",
-      "Mobile Number (ফোন)",
-      "Email Address (ইমেইল)",
-      "Registration Date (যোগদানের তারিখ)",
-      "Total Orders (মোট অর্ডার)",
-      "Lifetime Spend (৳ মোট ব্যয়)",
-      "Customer Status (স্ট্যাটাস)",
+      "Full Name",
+      "Mobile Phone",
+      "Email Address",
+      "Registered Date",
+      "Total Orders",
+      "Lifetime Spend (৳)",
+      "Status",
     ];
 
     const rows = customers.map((c) => [
@@ -803,15 +806,14 @@ export default function AdminReportsPage() {
     downloadCSV(filename, headers, rows);
   };
 
-  // Export Products Summary Report
   const handleExportProductSummary = () => {
     const dateSuffix = startDate || endDate ? `_${startDate || "start"}_to_${endDate || "end"}` : `_${new Date().toISOString().slice(0, 10)}`;
-    const filename = `ponchomukh_product_sales_ledger${dateSuffix}.csv`;
+    const filename = `product_sales_ledger${dateSuffix}.csv`;
     const headers = [
-      "Product Name (পণ্যের নাম)",
-      "Total Quantity Sold (মোট বিক্রি হয়েছে)",
-      "Total Revenue Generated (৳ মোট আয়)",
-      "Unique Buyers Count (ক্রেতার সংখ্যা)",
+      "Product Name",
+      "Total Quantity Sold",
+      "Total Revenue Generated (৳)",
+      "Unique Customer Buyers",
     ];
 
     const rows = productList.map((pName) => {
@@ -836,19 +838,19 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2.5">
-            <span>কাস্টমাইজড রিপোর্ট ও অ্যানালিটিক্স হাব</span>
+          <h1 className="text-2xl font-black text-[#3B0C04] flex items-center gap-2">
+            <span>Executive Reports & BI Analytics</span>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#16834A] text-white font-bold flex items-center gap-1">
               <Download className="w-3 h-3" />
-              <span>CSV/Excel Export</span>
+              <span>CSV / Excel</span>
             </span>
           </h1>
           <p className="text-xs text-[#6B5A52] mt-0.5">
-            তাং – তাং বিক্রয়, কেনা দাম (ক্রয়), পরিচালন খরচ, লাভ-ক্ষতি এবং পণ্যভিত্তিক ক্রেতা তালিকা
+            Real-time Sales, COGS, Operating Expenses, Net Margin & Product Customer Directory
           </p>
         </div>
 
@@ -857,7 +859,7 @@ export default function AdminReportsPage() {
             onClick={fetchAllData}
             disabled={isLoading}
             className="p-2.5 rounded-xl border border-[#E8DCD2] bg-white hover:bg-[#FFF7EE] text-[#3B0C04] text-xs font-bold shadow-xs transition-colors"
-            title="রিফ্রেশ করুন"
+            title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -870,8 +872,8 @@ export default function AdminReportsPage() {
               <Download className="w-4 h-4" />
               <span>
                 {productFilteredData.isProductSpecific
-                  ? "পণ্য ক্রেতা রিপোর্ট ডাউনলোড (CSV)"
-                  : "অর্ডার রিপোর্ট ডাউনলোড (CSV)"}
+                  ? "Download Product Buyers (CSV)"
+                  : "Download Orders Report (CSV)"}
               </span>
             </button>
           )}
@@ -882,7 +884,7 @@ export default function AdminReportsPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
             >
               <Download className="w-4 h-4" />
-              <span>হিসাব ও খরচ রিপোর্ট ডাউনলোড (CSV)</span>
+              <span>Download Ledger CSV</span>
             </button>
           )}
 
@@ -892,7 +894,7 @@ export default function AdminReportsPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
             >
               <Download className="w-4 h-4" />
-              <span>গ্রাহক রিপোর্ট ডাউনলোড (CSV)</span>
+              <span>Download Customers CSV</span>
             </button>
           )}
 
@@ -902,26 +904,24 @@ export default function AdminReportsPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B0C04] hover:bg-[#260700] text-[#FFC40E] text-xs font-bold shadow-xs transition-transform active:scale-95"
             >
               <Download className="w-4 h-4" />
-              <span>প্রোডাক্ট সেলস রিপোর্ট ডাউনলোড (CSV)</span>
+              <span>Download Products CSV</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* MASTER DATE-TO-DATE (তাং – তাং) RANGE PICKER */}
-      {/* ======================================================== */}
-      <div className="p-5 rounded-3xl bg-white border-2 border-[#3B0C04]/20 shadow-xs space-y-4">
+      {/* MASTER DATE-TO-DATE RANGE PICKER & CHANNEL SELECTOR */}
+      <div className="p-5 rounded-3xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <CalendarRange className="w-4 h-4 text-[#3B0C04]" />
               <h2 className="text-sm font-black text-[#3B0C04]">
-                কাস্টমাইজড তারিখ ফিল্টার (তাং – তাং রেঞ্জ সিলেক্টর)
+                Custom Date Range & Channel Filter
               </h2>
             </div>
             <p className="text-xs text-[#6B5A52]">
-              নির্দিষ্ট তারিখ হতে তারিখ পর্যন্ত বিক্রয়, কেনা দাম, খরচ ও ক্রেতাদের ফিল্টার করুন
+              Select custom date boundaries and sales channels to generate reports
             </p>
           </div>
 
@@ -935,40 +935,40 @@ export default function AdminReportsPage() {
                   : "bg-[#FFF7EE] text-[#3B0C04] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E]"
               }`}
             >
-              সব সময় (All)
+              All Time
             </button>
             <button
               onClick={() => setQuickRange("TODAY")}
               className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#FFF7EE] text-[#3B0C04] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E] transition-all"
             >
-              আজকে
+              Today
             </button>
             <button
               onClick={() => setQuickRange("LAST_7")}
               className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#FFF7EE] text-[#3B0C04] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E] transition-all"
             >
-              গত ৭ দিন
+              Last 7 Days
             </button>
             <button
               onClick={() => setQuickRange("THIS_MONTH")}
               className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#FFF7EE] text-[#3B0C04] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E] transition-all"
             >
-              চলতি মাস
+              This Month
             </button>
             <button
               onClick={() => setQuickRange("LAST_MONTH")}
               className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#FFF7EE] text-[#3B0C04] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E] transition-all"
             >
-              গত মাস
+              Last Month
             </button>
           </div>
         </div>
 
-        {/* Inputs row */}
+        {/* Date Inputs & Channel Dropdown */}
         <div className="pt-3 border-t border-[#E8DCD2]/60 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-          <div className="sm:col-span-5 flex items-center gap-2">
+          <div className="sm:col-span-4 flex items-center gap-2">
             <label className="text-xs font-bold text-[#3B0C04] whitespace-nowrap min-w-16">
-              শুরুর তাং:
+              Start Date:
             </label>
             <input
               type="date"
@@ -978,9 +978,9 @@ export default function AdminReportsPage() {
             />
           </div>
 
-          <div className="sm:col-span-5 flex items-center gap-2">
+          <div className="sm:col-span-4 flex items-center gap-2">
             <label className="text-xs font-bold text-[#3B0C04] whitespace-nowrap min-w-16">
-              শেষের তাং:
+              End Date:
             </label>
             <input
               type="date"
@@ -990,177 +990,191 @@ export default function AdminReportsPage() {
             />
           </div>
 
-          <div className="sm:col-span-2 flex items-center gap-2">
-            {(startDate || endDate) && (
+          <div className="sm:col-span-3 flex items-center gap-2">
+            <label className="text-xs font-bold text-[#3B0C04] whitespace-nowrap">
+              Channel:
+            </label>
+            <select
+              value={channelFilter}
+              onChange={(e: any) => setChannelFilter(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-bold text-[#3B0C04] outline-none"
+            >
+              <option value="ALL">All Sales Channels</option>
+              <option value="ECOMMERCE">🛒 E-Commerce Only</option>
+              <option value="POS">🏪 POS In-Store Only</option>
+            </select>
+          </div>
+
+          <div className="sm:col-span-1 flex items-center">
+            {(startDate || endDate || channelFilter !== "ALL") && (
               <button
-                onClick={() => setQuickRange("ALL")}
-                className="w-full h-10 px-3 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+                onClick={() => {
+                  setQuickRange("ALL");
+                  setChannelFilter("ALL");
+                }}
+                className="w-full h-10 px-2 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+                title="Reset Filters"
               >
                 <X className="w-3.5 h-3.5" />
-                <span>রিসেট</span>
+                <span>Reset</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Active Range Summary Pill */}
+        {/* Active Range Pill */}
         <div className="flex items-center gap-2 text-[11px] font-bold text-[#3B0C04] bg-[#FFF7EE] px-3.5 py-2 rounded-xl border border-[#E8DCD2]">
           <span className="w-2 h-2 rounded-full bg-[#16834A] animate-pulse" />
           <span>
-            {startDate || endDate
-              ? `ফিল্টার সক্রিয়: ${startDate ? startDate : "সূচনা"} হতে ${endDate ? endDate : "আজ পর্যন্ত"} (মোট ${dateFilteredOrders.length} টি অর্ডার পাওয়া গেছে)`
-              : `সকল সময়ের সর্বমোট হিসাব ও রিপোর্ট প্রদর্শিত হচ্ছে (মোট ${dateFilteredOrders.length} টি অর্ডার)`}
+            {startDate || endDate || channelFilter !== "ALL"
+              ? `Filter Active: ${startDate || "Earliest"} to ${endDate || "Present"} | Channel: ${channelFilter} (${dateFilteredOrders.length} orders matched)`
+              : `Viewing consolidated lifetime data across all channels (${dateFilteredOrders.length} orders)`}
           </span>
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* 4-PILLAR EXECUTIVE FINANCIAL SUMMARY (তাং – তাং হিসাব) */}
-      {/* ======================================================== */}
+      {/* 4-PILLAR EXECUTIVE FINANCIAL SUMMARY */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1: Total Sales (বিক্রয়) */}
+        {/* Total Sales */}
         <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#16834A]/10 text-[#16834A] flex items-center justify-center font-bold text-xl">
             ৳
           </div>
           <div>
             <p className="text-[11px] text-[#8C7B72] font-bold uppercase tracking-wider">
-              মোট বিক্রয় (Sales)
+              Total Gross Sales
             </p>
             <h3 className="text-2xl font-black text-[#16834A]">
               ৳{financialSummary.sales.toLocaleString()}
             </h3>
             <span className="text-[10px] text-[#6B5A52] font-semibold">
-              {financialSummary.ordersCount} টি সফল অর্ডার হতে
+              From {financialSummary.ordersCount} completed orders
             </span>
           </div>
         </div>
 
-        {/* Metric 2: Product Purchases / COGS (কেনা দাম / পণ্য ক্রয়) */}
+        {/* Cost of Goods / Purchases */}
         <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#FFC40E]/20 text-[#3B0C04] flex items-center justify-center font-bold text-xl">
             📦
           </div>
           <div>
             <p className="text-[11px] text-[#8C7B72] font-bold uppercase tracking-wider">
-              কেনা দাম / ক্রয় (Purchases)
+              Purchases / COGS
             </p>
             <h3 className="text-2xl font-black text-[#3B0C04]">
               ৳{financialSummary.purchases.toLocaleString()}
             </h3>
             <span className="text-[10px] text-[#8C7B72] font-semibold">
-              পণ্য ক্রয় ও কাঁচামাল খরচ
+              Inventory procurement cost
             </span>
           </div>
         </div>
 
-        {/* Metric 3: Operational Expenses (পরিচালন খরচ) */}
+        {/* Operating Expenses */}
         <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center font-bold text-xl">
             📉
           </div>
           <div>
             <p className="text-[11px] text-[#8C7B72] font-bold uppercase tracking-wider">
-              মোট খরচ (Expenses)
+              Operating Expenses
             </p>
             <h3 className="text-2xl font-black text-rose-700">
               ৳{financialSummary.expenses.toLocaleString()}
             </h3>
             <span className="text-[10px] text-[#8C7B72] font-semibold">
-              বিজ্ঞাপন, কুরিয়ার, প্যাকেজিং
+              Marketing, packaging, courier
             </span>
           </div>
         </div>
 
-        {/* Metric 4: Net Profit (নিট মুনাফা = বিক্রয় - কেনা দাম - খরচ) */}
+        {/* Net Profit */}
         <div className="p-5 rounded-2xl bg-[#3B0C04] text-[#FFFDF9] shadow-md flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#FFC40E] text-[#3B0C04] flex items-center justify-center font-black text-xl">
             🏆
           </div>
           <div>
             <p className="text-[11px] text-[#FFC40E] font-bold uppercase tracking-wider">
-              নিট মুনাফা (Net Profit)
+              Net Profit
             </p>
             <h3 className="text-2xl font-black text-[#FFC40E]">
               ৳{financialSummary.netProfit.toLocaleString()}
             </h3>
             <span className="text-[10px] text-zinc-300 font-semibold">
-              বিক্রি - কেনা দাম - খরচ ({financialSummary.marginPercent}%)
+              Margin: {financialSummary.marginPercent}%
             </span>
           </div>
         </div>
       </div>
 
-      {/* Main Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E8DCD2] pb-3 overflow-x-auto">
+      {/* Main Tabs */}
+      <div className="flex items-center gap-2 border-b border-[#E8DCD2] pb-3 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab("ORDERS")}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
             activeTab === "ORDERS"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-2xs"
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>অর্ডার ও পণ্যভিত্তিক ক্রেতা রিপোর্ট (Orders & Product Buyers)</span>
+          <span>Orders & Product Buyer Directory</span>
         </button>
 
         <button
           onClick={() => setActiveTab("ACCOUNTS")}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
             activeTab === "ACCOUNTS"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-2xs"
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
           <Receipt className="w-4 h-4" />
-          <span>আর্থিক লেজার: বিক্রয়, ক্রয় ও খরচ (Accounts Ledger)</span>
+          <span>Financial Accounts Ledger</span>
         </button>
 
         <button
           onClick={() => setActiveTab("CUSTOMERS")}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
             activeTab === "CUSTOMERS"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-2xs"
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>গ্রাহক রিপোর্ট (Customer Report)</span>
+          <span>Customer CRM Directory</span>
         </button>
 
         <button
           onClick={() => setActiveTab("PRODUCTS")}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
             activeTab === "PRODUCTS"
-              ? "bg-[#3B0C04] text-[#FFC40E] shadow-xs"
+              ? "bg-[#3B0C04] text-[#FFC40E] shadow-2xs"
               : "text-[#6B5A52] hover:bg-[#FFF7EE]"
           }`}
         >
           <TrendingUp className="w-4 h-4" />
-          <span>পণ্য বিক্রয় লেজার (Product Sales Ledger)</span>
+          <span>Product Sales Ledger</span>
         </button>
       </div>
 
-      {/* ======================================================== */}
-      {/* TAB 1: ORDER REPORT WITH PRODUCT-WISE FILTERING SYSTEM */}
-      {/* ======================================================== */}
+      {/* TAB 1: ORDER & PRODUCT-WISE BUYERS */}
       {activeTab === "ORDERS" && (
         <div className="space-y-6">
-          {/* PRODUCT FILTER DROPDOWN BAR */}
-          <div className="p-5 rounded-3xl bg-white border border-[#E8DCD2] shadow-sm space-y-4">
+          {/* PRODUCT FILTER DROPDOWN */}
+          <div className="p-5 rounded-3xl bg-white border border-[#E8DCD2] shadow-xs space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-black text-[#3B0C04] flex items-center gap-1.5">
                   <Filter className="w-3.5 h-3.5 text-[#FFC40E]" />
-                  <span>পণ্যভিত্তিক ফিল্টার নির্বাচন করুন (Select Product Wise):</span>
+                  <span>Product-Wise Customer Buyer Filter:</span>
                 </label>
                 <p className="text-[11px] text-[#6B5A52]">
-                  কোন পণ্যটি কতজন ক্রেতা কিনেছেন এবং তাদের বিস্তারিত তালিকা দেখতে নিচের তালিকা হতে পণ্য নির্বাচন করুন
+                  Select any product to see exactly which customers purchased it, contact details, quantity, and sales channel
                 </p>
               </div>
 
-              {/* Product Select Dropdown */}
               <div className="w-full md:w-96">
                 <div className="relative">
                   <select
@@ -1168,7 +1182,7 @@ export default function AdminReportsPage() {
                     onChange={(e) => setSelectedProduct(e.target.value)}
                     className="w-full h-11 pl-4 pr-10 rounded-xl border border-[#3B0C04] bg-[#FFF7EE] text-xs font-bold text-[#3B0C04] shadow-xs outline-none cursor-pointer appearance-none"
                   >
-                    <option value="ALL">📦 সকল পণ্য (All Products - সকল অর্ডার দেখুন)</option>
+                    <option value="ALL">📦 All Products (Consolidated View)</option>
                     {productList.map((pName, idx) => (
                       <option key={idx} value={pName}>
                         🔍 {pName}
@@ -1180,13 +1194,12 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            {/* General Filters row (Search & Status) */}
             <div className="pt-3 border-t border-[#E8DCD2]/60 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="relative w-full sm:w-72">
                 <Search className="w-4 h-4 text-[#8C7B72] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="অর্ডার আইডি, গ্রাহকের নাম বা ফোন..."
+                  placeholder="Order ID, Customer Name, or Phone..."
                   value={orderSearchQuery}
                   onChange={(e) => setOrderSearchQuery(e.target.value)}
                   className="w-full h-9 pl-9 pr-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
@@ -1194,13 +1207,13 @@ export default function AdminReportsPage() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="text-[11px] font-bold text-[#6B5A52] shrink-0">স্ট্যাটাস:</span>
+                <span className="text-[11px] font-bold text-[#6B5A52] shrink-0">Status:</span>
                 <select
                   value={orderStatusFilter}
                   onChange={(e) => setOrderStatusFilter(e.target.value)}
                   className="h-9 px-3 rounded-lg border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-semibold text-[#2B160F] outline-none"
                 >
-                  <option value="ALL">সব স্ট্যাটাস</option>
+                  <option value="ALL">All Statuses</option>
                   <option value="PROCESSING">Processing</option>
                   <option value="CONFIRMED">Confirmed</option>
                   <option value="SHIPPED">Shipped</option>
@@ -1211,70 +1224,58 @@ export default function AdminReportsPage() {
             </div>
           </div>
 
-          {/* KPI CARDS (Dramatically Changes When Product is Selected) */}
+          {/* Product Specific KPIs */}
           {productFilteredData.isProductSpecific ? (
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {/* Stat 1: Total Unique Customers */}
               <div className="p-5 rounded-2xl bg-white border-2 border-[#3B0C04] shadow-xs flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-lg">
                   👥
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">
-                    পণ্যটি মোট ক্রেতা কিনেছেন
-                  </p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Unique Buyers</p>
                   <h3 className="text-2xl font-black text-[#3B0C04]">
-                    {productFilteredData.uniqueBuyersCount} জন গ্রাহক
+                    {productFilteredData.uniqueBuyersCount} Customers
                   </h3>
-                  <span className="text-[10px] text-[#16834A] font-bold">অনন্য ক্রেতার সংখ্যা</span>
+                  <span className="text-[10px] text-[#16834A] font-bold">Distinct individuals</span>
                 </div>
               </div>
 
-              {/* Stat 2: Total Units Sold */}
               <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#FFC40E]/20 text-[#3B0C04] flex items-center justify-center font-bold text-lg">
                   📦
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">
-                    মোট বিক্রি পরিমাণ
-                  </p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Units Sold</p>
                   <h3 className="text-2xl font-black text-[#3B0C04]">
-                    {productFilteredData.totalUnitsSold} টি
+                    {productFilteredData.totalUnitsSold} Pcs
                   </h3>
-                  <span className="text-[10px] text-[#6B5A52]">মোট ইউনিট সম্পন্ন</span>
+                  <span className="text-[10px] text-[#6B5A52]">Fulfilled items</span>
                 </div>
               </div>
 
-              {/* Stat 3: Total Product Revenue */}
               <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#16834A]/10 text-[#16834A] flex items-center justify-center font-bold text-lg">
                   ৳
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">
-                    পণ্যটির মোট বিক্রয় রাজস্ব
-                  </p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Product Revenue</p>
                   <h3 className="text-2xl font-black text-[#16834A]">
                     ৳{productFilteredData.totalProductRevenue.toLocaleString()}
                   </h3>
-                  <span className="text-[10px] text-[#16834A] font-bold">নির্বাচিত সময়সীমায় রাজস্ব</span>
+                  <span className="text-[10px] text-[#16834A] font-bold">Sales generated</span>
                 </div>
               </div>
 
-              {/* Stat 4: Included in Orders */}
               <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#3B0C04]/10 text-[#3B0C04] flex items-center justify-center font-bold text-lg">
                   📑
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">
-                    অর্ডারে অন্তর্ভুক্ত
-                  </p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Orders Count</p>
                   <h3 className="text-2xl font-black text-[#3B0C04]">
-                    {productFilteredData.ordersList.length} টি অর্ডারে
+                    {productFilteredData.ordersList.length} Orders
                   </h3>
-                  <span className="text-[10px] text-[#6B5A52]">আলাদা অর্ডার সংখ্যা</span>
+                  <span className="text-[10px] text-[#6B5A52]">Order records</span>
                 </div>
               </div>
             </div>
@@ -1285,9 +1286,9 @@ export default function AdminReportsPage() {
                   📑
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold">মোট অর্ডার সংখ্যা</p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold">Total Orders</p>
                   <h3 className="text-2xl font-black text-[#3B0C04]">
-                    {productFilteredData.ordersList.length} টি
+                    {productFilteredData.ordersList.length}
                   </h3>
                 </div>
               </div>
@@ -1297,7 +1298,7 @@ export default function AdminReportsPage() {
                   ৳
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold">মোট বিক্রয় রাজস্ব</p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold">Total Sales Volume</p>
                   <h3 className="text-2xl font-black text-[#16834A]">
                     ৳{productFilteredData.ordersList.reduce((sum, o) => sum + (o.total || 0), 0).toLocaleString()}
                   </h3>
@@ -1309,7 +1310,7 @@ export default function AdminReportsPage() {
                   🛒
                 </div>
                 <div>
-                  <p className="text-[11px] text-[#8C7B72] font-bold">গড় অর্ডার মূল্য (AOV)</p>
+                  <p className="text-[11px] text-[#8C7B72] font-bold">Average Order Value (AOV)</p>
                   <h3 className="text-2xl font-black text-[#3B0C04]">
                     ৳
                     {productFilteredData.ordersList.length > 0
@@ -1324,19 +1325,19 @@ export default function AdminReportsPage() {
             </div>
           )}
 
-          {/* DETAILED TABLE: PRODUCT BUYERS TABLE OR ALL ORDERS TABLE */}
+          {/* TABLE */}
           {productFilteredData.isProductSpecific ? (
             <div className="bg-white rounded-3xl border border-[#E8DCD2] shadow-xs overflow-hidden">
               <div className="p-5 border-b border-[#E8DCD2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-base font-black text-[#3B0C04] flex items-center gap-2">
-                    <span>"{selectedProduct}" এর ক্রেতাদের বিস্তারিত তালিকা</span>
+                    <span>Customer Buyers of "{selectedProduct}"</span>
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
-                      {productFilteredData.buyersList.length} টি কেনাকাটা
+                      {productFilteredData.buyersList.length} Transactions
                     </span>
                   </h3>
                   <p className="text-xs text-[#6B5A52]">
-                    এই নির্দিষ্ট পণ্যটি ক্রয়কারী গ্রাহকদের নাম, মোবাইল ফোন, ঠিকানা, অর্ডার নম্বর এবং পেমেন্ট বিস্তারিত
+                    Complete list of buyers including contact phone, channel, delivery address, price, and status
                   </p>
                 </div>
 
@@ -1345,29 +1346,30 @@ export default function AdminReportsPage() {
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E] text-[#3B0C04] text-xs font-bold transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>তালিকাসহ এক্সপোর্ট করুন (CSV)</span>
+                  <span>Export Buyer List (CSV)</span>
                 </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold">
-                      <th className="py-3 px-4">গ্রাহকের নাম (Customer)</th>
-                      <th className="py-3 px-4">মোবাইল ফোন ও যোগাযোগ</th>
-                      <th className="py-3 px-4">ডেলিভারি ঠিকানা</th>
-                      <th className="py-3 px-4">অর্ডার আইডি ও তারিখ</th>
-                      <th className="py-3 px-4 text-center">পরিমাণ</th>
-                      <th className="py-3 px-4 text-right">একক মূল্য</th>
-                      <th className="py-3 px-4 text-right">মোট মূল্য</th>
-                      <th className="py-3 px-4 text-center">অর্ডার স্ট্যাটাস</th>
+                    <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold uppercase tracking-wider">
+                      <th className="py-3 px-4">Customer Name</th>
+                      <th className="py-3 px-4">Contact Phone & Email</th>
+                      <th className="py-3 px-4">Channel</th>
+                      <th className="py-3 px-4">Delivery Address</th>
+                      <th className="py-3 px-4">Order ID & Date</th>
+                      <th className="py-3 px-4 text-center">Qty</th>
+                      <th className="py-3 px-4 text-right">Unit Price</th>
+                      <th className="py-3 px-4 text-right">Line Total</th>
+                      <th className="py-3 px-4 text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E8DCD2]/60">
                     {productFilteredData.buyersList.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-8 text-center text-[#8C7B72] font-semibold">
-                          নির্বাচিত তারিখের পরিসীমায় এই পণ্যের কোনো কেনাকাটার তথ্য পাওয়া যায়নি।
+                        <td colSpan={9} className="py-8 text-center text-[#8C7B72] font-semibold">
+                          No buyer transactions recorded for this product in the selected period.
                         </td>
                       </tr>
                     ) : (
@@ -1380,6 +1382,17 @@ export default function AdminReportsPage() {
                             <div className="font-semibold text-[#3B0C04]">{buyer.phone}</div>
                             <div className="text-[11px] text-[#8C7B72]">{buyer.email}</div>
                           </td>
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                buyer.source.includes("POS")
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-blue-50 text-blue-700"
+                              }`}
+                            >
+                              {buyer.source}
+                            </span>
+                          </td>
                           <td className="py-3.5 px-4 text-[#6B5A52] max-w-xs truncate" title={buyer.address}>
                             {buyer.address}
                           </td>
@@ -1388,7 +1401,7 @@ export default function AdminReportsPage() {
                             <div className="text-[10px] text-[#8C7B72]">{buyer.orderDate}</div>
                           </td>
                           <td className="py-3.5 px-4 text-center font-bold text-[#2B160F]">
-                            {buyer.quantityBought} টি
+                            {buyer.quantityBought}
                           </td>
                           <td className="py-3.5 px-4 text-right font-medium text-[#6B5A52]">
                             ৳{buyer.unitPrice.toLocaleString()}
@@ -1409,15 +1422,14 @@ export default function AdminReportsPage() {
               </div>
             </div>
           ) : (
-            /* ALL ORDERS TABLE */
             <div className="bg-white rounded-3xl border border-[#E8DCD2] shadow-xs overflow-hidden">
               <div className="p-5 border-b border-[#E8DCD2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-base font-black text-[#3B0C04]">
-                    অর্ডার রিপোর্ট ({productFilteredData.ordersList.length} টি অর্ডার)
+                    Orders Report ({productFilteredData.ordersList.length} Orders)
                   </h3>
                   <p className="text-xs text-[#6B5A52]">
-                    নির্বাচিত তারিখের সকল অর্ডারের সমন্বিত রিপোর্ট এক্সেল ও সিএসভি আকারে ডাউনলোডযোগ্য
+                    All transactions in the selected date range & channel filter
                   </p>
                 </div>
                 <button
@@ -1425,28 +1437,29 @@ export default function AdminReportsPage() {
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FFF7EE] border border-[#E8DCD2] hover:bg-[#3B0C04] hover:text-[#FFC40E] text-[#3B0C04] text-xs font-bold transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>সম্পূর্ণ তালিকা এক্সপোর্ট করুন (CSV)</span>
+                  <span>Export Report (CSV)</span>
                 </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold">
-                      <th className="py-3 px-4">অর্ডার আইডি</th>
-                      <th className="py-3 px-4">তারিখ</th>
-                      <th className="py-3 px-4">গ্রাহকের নাম ও ফোন</th>
-                      <th className="py-3 px-4">অর্ডারকৃত পণ্যসমূহ</th>
-                      <th className="py-3 px-4 text-right">মোট টাকা</th>
-                      <th className="py-3 px-4">পেমেন্ট</th>
-                      <th className="py-3 px-4 text-center">স্ট্যাটাস</th>
+                    <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold uppercase tracking-wider">
+                      <th className="py-3 px-4">Order ID</th>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4">Channel</th>
+                      <th className="py-3 px-4">Customer Details</th>
+                      <th className="py-3 px-4">Purchased Items</th>
+                      <th className="py-3 px-4 text-right">Total Amount</th>
+                      <th className="py-3 px-4">Payment</th>
+                      <th className="py-3 px-4 text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E8DCD2]/60">
                     {productFilteredData.ordersList.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-[#8C7B72] font-semibold">
-                          নির্বাচিত তারিখ বা ফিল্টারে কোনো অর্ডার পাওয়া যায়নি।
+                        <td colSpan={8} className="py-8 text-center text-[#8C7B72] font-semibold">
+                          No orders found matching the filter criteria.
                         </td>
                       </tr>
                     ) : (
@@ -1457,6 +1470,17 @@ export default function AdminReportsPage() {
                           </td>
                           <td className="py-3.5 px-4 text-[#6B5A52] whitespace-nowrap">
                             {order.date}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                order.source === "POS"
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-blue-50 text-blue-700"
+                              }`}
+                            >
+                              {order.source === "POS" ? "POS IN-STORE" : "E-COMMERCE"}
+                            </span>
                           </td>
                           <td className="py-3.5 px-4">
                             <div className="font-bold text-[#2B160F]">{order.customer.name}</div>
@@ -1489,19 +1513,17 @@ export default function AdminReportsPage() {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* TAB 2: FINANCIAL ACCOUNTS LEDGER (বিক্রয়, ক্রয় ও খরচ) */}
-      {/* ======================================================== */}
+      {/* TAB 2: FINANCIAL ACCOUNTS LEDGER */}
       {activeTab === "ACCOUNTS" && (
         <div className="space-y-6">
           <div className="bg-white rounded-3xl border border-[#E8DCD2] shadow-xs overflow-hidden">
             <div className="p-5 border-b border-[#E8DCD2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-black text-[#3B0C04]">
-                  আর্থিক লেজার রিপোর্ট (ক্রয়, খরচ ও কালেকশন)
+                  Financial Accounts & General Ledger
                 </h3>
                 <p className="text-xs text-[#6B5A52]">
-                  নির্বাচিত তারিখের সকল ব্যয়, ক্রয় ও আয়ের সমন্বিত হিসাব
+                  Consolidated tracking of operating expenses, COGS procurement, and collections
                 </p>
               </div>
 
@@ -1511,10 +1533,10 @@ export default function AdminReportsPage() {
                   onChange={(e) => setLedgerTypeFilter(e.target.value)}
                   className="h-9 px-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs font-semibold text-[#2B160F]"
                 >
-                  <option value="ALL">সকল লেনদেন</option>
-                  <option value="EXPENSE">শুধু খরচ (Expenses)</option>
-                  <option value="PURCHASE">শুধু ক্রয় (Purchases)</option>
-                  <option value="COLLECTION">শুধু আদায় (Collections)</option>
+                  <option value="ALL">All Entries</option>
+                  <option value="EXPENSE">Operating Expenses</option>
+                  <option value="PURCHASE">Procurement Purchases</option>
+                  <option value="COLLECTION">Cash Collections</option>
                 </select>
 
                 <button
@@ -1522,7 +1544,7 @@ export default function AdminReportsPage() {
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700] transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>লেজার এক্সপোর্ট (CSV)</span>
+                  <span>Export Ledger (CSV)</span>
                 </button>
               </div>
             </div>
@@ -1530,13 +1552,12 @@ export default function AdminReportsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold">
-                    <th className="py-3 px-4">তারিখ (Date)</th>
-                    <th className="py-3 px-4">বিবরণ / শিরোনাম</th>
-                    <th className="py-3 px-4">ধরণ (Type)</th>
-                    <th className="py-3 px-4">ক্যাটাগরি</th>
-                    <th className="py-3 px-4">রেকর্ডকারী স্টাফ</th>
-                    <th className="py-3 px-4 text-right">পরিমাণ (Amount)</th>
+                  <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold uppercase tracking-wider">
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Title / Description</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Staff Admin</th>
+                    <th className="py-3 px-4 text-right">Amount (৳)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8DCD2]/60">
@@ -1549,23 +1570,6 @@ export default function AdminReportsPage() {
                         </td>
                         <td className="py-3.5 px-4 font-bold text-[#2B160F]">
                           {item.title}
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              item.type === "EXPENSE"
-                                ? "bg-rose-50 text-rose-700"
-                                : item.type === "PURCHASE"
-                                ? "bg-amber-50 text-amber-800"
-                                : "bg-emerald-50 text-emerald-700"
-                            }`}
-                          >
-                            {item.type === "EXPENSE"
-                              ? "পরিচালন খরচ"
-                              : item.type === "PURCHASE"
-                              ? "পণ্য ক্রয়"
-                              : "আদায়"}
-                          </span>
                         </td>
                         <td className="py-3.5 px-4 text-[#8C7B72]">
                           {item.category}
@@ -1596,20 +1600,17 @@ export default function AdminReportsPage() {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* TAB 3: CUSTOMER REPORT & DOWNLOAD */}
-      {/* ======================================================== */}
+      {/* TAB 3: CUSTOMER CRM */}
       {activeTab === "CUSTOMERS" && (
         <div className="space-y-6">
-          {/* Customer Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="p-5 rounded-2xl bg-white border border-[#E8DCD2] shadow-xs flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-[#3B0C04]/10 text-[#3B0C04] flex items-center justify-center font-bold text-lg">
                 👥
               </div>
               <div>
-                <p className="text-[11px] text-[#8C7B72] font-bold">মোট নিবন্ধিত গ্রাহক</p>
-                <h3 className="text-2xl font-black text-[#3B0C04]">{customers.length} জন</h3>
+                <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Total Accounts</p>
+                <h3 className="text-2xl font-black text-[#3B0C04]">{customers.length}</h3>
               </div>
             </div>
 
@@ -1618,9 +1619,9 @@ export default function AdminReportsPage() {
                 ✅
               </div>
               <div>
-                <p className="text-[11px] text-[#8C7B72] font-bold">সক্রিয় গ্রাহক</p>
+                <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Active Status</p>
                 <h3 className="text-2xl font-black text-[#16834A]">
-                  {customers.filter((c) => c.status === "ACTIVE").length} জন
+                  {customers.filter((c) => c.status === "ACTIVE").length}
                 </h3>
               </div>
             </div>
@@ -1630,7 +1631,7 @@ export default function AdminReportsPage() {
                 ৳
               </div>
               <div>
-                <p className="text-[11px] text-[#8C7B72] font-bold">গ্রাহকদের মোট ব্যয়</p>
+                <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Customer Lifetime Spend</p>
                 <h3 className="text-2xl font-black text-[#3B0C04]">
                   ৳{customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0).toLocaleString()}
                 </h3>
@@ -1642,7 +1643,7 @@ export default function AdminReportsPage() {
                 📊
               </div>
               <div>
-                <p className="text-[11px] text-[#8C7B72] font-bold">গড় গ্রাহক মূল্য (CLV)</p>
+                <p className="text-[11px] text-[#8C7B72] font-bold uppercase">Average CLV</p>
                 <h3 className="text-2xl font-black text-[#3B0C04]">
                   ৳
                   {customers.length > 0
@@ -1656,42 +1657,39 @@ export default function AdminReportsPage() {
             </div>
           </div>
 
-          {/* Customer Search & Filter */}
           <div className="bg-white p-4 rounded-3xl border border-[#E8DCD2] shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="relative w-full sm:w-80">
                 <Search className="w-4 h-4 text-[#8C7B72] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="গ্রাহকের নাম, ফোন বা ইমেইল খুঁজুন..."
+                  placeholder="Search customer by name, phone, or email..."
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   className="w-full h-10 pl-9 pr-3 rounded-xl border border-[#E8DCD2] bg-[#FFFDF9] text-xs focus:outline-none focus:border-[#3B0C04]"
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleExportCustomers}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16834A] text-white text-xs font-bold hover:bg-[#11693a] transition-all shadow-xs"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>গ্রাহক রিপোর্ট ডাউনলোড (CSV)</span>
-                </button>
-              </div>
+              <button
+                onClick={handleExportCustomers}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#16834A] text-white text-xs font-bold hover:bg-[#11693a] transition-all shadow-xs"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Customers (CSV)</span>
+              </button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold">
-                    <th className="py-3 px-4">গ্রাহকের নাম (Customer)</th>
-                    <th className="py-3 px-4">মোবাইল ফোন</th>
-                    <th className="py-3 px-4">ইমেইল</th>
-                    <th className="py-3 px-4">যোগদানের তারিখ</th>
-                    <th className="py-3 px-4 text-center">মোট অর্ডার</th>
-                    <th className="py-3 px-4 text-right">মোট ব্যয় (৳)</th>
-                    <th className="py-3 px-4 text-center">স্ট্যাটাস</th>
+                  <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold uppercase tracking-wider">
+                    <th className="py-3 px-4">Customer Name</th>
+                    <th className="py-3 px-4">Mobile Phone</th>
+                    <th className="py-3 px-4">Email Address</th>
+                    <th className="py-3 px-4">Joined Date</th>
+                    <th className="py-3 px-4 text-center">Total Orders</th>
+                    <th className="py-3 px-4 text-right">Lifetime Value (৳)</th>
+                    <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8DCD2]/60">
@@ -1711,7 +1709,7 @@ export default function AdminReportsPage() {
                         <td className="py-3.5 px-4 text-[#6B5A52]">{cust.email}</td>
                         <td className="py-3.5 px-4 text-[#8C7B72]">{cust.joinedDate}</td>
                         <td className="py-3.5 px-4 text-center font-bold text-[#2B160F]">
-                          {cust.totalOrders} টি
+                          {cust.totalOrders}
                         </td>
                         <td className="py-3.5 px-4 text-right font-black text-[#16834A]">
                           ৳{cust.totalSpent.toLocaleString()}
@@ -1736,19 +1734,17 @@ export default function AdminReportsPage() {
         </div>
       )}
 
-      {/* ======================================================== */}
       {/* TAB 4: PRODUCT SALES LEDGER */}
-      {/* ======================================================== */}
       {activeTab === "PRODUCTS" && (
         <div className="space-y-6">
           <div className="bg-white rounded-3xl border border-[#E8DCD2] shadow-xs overflow-hidden">
             <div className="p-5 border-b border-[#E8DCD2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-black text-[#3B0C04]">
-                  পণ্যভিত্তিক সর্বমোট বিক্রয় ও ক্রেতা লেজার
+                  Product Inventory & Sales Ledger
                 </h3>
                 <p className="text-xs text-[#6B5A52]">
-                  নির্বাচিত তারিখের পরিসীমায় প্রতিটি পণ্যের মোট বিক্রিত পরিমাণ, রাজস্ব এবং ক্রেতার সংখ্যা
+                  Units sold, generated revenue, and customer buyer count per catalog item
                 </p>
               </div>
               <button
@@ -1756,19 +1752,19 @@ export default function AdminReportsPage() {
                 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#3B0C04] text-[#FFC40E] text-xs font-bold hover:bg-[#260700] transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>লেজার এক্সপোর্ট করুন (CSV)</span>
+                <span>Export Product Ledger (CSV)</span>
               </button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold">
-                    <th className="py-3 px-4">পণ্যের নাম (Product Title)</th>
-                    <th className="py-3 px-4 text-center">মোট বিক্রিত ইউনিট</th>
-                    <th className="py-3 px-4 text-center">মোট অনন্য ক্রেতা (Buyers)</th>
-                    <th className="py-3 px-4 text-right">মোট বিক্রয় মূল্য (Revenue)</th>
-                    <th className="py-3 px-4 text-center">অ্যাকশন</th>
+                  <tr className="border-b border-[#E8DCD2] bg-[#FFFDF9] text-[#8C7B72] font-bold uppercase tracking-wider">
+                    <th className="py-3 px-4">Product Name</th>
+                    <th className="py-3 px-4 text-center">Units Sold</th>
+                    <th className="py-3 px-4 text-center">Customer Buyers</th>
+                    <th className="py-3 px-4 text-right">Revenue Generated</th>
+                    <th className="py-3 px-4 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8DCD2]/60">
@@ -1791,10 +1787,10 @@ export default function AdminReportsPage() {
                       <tr key={idx} className="hover:bg-[#FFF7EE]/30 transition-colors">
                         <td className="py-3.5 px-4 font-bold text-[#2B160F]">{pName}</td>
                         <td className="py-3.5 px-4 text-center font-bold text-[#3B0C04]">
-                          {units} টি
+                          {units} Pcs
                         </td>
                         <td className="py-3.5 px-4 text-center font-bold text-[#16834A]">
-                          {buyerSet.size} জন
+                          {buyerSet.size} Buyers
                         </td>
                         <td className="py-3.5 px-4 text-right font-black text-[#16834A]">
                           ৳{revenue.toLocaleString()}
@@ -1807,7 +1803,7 @@ export default function AdminReportsPage() {
                             }}
                             className="px-3 py-1 rounded-lg bg-[#FFF7EE] text-[#3B0C04] hover:bg-[#3B0C04] hover:text-[#FFC40E] text-[11px] font-bold border border-[#E8DCD2] transition-colors"
                           >
-                            ক্রেতাদের দেখুন →
+                            View Buyers →
                           </button>
                         </td>
                       </tr>
