@@ -1331,7 +1331,7 @@ export default function AdminReportsPage() {
               <div className="p-5 border-b border-[#E8DCD2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-base font-black text-[#3B0C04] flex items-center gap-2">
-                    <span>Customer Buyers of "{selectedProduct}"</span>
+                    <span>Customer Buyers of &ldquo;{selectedProduct}&rdquo;</span>
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#3B0C04] text-[#FFC40E] font-bold">
                       {productFilteredData.buyersList.length} Transactions
                     </span>
