@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { mockProducts, Product } from "@/lib/mockData";
 import { useLanguage } from "@/context/language-context";
+import { BrandLogoMark } from "@/components/brand-logo";
 
 export default function ProductLandingPage({ params }: { params: Promise<{ slug: string }> }) {
   const router = useRouter();
@@ -205,9 +206,7 @@ export default function ProductLandingPage({ params }: { params: Promise<{ slug:
       {/* 1. TOP STICKY URGENCY BAR */}
       <div className="sticky top-0 z-40 bg-[#3B0C04] text-[#FFC40E] py-2 px-3 text-center text-xs font-bold flex items-center justify-between shadow-md">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#FFC40E] text-[#3B0C04] flex items-center justify-center font-black text-sm">
-            প
-          </div>
+          <BrandLogoMark className="w-9 h-9" />
           <span className="font-black text-sm tracking-tight text-white hidden sm:inline">
             PONCHOMUKH
           </span>

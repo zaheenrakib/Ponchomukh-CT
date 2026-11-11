@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { BrandLogoMark } from "@/components/brand-logo";
 import { useCart } from "@/context/cart-context";
 import { Lock, Phone, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 
@@ -31,9 +32,7 @@ export default function LoginPage() {
       <main className="flex-1 py-12 px-4 flex items-center justify-center">
         <div className="w-full max-w-md bg-white rounded-2xl border border-[#E8DCD2] p-6 sm:p-8 shadow-xl space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-xl mx-auto">
-              প
-            </div>
+            <BrandLogoMark className="w-14 h-14 mx-auto" />
             <h1 className="text-2xl font-black text-[#3B0C04]">
               Welcome Back
             </h1>

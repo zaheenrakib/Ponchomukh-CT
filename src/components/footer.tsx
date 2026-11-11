@@ -16,6 +16,7 @@ import {
   CreditCard
 } from "lucide-react";
 import { FacebookIcon, InstagramIcon } from "@/components/ui/social-icons";
+import { BrandLogoMark } from "@/components/brand-logo";
 
 export const Footer: React.FC = () => {
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -75,9 +76,7 @@ export const Footer: React.FC = () => {
           {/* Column 1: Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#FFC40E] text-[#260700] flex items-center justify-center font-bold text-lg shadow-sm">
-                প
-              </div>
+              <BrandLogoMark className="w-14 h-14" />
               <span className="text-2xl font-black tracking-tight text-[#FFC40E]">
                 PONCHOMUKH
               </span>

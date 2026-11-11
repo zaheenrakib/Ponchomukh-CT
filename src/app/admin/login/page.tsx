@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ShieldAlert } from "lucide-react";
+import { BrandLogoMark } from "@/components/brand-logo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -45,9 +46,7 @@ export default function AdminLoginPage() {
         
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-[#3B0C04] text-[#FFC40E] font-black flex items-center justify-center text-xl mx-auto shadow-md">
-            P
-          </div>
+          <BrandLogoMark className="w-14 h-14 mx-auto" />
           <h1 className="font-sans font-black text-2xl text-[#3B0C04] dark:text-white">
             Ponchomukh Admin
           </h1>

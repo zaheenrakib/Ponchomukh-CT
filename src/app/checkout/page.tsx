@@ -7,6 +7,7 @@ import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Footer } from "@/components/footer";
+import { BrandLogoMark } from "@/components/brand-logo";
 import {
   Lock,
   CreditCard,
@@ -161,9 +162,7 @@ export default function CheckoutPage() {
       <header className="bg-white border-b border-[#E8DCD2] py-4">
         <div className="container-custom flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-lg">
-              প
-            </div>
+            <BrandLogoMark className="w-10 h-10" />
             <span className="text-xl font-black tracking-tight text-[#3B0C04]">
               PONCHOMUKH
             </span>

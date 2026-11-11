@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { BrandLogoMark } from "@/components/brand-logo";
 import { mockCategories, mockProducts } from "@/lib/mockData";
 import {
   Search,
@@ -85,9 +86,7 @@ export const Navbar: React.FC = () => {
         <div className="container-custom h-[72px] flex items-center justify-between gap-6">
           {/* Brand Logo (Left) */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-10 h-10 rounded-xl bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-xl shadow-sm border border-[#FFC40E]/30 group-hover:scale-105 transition-transform">
-              প
-            </div>
+            <BrandLogoMark className="w-12 h-12 group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
               <span className="text-2xl font-black tracking-tight text-[#3B0C04] leading-none">
                 PONCHOMUKH
@@ -393,9 +392,7 @@ export const Navbar: React.FC = () => {
 
           {/* Logo Center */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-base shadow-xs">
-              প
-            </div>
+            <BrandLogoMark className="w-9 h-9" />
             <span className="text-lg font-black tracking-tight text-[#3B0C04]">
               PONCHOMUKH
             </span>
@@ -456,9 +453,7 @@ export const Navbar: React.FC = () => {
             {/* Drawer Header */}
             <div className="p-4 bg-[#3B0C04] text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-[#FFC40E] text-[#260700] flex items-center justify-center font-bold text-sm">
-                  প
-                </div>
+                <BrandLogoMark className="w-9 h-9" />
                 <span className="font-bold text-base text-[#FFC40E]">{t("common.brandName")}</span>
               </div>
               <button

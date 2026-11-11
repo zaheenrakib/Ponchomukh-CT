@@ -35,6 +35,7 @@ import {
   CheckCircle2,
   Bell
 } from "lucide-react";
+import { BrandLogoMark } from "@/components/brand-logo";
 
 interface SubNavItem {
   href: string;
@@ -178,9 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="py-5 px-4 space-y-5">
           {/* Admin ERP Brand Header */}
           <Link href="/admin" className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-xl bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-black text-xl shadow-xs shrink-0">
-              P
-            </div>
+            <BrandLogoMark className="w-11 h-11" />
             <div className="min-w-0">
               <span className="font-black text-base text-[#3B0C04] tracking-tight block leading-tight">
                 PONCHOMUKH
@@ -337,9 +336,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-[#E8DCD2]">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#3B0C04] text-[#FFC40E] flex items-center justify-center font-bold text-base">
-                    P
-                  </div>
+                  <BrandLogoMark className="w-9 h-9" />
                   <div>
                     <span className="font-black text-sm text-[#3B0C04] block">PONCHOMUKH</span>
                     <span className="text-[10px] text-[#8C7B72] font-bold">Enterprise ERP</span>
